@@ -41,10 +41,10 @@ def main():
     R = np.array([np.radians(0), np.radians(0), np.radians(0)])  # angle in degree
     t = np.array([0, 0, 0])  # translation in meter
     cam = camera_setttings(R=R, t=t, vert=nb_vertices)
-    renderer = nr.Renderer(image_size=512, camera_mode='projection', dist_coeffs=None,
+    renderer = nr.Renderer(image_size=674, camera_mode='projection', dist_coeffs=None,
                            K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=1, background_color=[1, 1, 1], #background is filled now with  value 0-1 instead of 0-255
                            # changed from 0-255 to 0-1
-                           far=1000, orig_size=512,
+                           far=1000, orig_size=674,
                            light_intensity_ambient=1.0, light_intensity_directional=0, light_direction=[0, 1, 0],
                            light_color_ambient=[1, 1, 1], light_color_directional=[1, 1, 1])
 
@@ -65,8 +65,6 @@ def main():
         usm_inst = data[i]['usm-2']
 
 
-
-
         instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['pose'][0])),
                                                      list(map(float, usm_inst['pose'][1])),
                                                      list(map(float, usm_inst['pose'][2])),
@@ -74,7 +72,7 @@ def main():
                                                     dtype=np.float64)
 
         #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
-        R_test = np.array([np.radians(-36),np.radians(-42),np.radians(-58)]) #test value alpha beta gamma
+        R_test = np.array([np.radians(0),np.radians(0),np.radians(0)]) #test value alpha beta gamma
         T_test_vector, R_test_matrix =  BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=R_test[0], beta=R_test[1], gamma=R_test[2])
         instrument_to_camera_transform[0,0:3] = R_test_matrix[0,:]
         instrument_to_camera_transform[1,0:3] = R_test_matrix[1,:]
@@ -117,21 +115,21 @@ def main():
         Extracted_theta3_deg = np.degrees(Extracted_theta3_rad)
 
         # define transfomration parameter from json file
-        alpha =Extracted_theta1_deg
-        beta = Extracted_theta2_deg
-        gamma =  Extracted_theta3_deg
-        x = Extracted_X
-        y = Extracted_Y
-        z = -Extracted_Z
+        # alpha =Extracted_theta1_deg
+        # beta = Extracted_theta2_deg
+        # gamma =  Extracted_theta3_deg
+        # x = Extracted_X
+        # y = Extracted_Y
+        # z = Extracted_Z
 
         #
         # # define transfomration parameter randomly uniform
-        # alpha =0#uniform(0, 180)
-        # beta = 90#uniform(0, 180)
-        # gamma =  0 #uniform(0, 180)
-        # x = 0 #uniform(-1.5, 1.5)
-        # y = 0 #uniform(-1.5, 1.5)
-        # z = 3 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+        alpha =-36#uniform(0, 180)
+        beta = -42#uniform(0, 180)
+        gamma =  -58 #uniform(0, 180)
+        x = 0 #uniform(-1.5, 1.5)
+        y = 0 #uniform(-1.5, 1.5)
+        z = 2 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
 
 
 
