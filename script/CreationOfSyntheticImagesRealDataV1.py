@@ -4,11 +4,15 @@ import torch
 from numpy.random import uniform
 import neural_renderer as nr
 import matplotlib.pyplot as plt
+from utils_functions.camera_settings import BuildTransformationMatrix
 import tqdm
+import math as m
 import matplotlib.image as mpimg
 import random
 from scipy.misc import imsave
+from utils_functions.R2Rmat import R2Rmat
 import imageio
+import json
 from utils_functions.camera_settings import camera_setttings
 
 def main():
@@ -18,7 +22,7 @@ def main():
     params_database = []
     im_nr = 1
 
-    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/wrist.obj", load_texture=True) #, texture_size=4)
+    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaft.obj", load_texture=True) #, texture_size=4)
     print(vertices_1.shape)
     print(faces_1.shape)
     vertices_1 = vertices_1[None, :, :]  # add dimension
@@ -29,31 +33,87 @@ def main():
     print(vertices_1.shape)
     print(faces_1.shape)
 
-    file_name_extension = 'wrist1im_Head_10000datasetRotationTranslation0_180_M15_15_5_7'
+    file_name_extension = 'shaft_1im_180_M15_15_5_7'
 
 
-
-    nb_im = 10000
+    nb_im = 1
     #init and create renderer object
     R = np.array([np.radians(0), np.radians(0), np.radians(0)])  # angle in degree
     t = np.array([0, 0, 0])  # translation in meter
     cam = camera_setttings(R=R, t=t, vert=nb_vertices)
     renderer = nr.Renderer(image_size=512, camera_mode='projection', dist_coeffs=None,
-                           K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=1, background_color=[0, 0, 0], #background is filled now with  value 0-1 instead of 0-255
+                           K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=1, background_color=[1, 1, 1], #background is filled now with  value 0-1 instead of 0-255
                            # changed from 0-255 to 0-1
                            far=1000, orig_size=512,
                            light_intensity_ambient=1.0, light_intensity_directional=0, light_direction=[0, 1, 0],
                            light_color_ambient=[1, 1, 1], light_color_directional=[1, 1, 1])
 
+    ## -------------------------read json file -------------------------------------------
+
+    with open('data/data.json') as json_file:
+        data = json.load(json_file)
+        data_len = len(data)
+        # usm_camera = data[0:data_len]['usm-1']
+
+    ## --------------------------------------------------------------------------------
+
     loop = tqdm.tqdm(range(0, nb_im))
     for i in loop:
+
+        ## -------------------------extract json frame matrix -------------------------------------------
+        usm_camera = data[i]['usm-1']
+        usm_inst = data[i]['usm-2']
+        print(np.radians(180))
+        R_test = np.array([np.radians(180),np.radians(90),np.radians(0)]) #test value alpha beta gamma
+        T_test_vector, R_test_matrix =  BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=R_test[0], beta=R_test[1], gamma=R_test[2])
+
+
+        instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['pose'][0])),
+                                                     list(map(float, usm_inst['pose'][1])),
+                                                     list(map(float, usm_inst['pose'][2])),
+                                                     list(map(float, usm_inst['pose'][3]))],
+                                                    dtype=np.float64)
+
+        instrument_to_camera_transform[0,0:3] = R_test_matrix[0,:]
+        instrument_to_camera_transform[1,0:3] = R_test_matrix[1,:]
+        instrument_to_camera_transform[2,0:3] = R_test_matrix[2,:]
+
+
+        joint_values = np.asarray([list(map(float, usm_inst['articulation'][0])),
+                                   list(map(float, usm_inst['articulation'][1])),
+                                   list(map(float, usm_inst['articulation'][2]))],
+                                  dtype=np.float64)
+
+        joint_values[-1] = 2 * joint_values[-1]
+        # print(instrument_to_camera_transform[1,2]) # [row column]
+
+        #formula from https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
+        Extracted_theta1_rad = m.atan2(-instrument_to_camera_transform[1,2],instrument_to_camera_transform[2,2])
+        C_2 = m.sqrt(m.pow(instrument_to_camera_transform[0,0],2)+m.pow(instrument_to_camera_transform[0,1],2))
+        Extracted_theta2_rad = m.atan2(-instrument_to_camera_transform[0,1],  C_2 )
+        s_1 = m.sin(Extracted_theta1_rad)
+        c_1 = m.cos(Extracted_theta1_rad)
+        Extracted_theta3_rad = m.atan2(s_1*instrument_to_camera_transform[2,0]-c_1*instrument_to_camera_transform[1,0],
+                                       c_1*instrument_to_camera_transform[1,1]-s_1*instrument_to_camera_transform[2,1])
+
+
+        Extracted_X =  instrument_to_camera_transform[0,3]
+        Extracted_Y =  instrument_to_camera_transform[1,3]
+        Extracted_Z =  instrument_to_camera_transform[2,3]
+
+        Extracted_theta1_deg = np.degrees(Extracted_theta1_rad)
+        Extracted_theta2_deg = np.degrees(Extracted_theta2_rad)
+        Extracted_theta3_deg = np.degrees(Extracted_theta3_rad)
         # define transfomration parameter randomly uniform
         alpha =0#uniform(0, 180)
-        beta = 0#uniform(0, 180)
+        beta = 90#uniform(0, 180)
         gamma =  0 #uniform(0, 180)
-        x = uniform(-1.5, 1.5)
-        y = uniform(-1.5, 1.5)
-        z = uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+        x = 0 #uniform(-1.5, 1.5)
+        y = 0 #uniform(-1.5, 1.5)
+        z = 3 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+
+
+
         R = np.array([np.radians(alpha), np.radians(beta), np.radians(gamma)])  # angle in degree
         t = np.array([x, y, z])  # translation in meter
 
