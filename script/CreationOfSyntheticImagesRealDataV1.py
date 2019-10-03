@@ -63,9 +63,8 @@ def main():
         ## -------------------------extract json frame matrix -------------------------------------------
         usm_camera = data[i]['usm-1']
         usm_inst = data[i]['usm-2']
-        print(np.radians(180))
-        R_test = np.array([np.radians(45),np.radians(80),np.radians(-97)]) #test value alpha beta gamma
-        T_test_vector, R_test_matrix =  BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=R_test[0], beta=R_test[1], gamma=R_test[2])
+
+
 
 
         instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['pose'][0])),
@@ -74,6 +73,9 @@ def main():
                                                      list(map(float, usm_inst['pose'][3]))],
                                                     dtype=np.float64)
 
+        #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
+        R_test = np.array([np.radians(-36),np.radians(-42),np.radians(-58)]) #test value alpha beta gamma
+        T_test_vector, R_test_matrix =  BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=R_test[0], beta=R_test[1], gamma=R_test[2])
         instrument_to_camera_transform[0,0:3] = R_test_matrix[0,:]
         instrument_to_camera_transform[1,0:3] = R_test_matrix[1,:]
         instrument_to_camera_transform[2,0:3] = R_test_matrix[2,:]
@@ -90,10 +92,11 @@ def main():
 
 
         #formula from http://planning.cs.uiuc.edu/node103.html
-        Extracted_theta1_rad = m.atan2(instrument_to_camera_transform[1,0],instrument_to_camera_transform[0,0])
+        # alpha and gamma were swapped, don-t know where the problem is but value are correct
+        Extracted_theta3_rad = m.atan2(instrument_to_camera_transform[1,0],instrument_to_camera_transform[0,0])
         C_2 = m.sqrt(instrument_to_camera_transform[2,1]*instrument_to_camera_transform[2,1] + instrument_to_camera_transform[2,2]*instrument_to_camera_transform[2,2])
         Extracted_theta2_rad = m.atan2(-instrument_to_camera_transform[2,0],  C_2 )
-        Extracted_theta3_rad = m.atan2(instrument_to_camera_transform[2,1],instrument_to_camera_transform[2,2])
+        Extracted_theta1_rad = m.atan2(instrument_to_camera_transform[2,1],instrument_to_camera_transform[2,2])
 
         #formula from https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
         # Extracted_theta1_rad = m.atan2(-instrument_to_camera_transform[1,2],instrument_to_camera_transform[2,2])
@@ -112,13 +115,23 @@ def main():
         Extracted_theta1_deg = np.degrees(Extracted_theta1_rad)
         Extracted_theta2_deg = np.degrees(Extracted_theta2_rad)
         Extracted_theta3_deg = np.degrees(Extracted_theta3_rad)
-        # define transfomration parameter randomly uniform
-        alpha =0#uniform(0, 180)
-        beta = 90#uniform(0, 180)
-        gamma =  0 #uniform(0, 180)
-        x = 0 #uniform(-1.5, 1.5)
-        y = 0 #uniform(-1.5, 1.5)
-        z = 3 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+
+        # define transfomration parameter from json file
+        alpha =Extracted_theta1_deg
+        beta = Extracted_theta2_deg
+        gamma =  Extracted_theta3_deg
+        x = Extracted_X
+        y = Extracted_Y
+        z = -Extracted_Z
+
+        #
+        # # define transfomration parameter randomly uniform
+        # alpha =0#uniform(0, 180)
+        # beta = 90#uniform(0, 180)
+        # gamma =  0 #uniform(0, 180)
+        # x = 0 #uniform(-1.5, 1.5)
+        # y = 0 #uniform(-1.5, 1.5)
+        # z = 3 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
 
 
 
