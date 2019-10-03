@@ -64,7 +64,7 @@ def main():
         usm_camera = data[i]['usm-1']
         usm_inst = data[i]['usm-2']
         print(np.radians(180))
-        R_test = np.array([np.radians(180),np.radians(90),np.radians(0)]) #test value alpha beta gamma
+        R_test = np.array([np.radians(45),np.radians(80),np.radians(-97)]) #test value alpha beta gamma
         T_test_vector, R_test_matrix =  BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=R_test[0], beta=R_test[1], gamma=R_test[2])
 
 
@@ -87,14 +87,22 @@ def main():
         joint_values[-1] = 2 * joint_values[-1]
         # print(instrument_to_camera_transform[1,2]) # [row column]
 
+
+
+        #formula from http://planning.cs.uiuc.edu/node103.html
+        Extracted_theta1_rad = m.atan2(instrument_to_camera_transform[1,0],instrument_to_camera_transform[0,0])
+        C_2 = m.sqrt(instrument_to_camera_transform[2,1]*instrument_to_camera_transform[2,1] + instrument_to_camera_transform[2,2]*instrument_to_camera_transform[2,2])
+        Extracted_theta2_rad = m.atan2(-instrument_to_camera_transform[2,0],  C_2 )
+        Extracted_theta3_rad = m.atan2(instrument_to_camera_transform[2,1],instrument_to_camera_transform[2,2])
+
         #formula from https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2012/07/euler-angles1.pdf
-        Extracted_theta1_rad = m.atan2(-instrument_to_camera_transform[1,2],instrument_to_camera_transform[2,2])
-        C_2 = m.sqrt(m.pow(instrument_to_camera_transform[0,0],2)+m.pow(instrument_to_camera_transform[0,1],2))
-        Extracted_theta2_rad = m.atan2(-instrument_to_camera_transform[0,1],  C_2 )
-        s_1 = m.sin(Extracted_theta1_rad)
-        c_1 = m.cos(Extracted_theta1_rad)
-        Extracted_theta3_rad = m.atan2(s_1*instrument_to_camera_transform[2,0]-c_1*instrument_to_camera_transform[1,0],
-                                       c_1*instrument_to_camera_transform[1,1]-s_1*instrument_to_camera_transform[2,1])
+        # Extracted_theta1_rad = m.atan2(-instrument_to_camera_transform[1,2],instrument_to_camera_transform[2,2])
+        # C_2 = m.sqrt(instrument_to_camera_transform[0,0]*instrument_to_camera_transform[0,0] + instrument_to_camera_transform[0,1]*instrument_to_camera_transform[0,1])
+        # Extracted_theta2_rad = m.atan2(instrument_to_camera_transform[0,1],  C_2 )
+        # s_1 = m.sin(Extracted_theta1_rad)
+        # c_1 = m.cos(Extracted_theta1_rad)
+        # Extracted_theta3_rad = m.atan2(s_1*instrument_to_camera_transform[2,0]-c_1*instrument_to_camera_transform[1,0],
+        #                                c_1*instrument_to_camera_transform[1,1]-s_1*instrument_to_camera_transform[2,1])
 
 
         Extracted_X =  instrument_to_camera_transform[0,3]
