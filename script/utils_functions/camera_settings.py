@@ -55,8 +55,8 @@ class camera_setttings():
     #               [0,0,1]])  # shape of [nb_vertice, 3, 3]
 
     #K from file
-    c_x = 590.04
-    c_y = 508.74
+    c_x = 590.04 #1080
+    c_y = 508.74 #1016
     f_x = 1067.70
     f_y = 1067.52
 
