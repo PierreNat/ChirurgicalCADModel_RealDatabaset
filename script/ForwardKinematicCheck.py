@@ -1,5 +1,6 @@
 
 import numpy as np
+
 import torch
 from numpy.random import uniform
 import neural_renderer as nr
@@ -51,7 +52,8 @@ class Camera(object):
 def main():
 
 
-    nb_im = 1
+    nb_im = 6
+    space = 500
 
     ## -------------------------read json file -------------------------------------------
 
@@ -63,11 +65,15 @@ def main():
     ## --------------------------------------------------------------------------------
 
     loop = tqdm.tqdm(range(0, nb_im))
+    All2D_point = []
+    FrameNumb = []
     for i in loop:
-
+        frame= i*space
+        print(frame)
+        FrameNumb.append(frame)
         ## -------------------------extract json frame matrix -------------------------------------------
-        usm_camera = data[i]['usm-1']
-        usm_inst = data[i]['usm-2']
+        usm_camera = data[frame]['usm-1']
+        usm_inst = data[frame]['usm-2']
 
 
         instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['pose'][0])),
@@ -75,13 +81,33 @@ def main():
                                                      list(map(float, usm_inst['pose'][2])),
                                                      list(map(float, usm_inst['pose'][3]))],
                                                     dtype=np.float64)
+        print(instrument_to_camera_transform) #[4x4]
+        # instrument_to_camera_transform = instrument_to_camera_transform[0:3,0:4] #3x4matrix
+        # create a point
+        point_3D = np.array((0,0,0,1))
 
-        #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
-        R_test = np.array([np.radians(0),np.radians(0),np.radians(0)]) #test value alpha beta gamma
-        T_test_vector, R_test_matrix =  BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=R_test[0], beta=R_test[1], gamma=R_test[2])
-        instrument_to_camera_transform[0,0:3] = R_test_matrix[0,:]
-        instrument_to_camera_transform[1,0:3] = R_test_matrix[1,:]
-        instrument_to_camera_transform[2,0:3] = R_test_matrix[2,:]
+        # setup camera
+        c_x = 590.04  # 1080
+        c_y = 508.74  # 1016
+        f_x = 1067.70
+        f_y = 1067.52
+
+        K = np.array([[f_x, 0, c_x,0],
+                       [0, f_y, c_y,0],
+                       [0, 0, 1,0]])  # [3x4]
+
+        ImaCoord = np.matmul(K,instrument_to_camera_transform)
+        point_2D = np.matmul(ImaCoord, point_3D)
+        print(point_2D)
+        All2D_point.append((point_2D))
+
+
+        # #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
+        # R_test = np.array([np.radians(0),np.radians(0),np.radians(0)]) #test value alpha beta gamma
+        # T_test_vector, R_test_matrix =  BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=R_test[0], beta=R_test[1], gamma=R_test[2])
+        # instrument_to_camera_transform[0,0:3] = R_test_matrix[0,:]
+        # instrument_to_camera_transform[1,0:3] = R_test_matrix[1,:]
+        # instrument_to_camera_transform[2,0:3] = R_test_matrix[2,:]
 
 
         joint_values = np.asarray([list(map(float, usm_inst['articulation'][0])),
@@ -127,18 +153,16 @@ def main():
         y = Extracted_Y
         z = Extracted_Z
 
-        # create a point
-        point = [0,0,0,0]
+    print(len(FrameNumb))
 
-        # setup camera
-        P = hstack((eye(3),array([[0],[0],[-10]])))
-        cam = camera.Camera(P)
-        x = cam.project(points)
+    for i in range(0,len(FrameNumb)):
+        plt.subplot(1,len(FrameNumb),i+1)
+        im = plt.imread('framesLeft/frameL{}.jpg'.format(FrameNumb[i]))
+        implot = plt.imshow(im)
+        print(All2D_point[i][0],All2D_point[i][1])
+        plt.scatter(x=-1*All2D_point[i][0], y=-1*All2D_point[i][1], c='r', s=40)
 
-        # plot projection
-        figure()
-        plot(x[0],x[1],'k.')
-        show()
+    plt.show()
 
 if __name__ == '__main__':
     main()
