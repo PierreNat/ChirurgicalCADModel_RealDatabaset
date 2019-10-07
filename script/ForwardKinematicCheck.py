@@ -1,59 +1,36 @@
 
 import numpy as np
-
-import torch
-from numpy.random import uniform
-import neural_renderer as nr
 import matplotlib.pyplot as plt
-from utils_functions.camera_settings import BuildTransformationMatrix
 import tqdm
+import os
 import math as m
+import argparse
+import imageio
+import json
+import glob
+from skimage.io import imread, imsave
 import matplotlib.image as mpimg
 import random
 from scipy.misc import imsave
 from utils_functions.R2Rmat import R2Rmat
-import imageio
-import json
 from utils_functions.camera_settings import camera_setttings
+from utils_functions.camera_settings import BuildTransformationMatrix
+import torch
+from numpy.random import uniform
+import neural_renderer as nr
 
-from scipy import linalg
-# https://www.oreilly.com/library/view/programming-computer-vision/9781449341916/ch04.html
-class Camera(object):
-  """ Class for representing pin-hole cameras. """
-
-  def __init__(self,P):
-    """ Initialize P = K[R|t] camera model. """
-    self.P = P
-    self.K = None # calibration matrix
-    self.R = None # rotation camera
-    self.t = None # translation camera
-    self.c = None # camera center
-
-    c_x = 590.04 #1080
-    c_y = 508.74 #1016
-    f_x = 1067.70
-    f_y = 1067.52
-
-
-    self.K  = np.array([[f_x,0,c_x],
-                  [0,f_y,c_y],
-                  [0,0,1]])  # shape of [nb_vertice, 3, 3]
-
-
-  def project(self,X):
-    """  Project points in X (4*n array) and normalize coordinates. """
-
-    x = np.dot(self.P,X)
-    for i in range(3):
-      x[i] /= x[2]
-    return x
-
+def make_gif(filename):
+    with imageio.get_writer(filename, mode='I') as writer:
+        for filename in sorted(glob.glob('/tmp/_tmp_*.png')):
+            writer.append_data(imread(filename))
+            os.remove(filename)
+    writer.close()
 
 def main():
 
 
-    nb_im = 6
-    space = 500
+    nb_im = 1000
+    space = 1
 
     ## -------------------------read json file -------------------------------------------
 
@@ -66,6 +43,7 @@ def main():
 
     loop = tqdm.tqdm(range(0, nb_im))
     All2D_point = []
+    All2D_point2 = []
     FrameNumb = []
     for i in loop:
         frame= i*space
@@ -81,10 +59,11 @@ def main():
                                                      list(map(float, usm_inst['pose'][2])),
                                                      list(map(float, usm_inst['pose'][3]))],
                                                     dtype=np.float64)
-        print(instrument_to_camera_transform) #[4x4]
+        # print(instrument_to_camera_transform) #[4x4]
         # instrument_to_camera_transform = instrument_to_camera_transform[0:3,0:4] #3x4matrix
         # create a point
         point_3D = np.array((0,0,0,1))
+        point2_3D = np.array((0,0,0.5,1))
 
         # setup camera
         c_x = 590.04  # 1080
@@ -96,10 +75,20 @@ def main():
                        [0, f_y, c_y,0],
                        [0, 0, 1,0]])  # [3x4]
 
-        ImaCoord = np.matmul(K,instrument_to_camera_transform)
-        point_2D = np.matmul(ImaCoord, point_3D)
-        print(point_2D)
-        All2D_point.append((point_2D))
+        # ImaCoord = np.matmul(K,instrument_to_camera_transform)
+        # point_2D = np.matmul(ImaCoord, point_3D)
+
+        point_in_camera = np.matmul(instrument_to_camera_transform, point_3D)
+        point_2d = np.matmul(K,point_in_camera)
+        point_2d = point_2d/point_2d[2]
+
+        point_in_camera2 = np.matmul(instrument_to_camera_transform, point2_3D)
+        point2_2d = np.matmul(K,point_in_camera2)
+        point2_2d = point2_2d/point2_2d[2]
+
+        print(point_2d )
+        All2D_point.append((point_2d))
+        All2D_point2.append((point2_2d))
 
 
         # #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
@@ -155,14 +144,40 @@ def main():
 
     print(len(FrameNumb))
 
+    #plot scatter point with line
     for i in range(0,len(FrameNumb)):
-        plt.subplot(1,len(FrameNumb),i+1)
+        motion = plt.scatter(x=[All2D_point[i][0]], y=[All2D_point[i][1]-1024], c='r', s=10)
+        motion = plt.scatter(x=[All2D_point2[i][0]], y=[All2D_point2[i][1]-1024], c='b', s=10)
+        plt.plot([All2D_point[i][0], All2D_point2[i][0]], [All2D_point[i][1]-1024, All2D_point2[i][1]-1024], 'k-')
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.axis([0, 1280, 0, -1024])
+    plt.show()
+
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    file_name_extension = 'test_{}images'.format(nb_im)
+    result_dir = os.path.join(current_dir, 'framesgif')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-or', '--filename_output', type=str, default=os.path.join(result_dir, 'GIF_{}.gif'.format(file_name_extension)))
+    args = parser.parse_args()
+
+
+    loop = tqdm.tqdm(range(0,len(FrameNumb)))
+    for i in loop:
+        # plt.subplot(1,len(FrameNumb),i+1)
         im = plt.imread('framesLeft/frameL{}.jpg'.format(FrameNumb[i]))
         implot = plt.imshow(im)
-        print(All2D_point[i][0],All2D_point[i][1])
-        plt.scatter(x=-1*All2D_point[i][0], y=-1*All2D_point[i][1], c='r', s=40)
+        # print(All2D_point[i][0],All2D_point[i][1])
+        plt.scatter(x=All2D_point[i][0], y=All2D_point[i][1], c='r', s=40)
+        # plt.scatter(x=20, y=100, c='r', s=40)
+        # plt.savefig('framesgif/test%04d.png' % i)
+        plt.savefig('/tmp/_tmp_%04d.png' % i)
 
-    plt.show()
+    # plt.show()
+# save database
+    print('making gif')
+    make_gif(args.filename_output)
+
 
 if __name__ == '__main__':
     main()
