@@ -29,7 +29,7 @@ def make_gif(filename):
 def main():
 
 
-    nb_im = 1000
+    nb_im = 10
     space = 1
 
     ## -------------------------read json file -------------------------------------------
@@ -63,7 +63,7 @@ def main():
         # instrument_to_camera_transform = instrument_to_camera_transform[0:3,0:4] #3x4matrix
         # create a point
         point_3D = np.array((0,0,0,1))
-        point2_3D = np.array((0,0,0.5,1))
+        point2_3D = np.array((0,0,0.3,1))
 
         # setup camera
         c_x = 590.04  # 1080
@@ -166,17 +166,21 @@ def main():
     for i in loop:
         # plt.subplot(1,len(FrameNumb),i+1)
         im = plt.imread('framesLeft/frameL{}.jpg'.format(FrameNumb[i]))
+        # im = plt.imread('framesLeft/frameL{}.jpg'.format(i))
         implot = plt.imshow(im)
         # print(All2D_point[i][0],All2D_point[i][1])
-        plt.scatter(x=All2D_point[i][0], y=All2D_point[i][1], c='r', s=40)
+        plt.scatter(x=All2D_point[i][0], y=All2D_point[i][1], c='r', s=30)
+        plt.scatter(x=All2D_point2[i][0], y=All2D_point2[i][1] , c='b', s=30)
+        plt.plot([All2D_point[i][0], All2D_point2[i][0]], [All2D_point[i][1], All2D_point2[i][1]], 'k-')
         # plt.scatter(x=20, y=100, c='r', s=40)
-        # plt.savefig('framesgif/test%04d.png' % i)
-        plt.savefig('/tmp/_tmp_%04d.png' % i)
+        plt.savefig('framesgif/cleartest{}.jpg'.format(i))
+        plt.clf()
+        # plt.savefig('/tmp/_tmp_%04d.png' % i)
 
     # plt.show()
 # save database
-    print('making gif')
-    make_gif(args.filename_output)
+#     print('making gif')
+#     make_gif(args.filename_output)
 
 
 if __name__ == '__main__':
