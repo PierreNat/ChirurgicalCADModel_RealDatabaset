@@ -29,7 +29,7 @@ def make_gif(filename):
 def main():
 
 
-    nb_im = 10
+    nb_im = 100
     space = 1
 
     ## -------------------------read json file -------------------------------------------
@@ -43,6 +43,10 @@ def main():
 
     loop = tqdm.tqdm(range(0, nb_im))
     All2D_point = []
+    AllOrigin2D_point = []
+    All_X_2D_point = []
+    All_Y_2D_point = []
+    All_Z_2D_point = []
     All2D_point2 = []
     FrameNumb = []
     for i in loop:
@@ -62,8 +66,12 @@ def main():
         # print(instrument_to_camera_transform) #[4x4]
         # instrument_to_camera_transform = instrument_to_camera_transform[0:3,0:4] #3x4matrix
         # create a point
-        point_3D = np.array((0,0,0,1))
-        point2_3D = np.array((0,0,0.3,1))
+        length = 0.3
+        Origin_point_3D = np.array((0,0,0,1))
+        # point2_3D = np.array((0,0,0.3,1))
+        Xaxis_point_3D = np.array((length,0,0,1))
+        Yaxis_point_3D = np.array((0,length,0,1))
+        Zaxis_point_3D = np.array((0,0,length,1))
 
         # setup camera
         c_x = 590.04  # 1080
@@ -75,20 +83,27 @@ def main():
                        [0, f_y, c_y,0],
                        [0, 0, 1,0]])  # [3x4]
 
-        # ImaCoord = np.matmul(K,instrument_to_camera_transform)
-        # point_2D = np.matmul(ImaCoord, point_3D)
 
-        point_in_camera = np.matmul(instrument_to_camera_transform, point_3D)
+
+        point_in_camera = np.matmul(instrument_to_camera_transform, Origin_point_3D)
         point_2d = np.matmul(K,point_in_camera)
         point_2d = point_2d/point_2d[2]
+        AllOrigin2D_point.append((point_2d))
 
-        point_in_camera2 = np.matmul(instrument_to_camera_transform, point2_3D)
-        point2_2d = np.matmul(K,point_in_camera2)
-        point2_2d = point2_2d/point2_2d[2]
+        point_in_camera = np.matmul(instrument_to_camera_transform, Xaxis_point_3D)
+        point_2d = np.matmul(K,point_in_camera)
+        point_2d = point_2d/point_2d[2]
+        All_X_2D_point.append((point_2d))
 
-        print(point_2d )
-        All2D_point.append((point_2d))
-        All2D_point2.append((point2_2d))
+        point_in_camera = np.matmul(instrument_to_camera_transform, Yaxis_point_3D)
+        point_2d = np.matmul(K,point_in_camera)
+        point_2d = point_2d/point_2d[2]
+        All_Y_2D_point.append((point_2d))
+
+        point_in_camera = np.matmul(instrument_to_camera_transform, Zaxis_point_3D)
+        point_2d = np.matmul(K,point_in_camera)
+        point_2d = point_2d/point_2d[2]
+        All_Z_2D_point.append((point_2d))
 
 
         # #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
@@ -144,15 +159,19 @@ def main():
 
     print(len(FrameNumb))
 
-    #plot scatter point with line
-    for i in range(0,len(FrameNumb)):
-        motion = plt.scatter(x=[All2D_point[i][0]], y=[All2D_point[i][1]-1024], c='r', s=10)
-        motion = plt.scatter(x=[All2D_point2[i][0]], y=[All2D_point2[i][1]-1024], c='b', s=10)
-        plt.plot([All2D_point[i][0], All2D_point2[i][0]], [All2D_point[i][1]-1024, All2D_point2[i][1]-1024], 'k-')
-        plt.xlabel("X")
-        plt.ylabel("Y")
-        plt.axis([0, 1280, 0, -1024])
-    plt.show()
+    # #plot scatter point with line
+    # for i in range(0,len(FrameNumb)):
+    #     motion = plt.scatter(x=[AllOrigin2D_point[i][0]], y=[AllOrigin2D_point[i][1]-1024], c='k', s=10)
+    #     motion = plt.scatter(x=[All_X_2D_point[i][0]], y=[All_X_2D_point[i][1]-1024], c='r', s=10)
+    #     motion = plt.scatter(x=[All_Y_2D_point[i][0]], y=[All_Y_2D_point[i][1]-1024], c='g', s=10)
+    #     motion = plt.scatter(x=[All_Z_2D_point[i][0]], y=[All_Z_2D_point[i][1]-1024], c='b', s=10)
+    #     plt.plot([AllOrigin2D_point[i][0], All_X_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_X_2D_point[i][1]-1024], 'r-')
+    #     plt.plot([AllOrigin2D_point[i][0], All_Y_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_Y_2D_point[i][1]-1024], 'g-')
+    #     plt.plot([AllOrigin2D_point[i][0], All_Z_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_Z_2D_point[i][1]-1024], 'b-')
+    #     plt.xlabel("X")
+    #     plt.ylabel("Y")
+    #     plt.axis([0, 1280, 0, -1024])
+    # plt.show()
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
     file_name_extension = 'test_{}images'.format(nb_im)
@@ -166,21 +185,24 @@ def main():
     for i in loop:
         # plt.subplot(1,len(FrameNumb),i+1)
         im = plt.imread('framesLeft/frameL{}.jpg'.format(FrameNumb[i]))
-        # im = plt.imread('framesLeft/frameL{}.jpg'.format(i))
-        implot = plt.imshow(im)
-        # print(All2D_point[i][0],All2D_point[i][1])
-        plt.scatter(x=All2D_point[i][0], y=All2D_point[i][1], c='r', s=30)
-        plt.scatter(x=All2D_point2[i][0], y=All2D_point2[i][1] , c='b', s=30)
-        plt.plot([All2D_point[i][0], All2D_point2[i][0]], [All2D_point[i][1], All2D_point2[i][1]], 'k-')
+        plt.imshow(im)
+        plt.scatter(x=[AllOrigin2D_point[i][0]], y=[AllOrigin2D_point[i][1]], c='k', s=10)
+        plt.scatter(x=[All_X_2D_point[i][0]], y=[All_X_2D_point[i][1]], c='r', s=10)
+        plt.scatter(x=[All_Y_2D_point[i][0]], y=[All_Y_2D_point[i][1]], c='g', s=10)
+        plt.scatter(x=[All_Z_2D_point[i][0]], y=[All_Z_2D_point[i][1]], c='b', s=10)
+        plt.plot([AllOrigin2D_point[i][0], All_X_2D_point[i][0]], [AllOrigin2D_point[i][1], All_X_2D_point[i][1]], 'r-')
+        plt.plot([AllOrigin2D_point[i][0], All_Y_2D_point[i][0]], [AllOrigin2D_point[i][1], All_Y_2D_point[i][1]], 'g-')
+        plt.plot([AllOrigin2D_point[i][0], All_Z_2D_point[i][0]], [AllOrigin2D_point[i][1], All_Z_2D_point[i][1]], 'b-')
         # plt.scatter(x=20, y=100, c='r', s=40)
-        plt.savefig('framesgif/cleartest{}.jpg'.format(i))
+        plt.savefig('framesgif/xyz{}.jpg'.format(i))
+
+        plt.savefig('/tmp/_tmp_%04d.png' % i)
         plt.clf()
-        # plt.savefig('/tmp/_tmp_%04d.png' % i)
 
     # plt.show()
 # save database
-#     print('making gif')
-#     make_gif(args.filename_output)
+    print('making gif')
+    make_gif(args.filename_output)
 
 
 if __name__ == '__main__':
