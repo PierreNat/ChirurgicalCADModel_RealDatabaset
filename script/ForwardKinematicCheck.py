@@ -29,7 +29,7 @@ def make_gif(filename):
 def main():
 
 
-    nb_im = 100
+    nb_im = 5000
     space = 1
 
     ## -------------------------read json file -------------------------------------------
@@ -47,6 +47,7 @@ def main():
     All_X_2D_point = []
     All_Y_2D_point = []
     All_Z_2D_point = []
+    All_extrinsics_T = []
     All2D_point2 = []
     FrameNumb = []
     for i in loop:
@@ -56,7 +57,7 @@ def main():
         ## -------------------------extract json frame matrix -------------------------------------------
         usm_camera = data[frame]['usm-1']
         usm_inst = data[frame]['usm-2']
-
+        extrinsics_T = data[frame]['extrinsics-T']
 
         instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['pose'][0])),
                                                      list(map(float, usm_inst['pose'][1])),
@@ -104,6 +105,8 @@ def main():
         point_2d = np.matmul(K,point_in_camera)
         point_2d = point_2d/point_2d[2]
         All_Z_2D_point.append((point_2d))
+
+        # All_extrinsics_T.append(extrinsics_T)
 
 
         # #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
@@ -156,22 +159,56 @@ def main():
         x = Extracted_X
         y = Extracted_Y
         z = Extracted_Z
+        All_extrinsics_T.append([x,y,z])
+
 
     print(len(FrameNumb))
+    from mpl_toolkits.mplot3d import Axes3D
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    for i in range(0,len(FrameNumb)):
 
-    # #plot scatter point with line
-    # for i in range(0,len(FrameNumb)):
-    #     motion = plt.scatter(x=[AllOrigin2D_point[i][0]], y=[AllOrigin2D_point[i][1]-1024], c='k', s=10)
-    #     motion = plt.scatter(x=[All_X_2D_point[i][0]], y=[All_X_2D_point[i][1]-1024], c='r', s=10)
-    #     motion = plt.scatter(x=[All_Y_2D_point[i][0]], y=[All_Y_2D_point[i][1]-1024], c='g', s=10)
-    #     motion = plt.scatter(x=[All_Z_2D_point[i][0]], y=[All_Z_2D_point[i][1]-1024], c='b', s=10)
-    #     plt.plot([AllOrigin2D_point[i][0], All_X_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_X_2D_point[i][1]-1024], 'r-')
-    #     plt.plot([AllOrigin2D_point[i][0], All_Y_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_Y_2D_point[i][1]-1024], 'g-')
-    #     plt.plot([AllOrigin2D_point[i][0], All_Z_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_Z_2D_point[i][1]-1024], 'b-')
-    #     plt.xlabel("X")
-    #     plt.ylabel("Y")
-    #     plt.axis([0, 1280, 0, -1024])
-    # plt.show()
+        #print frist 200 points in red to see where it starts
+        if i < 200:
+            motion = ax.scatter(xs=[All_extrinsics_T[i][0]], ys=[All_extrinsics_T[i][1]], zs=[All_extrinsics_T[i][2]], c='r', s=10) #first point
+        else:
+            motion = ax.scatter(xs=[All_extrinsics_T[i][0]], ys=[All_extrinsics_T[i][1]], zs=[All_extrinsics_T[i][2]], c='b', s=10)
+
+        # Annotate point each 10 second (10sec * 60fps)
+        if i%600 == 0: #anotation each 10 second
+            ax.text(All_extrinsics_T[i][0],All_extrinsics_T[i][1],All_extrinsics_T[i][2], '{}'.format(i/60), None)
+
+        #link point
+        if i > 0:
+            plt.plot([All_extrinsics_T[i][0], prev[0]],[All_extrinsics_T[i][1], prev[1]],[All_extrinsics_T[i][2], prev[2]], 'k-')
+            prev = np.array((All_extrinsics_T[i][0], All_extrinsics_T[i][1], All_extrinsics_T[i][2]))
+        else:
+            prev =np.array((All_extrinsics_T[i][0],All_extrinsics_T[i][1],All_extrinsics_T[i][2]))
+
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    ax.invert_xaxis()
+    # ax.invert_yaxis()
+    ax.invert_zaxis()
+    # ax.invert_yaxis()
+    ax.set_title('instrument to camera translation transform')
+
+    plt.show()
+
+    #plot scatter point with line
+    for i in range(0,len(FrameNumb)):
+        motion = plt.scatter(x=[AllOrigin2D_point[i][0]], y=[AllOrigin2D_point[i][1]-1024], c='k', s=10)
+        motion = plt.scatter(x=[All_X_2D_point[i][0]], y=[All_X_2D_point[i][1]-1024], c='r', s=10)
+        motion = plt.scatter(x=[All_Y_2D_point[i][0]], y=[All_Y_2D_point[i][1]-1024], c='g', s=10)
+        motion = plt.scatter(x=[All_Z_2D_point[i][0]], y=[All_Z_2D_point[i][1]-1024], c='b', s=10)
+        plt.plot([AllOrigin2D_point[i][0], All_X_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_X_2D_point[i][1]-1024], 'r-')
+        plt.plot([AllOrigin2D_point[i][0], All_Y_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_Y_2D_point[i][1]-1024], 'g-')
+        plt.plot([AllOrigin2D_point[i][0], All_Z_2D_point[i][0]], [AllOrigin2D_point[i][1]-1024, All_Z_2D_point[i][1]-1024], 'b-')
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.axis([0, 1280, 0, -1024])
+    plt.show()
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
     file_name_extension = 'test_{}images'.format(nb_im)
