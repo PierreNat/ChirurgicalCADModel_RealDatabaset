@@ -18,6 +18,7 @@ from utils_functions.camera_settings import BuildTransformationMatrix
 import torch
 from numpy.random import uniform
 import neural_renderer as nr
+# import PySide
 
 def make_gif(filename):
     with imageio.get_writer(filename, mode='I') as writer:
@@ -29,8 +30,8 @@ def make_gif(filename):
 def main():
 
 
-    nb_im = 5000
-    space = 1
+    nb_im = 1000
+    space = 3
 
     ## -------------------------read json file -------------------------------------------
 
@@ -48,6 +49,8 @@ def main():
     All_Y_2D_point = []
     All_Z_2D_point = []
     All_extrinsics_T = []
+    All_extrinsics_OM = []
+    All_articulation = []
     All2D_point2 = []
     FrameNumb = []
     for i in loop:
@@ -58,6 +61,13 @@ def main():
         usm_camera = data[frame]['usm-1']
         usm_inst = data[frame]['usm-2']
         extrinsics_T = data[frame]['extrinsics-T']
+        extrinsics_om = data[frame]['extrinsics-om']
+        # articulation = data[frame]['articu']
+
+        # articulation = np.asarray([list(map(float, usm_inst['articulation'][0])),
+        #                                              list(map(float, usm_inst['articulation'][1])),
+        #                                              list(map(float, usm_inst['articulation'][2]))],
+        #                                             dtype=np.float64)
 
         instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['pose'][0])),
                                                      list(map(float, usm_inst['pose'][1])),
@@ -107,6 +117,8 @@ def main():
         All_Z_2D_point.append((point_2d))
 
         # All_extrinsics_T.append(extrinsics_T)
+        # All_extrinsics_OM.append(extrinsics_om)
+        # print(extrinsics_om)
 
 
         # #to test the conversion degree to radian to transformation matrix and then back to euler angle in radian
@@ -123,6 +135,8 @@ def main():
                                   dtype=np.float64)
 
         joint_values[-1] = 2 * joint_values[-1]
+
+        All_articulation.append([joint_values[0][0],joint_values[1][0],joint_values[2][0]])
         # print(instrument_to_camera_transform[1,2]) # [row column]
 
 
@@ -161,11 +175,31 @@ def main():
         z = Extracted_Z
         All_extrinsics_T.append([x,y,z])
 
+    print(len(FrameNumb))
+    from mpl_toolkits.mplot3d import Axes3D
+    fig = plt.figure()
+    ax = Axes3D(fig)
+
+    for i in range(0, len(FrameNumb)):
+
+        # print frist 200 points in red to see where it starts
+        if i < 200:
+            motion = ax.scatter(xs=[All_articulation[i][0]], ys=[All_articulation[i][1]], zs=[All_articulation[i][2]],
+                                c='r', s=10)  # first point
+        else:
+            motion = ax.scatter(xs=[All_articulation[i][0]], ys=[All_articulation[i][1]], zs=[All_articulation[i][2]],
+                                c='b', s=10)
+
+    ax.set_title('joint ')
+
+    plt.show()
+
 
     print(len(FrameNumb))
     from mpl_toolkits.mplot3d import Axes3D
     fig = plt.figure()
     ax = Axes3D(fig)
+
     for i in range(0,len(FrameNumb)):
 
         #print frist 200 points in red to see where it starts

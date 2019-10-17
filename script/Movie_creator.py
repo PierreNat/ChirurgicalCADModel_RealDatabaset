@@ -1,7 +1,7 @@
 import cv2
 import os
 import tqdm
-image_folder = 'framesgif/cameraSet1'
+image_folder = 'framesgif/cameraSet1/re'
 video_name = 'video.avi'
 
 images = [img for img in os.listdir(image_folder) if img.endswith(".jpg")]
