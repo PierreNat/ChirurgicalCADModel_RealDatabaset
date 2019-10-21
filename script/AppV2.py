@@ -8,12 +8,15 @@ class CommandWindow:
     def __init__(self, master):
         self.master = master
         self.frame = tk.Frame(self.master)
-        self.button1 = tk.Button(self.frame, text = 'Open First Image', width = 25, command = self.new_window)
-        self.button2 = tk.Button(self.frame, text = 'close', width = 25, command = self.close_image)
-        self.button3 = tk.Button(self.frame, text = 'Next', width = 25, command = self.next_frame)
-        self.button4 = tk.Button(self.frame, text = 'Previous', width = 25, command = self.prev_frame)
-        self.button5 = tk.Button(self.frame, text = 'clear', width = 15, command = self.clearPose)
-        self.button6 = tk.Button(self.frame, text = 'save all', width = 15, command = self.savePose)
+        self.interface_creation()
+
+    def interface_creation(self):
+        self.button1 = tk.Button(self.frame, text = 'Open First Image', width = 20, command = self.new_window)
+        self.button2 = tk.Button(self.frame, text = 'close', width = 20, command = self.close_image)
+        self.button3 = tk.Button(self.frame, text = 'Next', width = 20, command = self.next_frame)
+        self.button4 = tk.Button(self.frame, text = 'Previous', width = 20, command = self.prev_frame)
+        self.button5 = tk.Button(self.frame, text = 'clear', width = 10, command = self.clearPose)
+        self.button6 = tk.Button(self.frame, text = 'save all', width = 10, command = self.savePose)
         self.frame.bind('<Motion>', self.motion)
         self.button1.grid(row=0, column=0)
         self.button2.grid(row=1, column=0)
@@ -33,8 +36,8 @@ class CommandWindow:
         self.Red1_x .set(self.string_to_display)
         self.Red1_y = StringVar()
         self.Red1_y .set(self.string_to_display)
-        self.entry_Red1_x = Entry(self.frame, textvariable = self.Red1_x)
-        self.entry_Red1_y = Entry(self.frame, textvariable = self.Red1_y)
+        self.entry_Red1_x = Entry(self.frame, width = 5, textvariable = self.Red1_x)
+        self.entry_Red1_y = Entry(self.frame,width = 5, textvariable = self.Red1_y)
         self.LabelRed1_x .grid(row=5, column=0)
         self.entry_Red1_x .grid(row=5, column=1)
         self.LabelRed1_y .grid(row=5, column=3)
@@ -93,6 +96,7 @@ class CommandWindow:
 
 
     def savePose(self):
+        #save  in dictionnary
         a =2
 
 class Child_window:
