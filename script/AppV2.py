@@ -12,11 +12,14 @@ class CommandWindow:
         self.button2 = tk.Button(self.frame, text = 'close', width = 25, command = self.close_image)
         self.button3 = tk.Button(self.frame, text = 'Next', width = 25, command = self.next_frame)
         self.button4 = tk.Button(self.frame, text = 'Previous', width = 25, command = self.prev_frame)
+        self.button5 = tk.Button(self.frame, text = 'clear', width = 15, command = self.clearPose)
+        self.button6 = tk.Button(self.frame, text = 'save all', width = 15, command = self.savePose)
         self.frame.bind('<Motion>', self.motion)
         self.button1.grid(row=0, column=0)
         self.button2.grid(row=1, column=0)
         self.button3.grid(row=2, column=0)
         self.button4.grid(row=3, column=0)
+
         self.frame.pack()
         self.currentImage = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
@@ -36,15 +39,19 @@ class CommandWindow:
         self.entry_Red1_x .grid(row=5, column=1)
         self.LabelRed1_y .grid(row=5, column=3)
         self.entry_Red1_y .grid(row=5, column=4)
-        # self.imWindow = tk.Toplevel(self.master)
-        # self.img = ImageTk.PhotoImage(Image.open("framesLeft/frameL{}.jpg".format(0)))
+        self.button5.grid(row=5, column=5)
+        self.button6.grid(row=6, column=5)
+        self.app_created = False
+
 
     def new_window(self):
         self.newWindow = tk.Toplevel(self.master)
         self.app = Child_window(self.newWindow, ImageId=self.currentImage)
+        self.app_created = True
 
     def close_image(self):
         self.app.close_windows()
+        self.app_created = False
 
     # def get_coordinate(self):
     #     self.current_cursor_pos_X, self.current_cursor_pos_Y = self.app.
@@ -69,13 +76,24 @@ class CommandWindow:
 
 
     def motion(self,event):
-        if self.app.clk:
-            print('{}, {}'.format(self.app.x, self.app.y))
-            self.app.clk = False
-        self.Red1_x .set(self.app.x)
-        self.entry_Red1_x = Entry(self.frame, textvariable = self.Red1_x)
-        self.Red1_y .set(self.app.y)
-        self.entry_Red1_y = Entry(self.frame, textvariable = self.Red1_y)
+        if self.app_created:
+            if self.app.clk:
+                print('{}, {}'.format(self.app.x, self.app.y))
+                self.app.clk = False
+                self.Red1_x .set(self.app.x)
+                self.entry_Red1_x = Entry(self.frame, textvariable = self.Red1_x)
+                self.Red1_y .set(self.app.y)
+                self.entry_Red1_y = Entry(self.frame, textvariable = self.Red1_y)
+
+    def clearPose(self):
+        self.Red1_x.set(0)
+        self.entry_Red1_x = Entry(self.frame, textvariable=self.Red1_x)
+        self.Red1_y.set(0)
+        self.entry_Red1_y = Entry(self.frame, textvariable=self.Red1_y)
+
+
+    def savePose(self):
+        a =2
 
 class Child_window:
     def __init__(self, master, ImageId=0):
