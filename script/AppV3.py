@@ -10,6 +10,7 @@ class CommandWindow:
         self.master = master
         self.frame = tk.Frame(self.master)
         self.interface_creation()
+        self.Number_frame = 4  # each x frame will be picked, ideally 1000 for the ground truth database
         self.createDict()
 
     def interface_creation(self):
@@ -29,22 +30,27 @@ class CommandWindow:
         self.frame.pack()
         self.currentImage = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
-        self.number_frame = 0 # diplayed frames count
+        self.number_frame = 0 # diplayed frames count, image count
         self.current_cursor_pos_X = 0
         self.current_cursor_pos_Y  = 0
-        self.LabelRed1_x = Label(self.frame, text='Red 1 x pos')
-        self.LabelRed1_y = Label(self.frame, text='Red 1 y pos')
+        self.Labelval_x = Label(self.frame, text='Red_1 x')
+        self.Labelval_y = Label(self.frame, text='Red_1 y')
+        self.LabelSave = Label(self.frame, text='Dictionnary saved')
+        self.v = StringVar()
+        self.v.set("image {}".format(self.number_frame))
+        self.LabelImageProcess = Label(self.frame, textvariable=self.v)
         self.string_to_display = 0
-        self.Red1_x = StringVar()
-        self.Red1_x .set(self.string_to_display)
-        self.Red1_y = StringVar()
-        self.Red1_y .set(self.string_to_display)
-        self.entry_Red1_x = Entry(self.frame, width = 5, textvariable = self.Red1_x)
-        self.entry_Red1_y = Entry(self.frame,width = 5, textvariable = self.Red1_y)
-        self.LabelRed1_x .grid(row=5, column=0)
-        self.entry_Red1_x .grid(row=5, column=1)
-        self.LabelRed1_y .grid(row=5, column=3)
-        self.entry_Red1_y .grid(row=5, column=4)
+        self.val_x = StringVar()
+        self.val_x.set(self.string_to_display)
+        self.val_y = StringVar()
+        self.val_y.set(self.string_to_display)
+        self.entry_val_x = Entry(self.frame, width = 5, textvariable = self.val_x)
+        self.entry_val_y = Entry(self.frame,width = 5, textvariable = self.val_y)
+        self.Labelval_x .grid(row=5, column=0)
+        self.LabelImageProcess.grid(row=0, column=4)
+        self.entry_val_x .grid(row=5, column=1)
+        self.Labelval_y .grid(row=5, column=3)
+        self.entry_val_y .grid(row=5, column=4)
         self.button5.grid(row=5, column=5)
         self.button51.grid(row=5, column=6)
         self.button6.grid(row=6, column=6)
@@ -71,21 +77,35 @@ class CommandWindow:
     #     print(self.current_cursor_pos_X, self.current_cursor_pos_Y)
 
     def next_frame(self):
-        if (self.currentImage+self.span < 18000):
+        self.updatePose = True
+        if (self.currentImage+self.span <= 18000):
             self.currentImage = self.currentImage+self.span
+            self.number_frame = self.number_frame + 1
         else:
             self.currentImage = self.currentImage
         self.close_image()
         self.new_window()
-        self.number_frame = self.number_frame+1
+
+        self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
+        self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
+        self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
+        self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
+        print(self.number_frame)
 
     def prev_frame(self):
-        if (self.currentImage-self.span > 0):
+        self.updatePose = True
+        if (self.currentImage-self.span >= 0):
             self.currentImage = self.currentImage-self.span
+            self.number_frame = self.number_frame - 1
         else:
             self.currentImage = self.currentImage
         self.close_image()
         self.new_window()
+        self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
+        self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
+        self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
+        self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
+        print(self.number_frame)
 
 
     # def motion(self,event):
@@ -95,27 +115,33 @@ class CommandWindow:
     #                 print('{}, {}'.format(self.app.x, self.app.y))
     #                 self.app.clk = False
     #                 self.updatePose = False
-    #                 self.Red1_x .set(self.app.x)
-    #                 self.entry_Red1_x = Entry(self.frame, textvariable = self.Red1_x)
-    #                 self.Red1_y .set(self.app.y)
-    #                 self.entry_Red1_y = Entry(self.frame, textvariable = self.Red1_y)
+    #                 self.val_x .set(self.app.x)
+    #                 self.entry_val_x = Entry(self.frame, textvariable = self.val_x)
+    #                 self.val_y .set(self.app.y)
+    #                 self.entry_val_y = Entry(self.frame, textvariable = self.val_y)
 
     def motion_all(self,event):
         if self.app_created:
             if self.updatePose:
-                self.Red1_x .set(self.app.x)
-                self.entry_Red1_x = Entry(self.frame, textvariable = self.Red1_x)
-                self.Red1_y .set(self.app.y)
-                self.entry_Red1_y = Entry(self.frame, textvariable = self.Red1_y)
+                if self.app.clk:
+                    self.val_x.set(self.app.x)
+                    self.entry_val_x = Entry(self.frame, textvariable = self.val_x)
+                    self.AllDataPoint[self.number_frame]['Redx1'] =self.app.x
+                    print('point saved for x of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redx1']))
+                    self.val_y.set(self.app.y)
+                    self.entry_val_y = Entry(self.frame, textvariable = self.val_y)
+                    self.AllDataPoint[self.number_frame]['Redy1'] =self.app.y
+                    print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
+                    self.app.clk = False
 
 
 
 
     def clearPose(self):
-        self.Red1_x.set(0)
-        self.entry_Red1_x = Entry(self.frame, textvariable=self.Red1_x)
-        self.Red1_y.set(0)
-        self.entry_Red1_y = Entry(self.frame, textvariable=self.Red1_y)
+        self.val_x.set(0)
+        self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
+        self.val_y.set(0)
+        self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
         self.updatePose = True
 
 
@@ -124,11 +150,13 @@ class CommandWindow:
 
 
     def savePose(self):
-        #save  in dictionnary
-        a =2
+        with open('result.json', 'w') as fp:
+            json.dump(self.AllDataPoint, fp)
+
+        self.LabelSave.grid(row=6, column=0)
 
     def createDict(self):
-        self.Number_frame = 1  # each x frame will be picked, ideally 1000 for the ground truth database
+
         self.AllDataPoint = []
 
         for i in range(0, self.Number_frame):  # creation of the list of dictionnary
@@ -163,7 +191,7 @@ class Child_window:
         imageinfo = Image.open("framesLeft/frameL{}.jpg".format(ImageId))
         self.img = ImageTk.PhotoImage(Image.open("framesLeft/frameL{}.jpg".format(ImageId)))
         self.canvas = Canvas(self.master, width = imageinfo.size[0], height = imageinfo.size[1])
-        print( imageinfo.size[0], imageinfo.size[1] )
+        # print( imageinfo.size[0], imageinfo.size[1]) #print canva size
         self.canvas.create_image(0,0, image=self.img, anchor="nw")
         self.canvas.pack()
         master.bind('<Button-1>', self.clicked)
@@ -180,12 +208,12 @@ class Child_window:
     def clicked(self, event):
         self.x, self.y = event.x, event.y
         self.clk = True
-        print(self.x,self.y)
+        # print(self.x,self.y)
 
-    def childMoltion(self, event):
-        self.x = event.x
-        self.y = event.y
-        print(self.x, self.y)
+    # def childMoltion(self, event):
+    #     self.x = event.x
+    #     self.y = event.y
+    #     print(self.x, self.y)
 
 
 # class MousePose():
