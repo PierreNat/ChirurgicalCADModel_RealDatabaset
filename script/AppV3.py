@@ -10,10 +10,12 @@ class CommandWindow:
         self.master = master
         self.frame = tk.Frame(self.master)
         self.interface_creation()
-        self.Number_frame = 4  # each x frame will be picked, ideally 1000 for the ground truth database
-        self.createDict()
+        # self.TotNumbOfImage = 4  # each x frame will be picked, ideally 1000 for the ground truth database
+        # self.createDict()
 
     def interface_creation(self):
+        self.TotNumbOfImage = 4  # each x frame will be picked, ideally 1000 for the ground truth database
+        self.createDict()
         self.button1 = tk.Button(self.frame, text = 'Open First Image', width = 20, command = self.new_window)
         self.button2 = tk.Button(self.frame, text = 'close', width = 20, command = self.close_image)
         self.button3 = tk.Button(self.frame, text = 'Next', width = 20, command = self.next_frame)
@@ -36,9 +38,14 @@ class CommandWindow:
         self.Labelval_x = Label(self.frame, text='Red_1 x')
         self.Labelval_y = Label(self.frame, text='Red_1 y')
         self.LabelSave = Label(self.frame, text='Dictionnary saved')
+
+
         self.v = StringVar()
-        self.v.set("image {}".format(self.number_frame))
-        self.LabelImageProcess = Label(self.frame, textvariable=self.v)
+        self.print_Status()
+        # self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
+        # self.LabelImageProcess = Label(self.frame, textvariable=self.v)
+        # self.LabelImageProcess.grid(row=0, column=4)
+
         self.string_to_display = 0
         self.val_x = StringVar()
         self.val_x.set(self.string_to_display)
@@ -47,7 +54,7 @@ class CommandWindow:
         self.entry_val_x = Entry(self.frame, width = 5, textvariable = self.val_x)
         self.entry_val_y = Entry(self.frame,width = 5, textvariable = self.val_y)
         self.Labelval_x .grid(row=5, column=0)
-        self.LabelImageProcess.grid(row=0, column=4)
+
         self.entry_val_x .grid(row=5, column=1)
         self.Labelval_y .grid(row=5, column=3)
         self.entry_val_y .grid(row=5, column=4)
@@ -59,6 +66,11 @@ class CommandWindow:
         self.parentWindowWidth = self.master.winfo_width()
         self.parentWindowheight = self.frame.winfo_height()
         print(self.parentWindowWidth, self.parentWindowheight)
+
+    def print_Status(self):
+        self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
+        self.LabelImageProcess = Label(self.frame, textvariable=self.v)
+        self.LabelImageProcess.grid(row=0, column=4)
 
 
     def new_window(self):
@@ -78,19 +90,22 @@ class CommandWindow:
 
     def next_frame(self):
         self.updatePose = True
-        if (self.currentImage+self.span <= 18000):
-            self.currentImage = self.currentImage+self.span
-            self.number_frame = self.number_frame + 1
-        else:
-            self.currentImage = self.currentImage
+        if (self.number_frame < self.TotNumbOfImage-1):
+            if (self.currentImage + self.span <= 18000):
+                self.currentImage = self.currentImage+self.span
+                self.number_frame = self.number_frame + 1
+            else:
+                self.currentImage = self.currentImage
+
+
         self.close_image()
         self.new_window()
-
+        print(self.number_frame)
         self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
         self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
         self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
         self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
-        print(self.number_frame)
+        self.print_Status()
 
     def prev_frame(self):
         self.updatePose = True
@@ -106,6 +121,7 @@ class CommandWindow:
         self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
         self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
         print(self.number_frame)
+        self.print_Status()
 
 
     # def motion(self,event):
@@ -159,7 +175,7 @@ class CommandWindow:
 
         self.AllDataPoint = []
 
-        for i in range(0, self.Number_frame):  # creation of the list of dictionnary
+        for i in range(0, self.TotNumbOfImage):  # creation of the list of dictionnary
             OneFrameDict = {
                 "FrameNo": i,
                 "Redx1": 0,
@@ -176,7 +192,7 @@ class CommandWindow:
                 "Bluey2": 0,
             }
             self.AllDataPoint.append(OneFrameDict)
-        print('dictionnary created with {} elements'.format(self.Number_frame))
+        print('dictionnary created with {} elements'.format(self.TotNumbOfImage))
 
 
 class Child_window:
