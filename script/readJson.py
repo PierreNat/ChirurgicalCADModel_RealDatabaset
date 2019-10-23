@@ -8,7 +8,7 @@ import json
 import numpy as np
 import imageio
 
-with open('data/data.json') as json_file:
+with open('result.json') as json_file:
     data = json.load(json_file)
     data_len = len(data)
     # usm_camera = data[0:data_len]['usm-1']

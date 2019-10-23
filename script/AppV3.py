@@ -1,5 +1,6 @@
 from tkinter import *
 from PIL import ImageTk, Image
+from tkinter import filedialog
 import os
 import json
 
@@ -14,25 +15,30 @@ class CommandWindow:
         # self.createDict()
 
     def interface_creation(self):
-        self.TotNumbOfImage = 4  # each x frame will be picked, ideally 1000 for the ground truth database
-        self.createDict()
+
         self.button1 = tk.Button(self.frame, text = 'Open First Image', width = 20, command = self.new_window)
         self.button2 = tk.Button(self.frame, text = 'close', width = 20, command = self.close_image)
         self.button3 = tk.Button(self.frame, text = 'Next', width = 20, command = self.next_frame)
         self.button4 = tk.Button(self.frame, text = 'Previous', width = 20, command = self.prev_frame)
         self.button5 = tk.Button(self.frame, text = 'edit', width = 10, command = self.clearPose)
         self.button51 = tk.Button(self.frame, text = 'val', width = 10, command = self.valPose)
+        self.button52 = tk.Button(self.frame, text = 'Load Dict', width = 10, command = self.load_dict)
         self.button6 = tk.Button(self.frame, text = 'save all', width = 10, command = self.savePose)
         # self.frame.bind('<Motion>', self.motion)
         self.button1.grid(row=0, column=0)
+        self.button52.grid(row=0, column=6)
         self.button2.grid(row=1, column=0)
         self.button3.grid(row=2, column=0)
         self.button4.grid(row=3, column=0)
 
         self.frame.pack()
-        self.currentImage = 0 #contain the frame number to pick in the set
+        self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
+
+        self.TotNumbOfImage = 4  # each x frame will be picked, ideally 1000 for the ground truth database
+        self.createDict()
+
         self.current_cursor_pos_X = 0
         self.current_cursor_pos_Y  = 0
         self.Labelval_x = Label(self.frame, text='Red_1 x')
@@ -42,19 +48,13 @@ class CommandWindow:
 
         self.v = StringVar()
         self.print_Status()
-        # self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
-        # self.LabelImageProcess = Label(self.frame, textvariable=self.v)
-        # self.LabelImageProcess.grid(row=0, column=4)
-
-        self.string_to_display = 0
         self.val_x = StringVar()
-        self.val_x.set(self.string_to_display)
+        self.val_x.set(0)
         self.val_y = StringVar()
-        self.val_y.set(self.string_to_display)
+        self.val_y.set(0)
         self.entry_val_x = Entry(self.frame, width = 5, textvariable = self.val_x)
         self.entry_val_y = Entry(self.frame,width = 5, textvariable = self.val_y)
         self.Labelval_x .grid(row=5, column=0)
-
         self.entry_val_x .grid(row=5, column=1)
         self.Labelval_y .grid(row=5, column=3)
         self.entry_val_y .grid(row=5, column=4)
@@ -72,10 +72,19 @@ class CommandWindow:
         self.LabelImageProcess = Label(self.frame, textvariable=self.v)
         self.LabelImageProcess.grid(row=0, column=4)
 
+    def load_dict(self):
+        self.LoadedDict = filedialog.askopenfilename(initialdir="/", title="Select file",
+                                                   filetypes=(("json files", "*.json"), ("all files", "*.*")))
+
+        with open('{}'.format(self.LoadedDict)) as json_file:
+            data = json.load(json_file)
+            self.AllDataPoint=data
+
+
 
     def new_window(self):
         self.newWindow = tk.Toplevel(self.master)
-        self.app = Child_window(self.newWindow, ImageId=self.currentImage)
+        self.app = Child_window(self.newWindow, ImageId=self.currentFrameId)
         self.app_created = True
         self.app.canvas.bind('<Motion>', self.motion_all)
 
@@ -91,11 +100,11 @@ class CommandWindow:
     def next_frame(self):
         self.updatePose = True
         if (self.number_frame < self.TotNumbOfImage-1):
-            if (self.currentImage + self.span <= 18000):
-                self.currentImage = self.currentImage+self.span
+            if (self.currentFrameId + self.span <= 18000):
+                self.currentFrameId = self.currentFrameId+self.span
                 self.number_frame = self.number_frame + 1
             else:
-                self.currentImage = self.currentImage
+                self.currentFrameId = self.currentFrameId
 
 
         self.close_image()
@@ -109,11 +118,11 @@ class CommandWindow:
 
     def prev_frame(self):
         self.updatePose = True
-        if (self.currentImage-self.span >= 0):
-            self.currentImage = self.currentImage-self.span
+        if (self.currentFrameId-self.span >= 0):
+            self.currentFrameId = self.currentFrameId-self.span
             self.number_frame = self.number_frame - 1
         else:
-            self.currentImage = self.currentImage
+            self.currentFrameId = self.currentFrameId
         self.close_image()
         self.new_window()
         self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
@@ -140,6 +149,7 @@ class CommandWindow:
         if self.app_created:
             if self.updatePose:
                 if self.app.clk:
+
                     self.val_x.set(self.app.x)
                     self.entry_val_x = Entry(self.frame, textvariable = self.val_x)
                     self.AllDataPoint[self.number_frame]['Redx1'] =self.app.x
@@ -147,6 +157,7 @@ class CommandWindow:
                     self.val_y.set(self.app.y)
                     self.entry_val_y = Entry(self.frame, textvariable = self.val_y)
                     self.AllDataPoint[self.number_frame]['Redy1'] =self.app.y
+                    self.AllDataPoint[self.number_frame]['FrameId'] = self.currentFrameId
                     print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
                     self.app.clk = False
 
@@ -177,7 +188,9 @@ class CommandWindow:
 
         for i in range(0, self.TotNumbOfImage):  # creation of the list of dictionnary
             OneFrameDict = {
-                "FrameNo": i,
+                "ImageNo": i,
+                "Span": self.span,
+                "FrameId":0,
                 "Redx1": 0,
                 "Redx2": 0,
                 "Redy1": 0,
@@ -211,11 +224,6 @@ class Child_window:
         self.canvas.create_image(0,0, image=self.img, anchor="nw")
         self.canvas.pack()
         master.bind('<Button-1>', self.clicked)
-        # self.canvas.bind('<Motion>', self.childMoltion)
-        # master.bind('<Motion>', self.motion)
-        # print(self.mm.pos_x)
-        # print(self.mm.pos_y)
-        # master.bind('<Button-1>', leftClick)
 
     def close_windows(self):
         self.master.destroy()
@@ -225,24 +233,6 @@ class Child_window:
         self.x, self.y = event.x, event.y
         self.clk = True
         # print(self.x,self.y)
-
-    # def childMoltion(self, event):
-    #     self.x = event.x
-    #     self.y = event.y
-    #     print(self.x, self.y)
-
-
-# class MousePose():
-#   def __init__(self):
-#     self.pos_x = 0
-#     self.pos_y = 0
-#
-#
-#
-#   def select(self, event):
-#       print("left")
-#       pos_x  = event.x
-#       pos_y  = event.y
 
 
 def main():
