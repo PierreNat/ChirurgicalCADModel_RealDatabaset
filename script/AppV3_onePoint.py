@@ -73,20 +73,20 @@ class CommandWindow:
         self.LabelImageProcess.grid(row=0, column=4)
 
     def load_dict(self):
-        self.LoadedDict = filedialog.askopenfilename(initialdir="/", title="Select file",
+        self.LoadedDict = filedialog.askopenfilename(initialdir="/home/pierrec/Documents/Master_Thesis/ChirurgicalCADModel_RealDatabaset/script", title="Select file",
                                                    filetypes=(("json files", "*.json"), ("all files", "*.*")))
+        if (len(self.LoadedDict) != 0):
+            with open('{}'.format(self.LoadedDict)) as json_file:
+                data = json.load(json_file)
+                self.AllDataPoint=data
+                if self.app_created: #close current by saving
+                    self.close_image()
 
-        with open('{}'.format(self.LoadedDict)) as json_file:
-            data = json.load(json_file)
-            self.AllDataPoint=data
-            if self.app_created: #close current by saving
-                self.close_image()
-
-            self.currentFrameId = 0  # contain the frame number to pick in the set
-            self.span = self.AllDataPoint[0]['Span']  # jump between frames to see the tool moving
-            self.number_frame = 0  # diplayed frames count, image count
-            self.TotNumbOfImage = len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
-            self.print_Status()
+                self.currentFrameId = 0  # contain the frame number to pick in the set
+                self.span = self.AllDataPoint[0]['Span']  # jump between frames to see the tool moving
+                self.number_frame = 0  # diplayed frames count, image count
+                self.TotNumbOfImage = len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
+                self.print_Status()
 
 
     def new_window(self):
