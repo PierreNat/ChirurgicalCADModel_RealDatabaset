@@ -266,6 +266,7 @@ class CommandWindow:
     def motion_all(self,event):
         if self.app_created:
             if self.updatePose:
+                #test the update bool
                 if self.app.clk:
 
                     self.val_x.set(self.app.x)
@@ -279,17 +280,21 @@ class CommandWindow:
                     print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
                     self.app.clk = False
 
-
-    # def update_field(self,event,color, axis,number):
+    # def motion_all(self,event):
+    #     if self.app_created:
+    #         if self.updatePose:
+    #             if self.app.clk:
     #
-    #
-    #
-    # def current_val_field(self,event,color, axis,number):
-    #     # color: R,G,B, axis: x,z number:1,2
-    #     self.currentfield = color
-    #     self.axis = axis
-    #     self.number = number
-
+    #                 self.val_x.set(self.app.x)
+    #                 self.Entry_Rx1 = Entry(self.frame, textvariable = self.val_x)
+    #                 self.AllDataPoint[self.number_frame]['Redx1'] =self.app.x
+    #                 print('point saved for x of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redx1']))
+    #                 self.val_y.set(self.app.y)
+    #                 self.Entry_Ry1 = Entry(self.frame, textvariable = self.val_y)
+    #                 self.AllDataPoint[self.number_frame]['Redy1'] =self.app.y
+    #                 self.AllDataPoint[self.number_frame]['FrameId'] = self.currentFrameId
+    #                 print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
+    #                 self.app.clk = False
 
     def clearPose(self, currentColor,currentNumber, val_X=0, val_Y=0):
 
@@ -320,7 +325,12 @@ class CommandWindow:
 
 
     def valPose(self):
-        self.updatePose = False
+        self.updatePoseR1 = False
+        self.updatePoseR2 = False
+        self.updatePoseG1 = False
+        self.updatePoseG2 = False
+        self.updatePoseB1 = False
+        self.updatePoseB2 = False
 
 
 
