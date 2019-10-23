@@ -74,6 +74,7 @@ class CommandWindow:
 
         self.buttonEdit_R1.grid(row=5, column=5)
         self.buttonVal_R1.grid(row=5, column=6)
+        self.updatePoseR1 = False # can the position be updated
 
         #Red dot 2 ----------------------------------------------------------------------------
 
@@ -92,6 +93,7 @@ class CommandWindow:
 
         self.buttonEdit_R2.grid(row=6, column=5)
         self.buttonVal_R2.grid(row=6, column=6)
+        self.updatePoseR2 = False # can the position be updated
 
         # Green dot 1 ----------------------------------------------------------------------------
         self.Label_Gx1 = Label(self.frame, text='Green_1 x')
@@ -109,6 +111,7 @@ class CommandWindow:
 
         self.buttonEdit_G1.grid(row=7, column=5)
         self.buttonVal_G1.grid(row=7, column=6)
+        self.updatePoseG1 = False # can the position be updated
 
         # Green dot 2 ----------------------------------------------------------------------------
         self.Label_Gx2 = Label(self.frame, text='Green_2 x')
@@ -126,6 +129,7 @@ class CommandWindow:
 
         self.buttonEdit_G2.grid(row=8, column=5)
         self.buttonVal_G2.grid(row=8, column=6)
+        self.updatePoseG2 = False # can the position be updated
 
         # Blue dot 1 ----------------------------------------------------------------------------
         self.Label_Bx1 = Label(self.frame, text='Blue_1 x')
@@ -143,6 +147,7 @@ class CommandWindow:
 
         self.buttonEdit_B1.grid(row=9, column=5)
         self.buttonVal_B1.grid(row=9, column=6)
+        self.updatePoseB1 = False # can the position be updated
 
         # Blue dot 2 ----------------------------------------------------------------------------
         self.Label_Bx2 = Label(self.frame, text='Blue_2 x')
@@ -160,11 +165,12 @@ class CommandWindow:
 
         self.buttonEdit_B2.grid(row=10, column=5)
         self.buttonVal_B2.grid(row=10, column=6)
+        self.updatePoseB2 = False # can the position be updated
 
 
         self.app_created = False #true if child is created
-        self.updatePose = False # can the position be updated
-
+        self.currentColor = 'R'
+        self.curentNumber = '1'
         self.frame.pack()
 
 
@@ -285,13 +291,23 @@ class CommandWindow:
     #     self.number = number
 
 
-    def clearPose(self, currentColor,currentNumber):
+    def clearPose(self, currentColor,currentNumber, val_X=0, val_Y=0):
 
-        self.val_x.set(99)
+        self.currentColor = currentColor
+        self.curentNumber = currentNumber
+        self.val_x.set(val_X)
         entry_X = "self.Entry_{}x{}".format(currentColor,currentNumber)
         entry_Y = "self.Entry_{}y{}".format(currentColor, currentNumber)
-        test = Entry(self.frame, textvariable=self.val_x)
-        exec(entry_X  + " = '{}'".format(test))
+        Update = "self.updatePose{}{}".format(currentColor,currentNumber)
+
+        Varx= Entry(self.frame, textvariable=self.val_x)
+        exec(entry_X  + " = '{}'".format(Varx))
+        self.val_y.set(val_Y)
+        Vary= Entry(self.frame, textvariable=self.val_y)
+        exec(entry_Y  + " = '{}'".format(Vary))
+
+        exec(Update + " = '{}'".format(True))
+
         # exec(entry_Y + " = '{}'".format(99))
         # self.updatePose = True
 
