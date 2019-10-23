@@ -6,6 +6,7 @@ import json
 
 import tkinter as tk
 
+
 class CommandWindow:
     def __init__(self, master):
         self.master = master
@@ -31,12 +32,6 @@ class CommandWindow:
         self.buttonSaveAll.grid(row=11, column=6)
 
         # self.frame.bind('<Motion>', self.motion)
-
-
-
-
-
-
 
 
         self.currentFrameId = 0 #contain the frame number to pick in the set
@@ -167,15 +162,12 @@ class CommandWindow:
         self.buttonVal_B2.grid(row=10, column=6)
 
 
-
-
-
-
-
         self.app_created = False #true if child is created
         self.updatePose = False # can the position be updated
 
         self.frame.pack()
+
+
 
     def print_Status(self):
         self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
