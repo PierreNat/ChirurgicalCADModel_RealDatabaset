@@ -16,25 +16,29 @@ class CommandWindow:
 
     def interface_creation(self):
 
-        self.button1 = tk.Button(self.frame, text = 'Open Image', width = 20, command = self.new_window)
-        self.button2 = tk.Button(self.frame, text = 'close', width = 20, command = self.close_image)
-        self.button3 = tk.Button(self.frame, text = 'Next', width = 20, command = self.next_frame)
-        self.button4 = tk.Button(self.frame, text = 'Previous', width = 20, command = self.prev_frame)
-        self.button5 = tk.Button(self.frame, text = 'edit', width = 10, command = self.clearPose)
-        self.button51 = tk.Button(self.frame, text = 'val', width = 10, command = self.valPose)
-        self.button52 = tk.Button(self.frame, text = 'Load Dict', width = 10, command = self.load_dict)
-        self.button6 = tk.Button(self.frame, text = 'save all', width = 10, command = self.saveDict)
-        self.master.bind('<Left>', self.leftKey)
-        self.master.bind('<Right>', self.rightKey)
+        #frame creation
+        self.buttonOpen = tk.Button(self.frame, text = 'Open Image', width = 20, command = self.new_window)
+        self.buttonOpen.grid(row=0, column=0)
+        self.buttonClose = tk.Button(self.frame, text = 'close', width = 20, command = self.close_image)
+        self.buttonClose.grid(row=1, column=0)
+        self.buttonNext = tk.Button(self.frame, text = 'Next', width = 20, command = self.next_frame)
+        self.buttonNext.grid(row=2, column=0)
+        self.buttonPrev = tk.Button(self.frame, text = 'Previous', width = 20, command = self.prev_frame)
+        self.buttonPrev.grid(row=3, column=0)
+        self.buttonLoadDict = tk.Button(self.frame, text = 'Load Dict', width = 10, command = self.load_dict)
+        self.buttonLoadDict.grid(row=0, column=6)
+        self.buttonSaveAll = tk.Button(self.frame, text = 'save all', width = 10, command = self.saveDict)
+        self.buttonSaveAll.grid(row=11, column=6)
 
         # self.frame.bind('<Motion>', self.motion)
-        self.button1.grid(row=0, column=0)
-        self.button52.grid(row=0, column=6)
-        self.button2.grid(row=1, column=0)
-        self.button3.grid(row=2, column=0)
-        self.button4.grid(row=3, column=0)
 
-        self.frame.pack()
+
+
+
+
+
+
+
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
@@ -44,8 +48,10 @@ class CommandWindow:
         self.current_cursor_pos_X = 0
         self.current_cursor_pos_Y  = 0
 
-        self.Labelval_x = Label(self.frame, text='Red_1 x')
-        self.Labelval_y = Label(self.frame, text='Red_1 y')
+
+        self.color2edit = 'Red'
+        self.axis2edit = 'x'
+        self.var2edit = '1'
         self.LabelSave = Label(self.frame, text='Dictionnary saved')
 
 
@@ -55,22 +61,121 @@ class CommandWindow:
         self.val_x.set(0)
         self.val_y = StringVar()
         self.val_y.set(0)
-        self.entry_val_x = Entry(self.frame, width = 5, textvariable = self.val_x)
+
+        #Red dot 1 ----------------------------------------------------------------------------
+
+        self.Label_Rx1 = Label(self.frame, text='Red_1 x')
+        self.Enty_Rx1 = Entry(self.frame, width = 5, textvariable = self.val_x)
+        self.Label_Rx1 .grid(row=5, column=0)
+        self.Enty_Rx1 .grid(row=5, column=1)
+
+        self.Label_Ry1 = Label(self.frame, text='Red_1 y')
+        self.Enty_Ry1 = Entry(self.frame,width = 5, textvariable = self.val_y)
+        self.Label_Ry1 .grid(row=5, column=3)
+        self.Enty_Ry1 .grid(row=5, column=4)
+
+        self.buttonEdit_R1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonVal_R1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+
+        self.buttonEdit_R1.grid(row=5, column=5)
+        self.buttonVal_R1.grid(row=5, column=6)
+
+        #Red dot 2 ----------------------------------------------------------------------------
+
+        self.Label_Rx2 = Label(self.frame, text='Red_2 x')
+        self.Enty_Rx2 = Entry(self.frame, width = 5, textvariable = self.val_x)
+        self.Label_Rx2 .grid(row=6, column=0)
+        self.Enty_Rx2 .grid(row=6, column=1)
+
+        self.Label_Ry1 = Label(self.frame, text='Red_2 y')
+        self.Enty_Ry1 = Entry(self.frame,width = 5, textvariable = self.val_y)
+        self.Label_Ry1 .grid(row=6, column=3)
+        self.Enty_Ry1 .grid(row=6, column=4)
+
+        self.buttonEdit_R2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonVal_R2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+
+        self.buttonEdit_R2.grid(row=6, column=5)
+        self.buttonVal_R2.grid(row=6, column=6)
+
+        # Green dot 1 ----------------------------------------------------------------------------
+        self.Label_Gx1 = Label(self.frame, text='Green_1 x')
+        self.Enty_Gx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Gx1.grid(row=7, column=0)
+        self.Enty_Gx1.grid(row=7, column=1)
+
+        self.Label_Gy1 = Label(self.frame, text='Green_1 y')
+        self.Enty_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Label_Gy1.grid(row=7, column=3)
+        self.Enty_Gy1.grid(row=7, column=4)
+
+        self.buttonEdit_G1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonVal_G1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+
+        self.buttonEdit_G1.grid(row=7, column=5)
+        self.buttonVal_G1.grid(row=7, column=6)
+
+        # Green dot 2 ----------------------------------------------------------------------------
+        self.Label_Gx2 = Label(self.frame, text='Green_2 x')
+        self.Enty_Gx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Gx2.grid(row=8, column=0)
+        self.Enty_Gx2.grid(row=8, column=1)
+
+        self.Label_Gy1 = Label(self.frame, text='Green_2 y')
+        self.Enty_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Label_Gy1.grid(row=8, column=3)
+        self.Enty_Gy1.grid(row=8, column=4)
+
+        self.buttonEdit_G2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonVal_G2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+
+        self.buttonEdit_G2.grid(row=8, column=5)
+        self.buttonVal_G2.grid(row=8, column=6)
+
+        # Blue dot 1 ----------------------------------------------------------------------------
+        self.Label_Bx1 = Label(self.frame, text='Blue_1 x')
+        self.Enty_Bx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Bx1.grid(row=9, column=0)
+        self.Enty_Bx1.grid(row=9, column=1)
+
+        self.Label_By1 = Label(self.frame, text='Blue_1 y')
+        self.Enty_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Label_By1.grid(row=9, column=3)
+        self.Enty_By1.grid(row=9, column=4)
+
+        self.buttonEdit_B1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonVal_B1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+
+        self.buttonEdit_B1.grid(row=9, column=5)
+        self.buttonVal_B1.grid(row=9, column=6)
+
+        # Blue dot 2 ----------------------------------------------------------------------------
+        self.Label_Bx2 = Label(self.frame, text='Blue_2 x')
+        self.Enty_Bx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Bx2.grid(row=10, column=0)
+        self.Enty_Bx2.grid(row=10, column=1)
+
+        self.Label_By1 = Label(self.frame, text='Blue_2 y')
+        self.Enty_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Label_By1.grid(row=10, column=3)
+        self.Enty_By1.grid(row=10, column=4)
+
+        self.buttonEdit_B2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonVal_B2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+
+        self.buttonEdit_B2.grid(row=10, column=5)
+        self.buttonVal_B2.grid(row=10, column=6)
 
 
-        self.entry_val_y = Entry(self.frame,width = 5, textvariable = self.val_y)
-        self.Labelval_x .grid(row=5, column=0)
-        self.entry_val_x .grid(row=5, column=1)
-        self.Labelval_y .grid(row=5, column=3)
-        self.entry_val_y .grid(row=5, column=4)
-        self.button5.grid(row=5, column=5)
-        self.button51.grid(row=5, column=6)
-        self.button6.grid(row=6, column=6)
+
+
+
+
+
         self.app_created = False #true if child is created
         self.updatePose = False # can the position be updated
-        self.parentWindowWidth = self.master.winfo_width()
-        self.parentWindowheight = self.frame.winfo_height()
-        print(self.parentWindowWidth, self.parentWindowheight)
+
+        self.frame.pack()
 
     def print_Status(self):
         self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
@@ -78,7 +183,7 @@ class CommandWindow:
         self.LabelImageProcess.grid(row=0, column=4)
 
     def load_dict(self):
-        self.LoadedDict = filedialog.askopenfilename(initialdir="/home/pierrec/Documents/Master_Thesis/ChirurgicalCADModel_RealDatabaset/script", title="Select file",
+        self.LoadedDict = filedialog.askopenfilename(initialdir="/home/pierrec/Documents/Master_Thesis/ChirurgicalCADModel_RealDatabaset/script/dictSave", title="Select file",
                                                    filetypes=(("json files", "*.json"), ("all files", "*.*")))
         if (len(self.LoadedDict) != 0):
             with open('{}'.format(self.LoadedDict)) as json_file:
@@ -95,7 +200,7 @@ class CommandWindow:
 
     def saveDict(self):
         self.Savefilename = filedialog.asksaveasfilename(initialdir="/home/pierrec/Documents/Master_Thesis/ChirurgicalCADModel_RealDatabaset/script/dictSave", title="Select file",
-                                                     filetypes=(("jpeg files", "*.json"), ("all files", "*.*")))
+                                                     filetypes=(("json files", "*.json"), ("all files", "*.*")))
         print(self.Savefilename)
         with open('{}'.format(self.Savefilename), 'w') as fp:
             json.dump(self.AllDataPoint, fp)
@@ -110,8 +215,8 @@ class CommandWindow:
         self.app.canvas.bind('<Motion>', self.motion_all)
         self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
         self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
-        self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
-        self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
+        self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
+        self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
 
     def close_image(self):
         self.app.close_windows()
@@ -138,8 +243,8 @@ class CommandWindow:
             print(self.number_frame)
             self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
             self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
-            self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
-            self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
+            self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
+            self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
             self.print_Status()
 
     def prev_frame(self):
@@ -154,8 +259,8 @@ class CommandWindow:
             self.new_window()
             self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
             self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
-            self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
-            self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
+            self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
+            self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
             print(self.number_frame)
             self.print_Status()
 
@@ -166,31 +271,24 @@ class CommandWindow:
                 if self.app.clk:
 
                     self.val_x.set(self.app.x)
-                    self.entry_val_x = Entry(self.frame, textvariable = self.val_x)
+                    self.Enty_Rx1 = Entry(self.frame, textvariable = self.val_x)
                     self.AllDataPoint[self.number_frame]['Redx1'] =self.app.x
                     print('point saved for x of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redx1']))
                     self.val_y.set(self.app.y)
-                    self.entry_val_y = Entry(self.frame, textvariable = self.val_y)
+                    self.Enty_Ry1 = Entry(self.frame, textvariable = self.val_y)
                     self.AllDataPoint[self.number_frame]['Redy1'] =self.app.y
                     self.AllDataPoint[self.number_frame]['FrameId'] = self.currentFrameId
                     print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
                     self.app.clk = False
 
-    def leftKey(self, event):
-        # self.next_frame()
-        print("left key pressed")
-
-    def rightKey(self, event):
-        # self.prev_frame()
-        print("Right key pressed")
 
 
 
     def clearPose(self):
         self.val_x.set(0)
-        self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
+        self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
         self.val_y.set(0)
-        self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
+        self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
         self.updatePose = True
 
 
@@ -210,16 +308,16 @@ class CommandWindow:
                 "Span": self.span,
                 "FrameId":0,
                 "Redx1": 0,
-                "Redx2": 0,
                 "Redy1": 0,
+                "Redx2": 0,
                 "Redy2": 0,
                 "Greenx1": 0,
-                "Greenx2": 0,
                 "Greeny1": 0,
+                "Greenx2": 0,
                 "Greeny2": 0,
                 "Bluex1": 0,
-                "Bluex2": 0,
                 "Bluey1": 0,
+                "Bluex2": 0,
                 "Bluey2": 0,
             }
             self.AllDataPoint.append(OneFrameDict)
@@ -262,5 +360,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
+
 # https://stackoverflow.com/questions/16115378/tkinter-example-code-for-multiple-windows-why-wont-buttons-load-correctly
