@@ -60,16 +60,16 @@ class CommandWindow:
         #Red dot 1 ----------------------------------------------------------------------------
 
         self.Label_Rx1 = Label(self.frame, text='Red_1 x')
-        self.Enty_Rx1 = Entry(self.frame, width = 5, textvariable = self.val_x)
+        self.Entry_Rx1 = Entry(self.frame, width = 5, textvariable = self.val_x)
         self.Label_Rx1 .grid(row=5, column=0)
-        self.Enty_Rx1 .grid(row=5, column=1)
+        self.Entry_Rx1 .grid(row=5, column=1)
 
         self.Label_Ry1 = Label(self.frame, text='Red_1 y')
-        self.Enty_Ry1 = Entry(self.frame,width = 5, textvariable = self.val_y)
+        self.Entry_Ry1 = Entry(self.frame,width = 5, textvariable = self.val_y)
         self.Label_Ry1 .grid(row=5, column=3)
-        self.Enty_Ry1 .grid(row=5, column=4)
+        self.Entry_Ry1 .grid(row=5, column=4)
 
-        self.buttonEdit_R1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonEdit_R1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('R','1'))
         self.buttonVal_R1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_R1.grid(row=5, column=5)
@@ -78,16 +78,16 @@ class CommandWindow:
         #Red dot 2 ----------------------------------------------------------------------------
 
         self.Label_Rx2 = Label(self.frame, text='Red_2 x')
-        self.Enty_Rx2 = Entry(self.frame, width = 5, textvariable = self.val_x)
+        self.Entry_Rx2 = Entry(self.frame, width = 5, textvariable = self.val_x)
         self.Label_Rx2 .grid(row=6, column=0)
-        self.Enty_Rx2 .grid(row=6, column=1)
+        self.Entry_Rx2 .grid(row=6, column=1)
 
         self.Label_Ry1 = Label(self.frame, text='Red_2 y')
-        self.Enty_Ry1 = Entry(self.frame,width = 5, textvariable = self.val_y)
+        self.Entry_Ry1 = Entry(self.frame,width = 5, textvariable = self.val_y)
         self.Label_Ry1 .grid(row=6, column=3)
-        self.Enty_Ry1 .grid(row=6, column=4)
+        self.Entry_Ry1 .grid(row=6, column=4)
 
-        self.buttonEdit_R2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonEdit_R2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('R','2'))
         self.buttonVal_R2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_R2.grid(row=6, column=5)
@@ -95,16 +95,16 @@ class CommandWindow:
 
         # Green dot 1 ----------------------------------------------------------------------------
         self.Label_Gx1 = Label(self.frame, text='Green_1 x')
-        self.Enty_Gx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Entry_Gx1 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Gx1.grid(row=7, column=0)
-        self.Enty_Gx1.grid(row=7, column=1)
+        self.Entry_Gx1.grid(row=7, column=1)
 
         self.Label_Gy1 = Label(self.frame, text='Green_1 y')
-        self.Enty_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Entry_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_Gy1.grid(row=7, column=3)
-        self.Enty_Gy1.grid(row=7, column=4)
+        self.Entry_Gy1.grid(row=7, column=4)
 
-        self.buttonEdit_G1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonEdit_G1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('G','1'))
         self.buttonVal_G1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_G1.grid(row=7, column=5)
@@ -112,16 +112,16 @@ class CommandWindow:
 
         # Green dot 2 ----------------------------------------------------------------------------
         self.Label_Gx2 = Label(self.frame, text='Green_2 x')
-        self.Enty_Gx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Entry_Gx2 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Gx2.grid(row=8, column=0)
-        self.Enty_Gx2.grid(row=8, column=1)
+        self.Entry_Gx2.grid(row=8, column=1)
 
         self.Label_Gy1 = Label(self.frame, text='Green_2 y')
-        self.Enty_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Entry_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_Gy1.grid(row=8, column=3)
-        self.Enty_Gy1.grid(row=8, column=4)
+        self.Entry_Gy1.grid(row=8, column=4)
 
-        self.buttonEdit_G2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonEdit_G2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('G','2'))
         self.buttonVal_G2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_G2.grid(row=8, column=5)
@@ -129,16 +129,16 @@ class CommandWindow:
 
         # Blue dot 1 ----------------------------------------------------------------------------
         self.Label_Bx1 = Label(self.frame, text='Blue_1 x')
-        self.Enty_Bx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Entry_Bx1 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Bx1.grid(row=9, column=0)
-        self.Enty_Bx1.grid(row=9, column=1)
+        self.Entry_Bx1.grid(row=9, column=1)
 
         self.Label_By1 = Label(self.frame, text='Blue_1 y')
-        self.Enty_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Entry_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_By1.grid(row=9, column=3)
-        self.Enty_By1.grid(row=9, column=4)
+        self.Entry_By1.grid(row=9, column=4)
 
-        self.buttonEdit_B1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonEdit_B1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('B','1'))
         self.buttonVal_B1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_B1.grid(row=9, column=5)
@@ -146,16 +146,16 @@ class CommandWindow:
 
         # Blue dot 2 ----------------------------------------------------------------------------
         self.Label_Bx2 = Label(self.frame, text='Blue_2 x')
-        self.Enty_Bx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Entry_Bx2 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Bx2.grid(row=10, column=0)
-        self.Enty_Bx2.grid(row=10, column=1)
+        self.Entry_Bx2.grid(row=10, column=1)
 
         self.Label_By1 = Label(self.frame, text='Blue_2 y')
-        self.Enty_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        self.Entry_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_By1.grid(row=10, column=3)
-        self.Enty_By1.grid(row=10, column=4)
+        self.Entry_By1.grid(row=10, column=4)
 
-        self.buttonEdit_B2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose)
+        self.buttonEdit_B2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('B','2'))
         self.buttonVal_B2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_B2.grid(row=10, column=5)
@@ -207,8 +207,8 @@ class CommandWindow:
         self.app.canvas.bind('<Motion>', self.motion_all)
         self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
         self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
-        self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
-        self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
+        self.Entry_Rx1 = Entry(self.frame, textvariable=self.val_x)
+        self.Entry_Ry1 = Entry(self.frame, textvariable=self.val_y)
 
     def close_image(self):
         self.app.close_windows()
@@ -235,8 +235,8 @@ class CommandWindow:
             print(self.number_frame)
             self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
             self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
-            self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
-            self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
+            self.Entry_Rx1 = Entry(self.frame, textvariable=self.val_x)
+            self.Entry_Ry1 = Entry(self.frame, textvariable=self.val_y)
             self.print_Status()
 
     def prev_frame(self):
@@ -251,8 +251,8 @@ class CommandWindow:
             self.new_window()
             self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
             self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
-            self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
-            self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
+            self.Entry_Rx1 = Entry(self.frame, textvariable=self.val_x)
+            self.Entry_Ry1 = Entry(self.frame, textvariable=self.val_y)
             print(self.number_frame)
             self.print_Status()
 
@@ -263,25 +263,44 @@ class CommandWindow:
                 if self.app.clk:
 
                     self.val_x.set(self.app.x)
-                    self.Enty_Rx1 = Entry(self.frame, textvariable = self.val_x)
+                    self.Entry_Rx1 = Entry(self.frame, textvariable = self.val_x)
                     self.AllDataPoint[self.number_frame]['Redx1'] =self.app.x
                     print('point saved for x of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redx1']))
                     self.val_y.set(self.app.y)
-                    self.Enty_Ry1 = Entry(self.frame, textvariable = self.val_y)
+                    self.Entry_Ry1 = Entry(self.frame, textvariable = self.val_y)
                     self.AllDataPoint[self.number_frame]['Redy1'] =self.app.y
                     self.AllDataPoint[self.number_frame]['FrameId'] = self.currentFrameId
                     print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
                     self.app.clk = False
 
 
+    # def update_field(self,event,color, axis,number):
+    #
+    #
+    #
+    # def current_val_field(self,event,color, axis,number):
+    #     # color: R,G,B, axis: x,z number:1,2
+    #     self.currentfield = color
+    #     self.axis = axis
+    #     self.number = number
 
 
-    def clearPose(self):
-        self.val_x.set(0)
-        self.Enty_Rx1 = Entry(self.frame, textvariable=self.val_x)
-        self.val_y.set(0)
-        self.Enty_Ry1 = Entry(self.frame, textvariable=self.val_y)
-        self.updatePose = True
+    def clearPose(self, currentColor,currentNumber):
+
+        self.val_x.set(99)
+        entry_X = "self.Entry_{}x{}".format(currentColor,currentNumber)
+        entry_Y = "self.Entry_{}y{}".format(currentColor, currentNumber)
+        test = Entry(self.frame, textvariable=self.val_x)
+        exec(entry_X  + " = '{}'".format(test))
+        # exec(entry_Y + " = '{}'".format(99))
+        # self.updatePose = True
+
+
+        # self.val_x.set(7)
+        # self.Entry_Rx1 = Entry(self.frame, textvariable=self.val_x)
+        # self.val_y.set(7)
+        # self.Entry_Ry1 = Entry(self.frame, textvariable=self.val_y)
+        # self.updatePose = True
 
 
     def valPose(self):
