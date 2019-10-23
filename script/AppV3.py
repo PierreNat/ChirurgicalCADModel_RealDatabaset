@@ -16,7 +16,7 @@ class CommandWindow:
 
     def interface_creation(self):
 
-        self.button1 = tk.Button(self.frame, text = 'Open First Image', width = 20, command = self.new_window)
+        self.button1 = tk.Button(self.frame, text = 'Open Image', width = 20, command = self.new_window)
         self.button2 = tk.Button(self.frame, text = 'close', width = 20, command = self.close_image)
         self.button3 = tk.Button(self.frame, text = 'Next', width = 20, command = self.next_frame)
         self.button4 = tk.Button(self.frame, text = 'Previous', width = 20, command = self.prev_frame)
@@ -35,12 +35,12 @@ class CommandWindow:
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-
-        self.TotNumbOfImage = 4  # each x frame will be picked, ideally 1000 for the ground truth database
+        self.TotNumbOfImage = 10 # each x frame will be picked, ideally 1000 for the ground truth database
         self.createDict()
 
         self.current_cursor_pos_X = 0
         self.current_cursor_pos_Y  = 0
+
         self.Labelval_x = Label(self.frame, text='Red_1 x')
         self.Labelval_y = Label(self.frame, text='Red_1 y')
         self.LabelSave = Label(self.frame, text='Dictionnary saved')
@@ -79,7 +79,14 @@ class CommandWindow:
         with open('{}'.format(self.LoadedDict)) as json_file:
             data = json.load(json_file)
             self.AllDataPoint=data
+            if self.app_created: #close current by saving
+                self.close_image()
 
+            self.currentFrameId = 0  # contain the frame number to pick in the set
+            self.span = self.AllDataPoint[0]['Span']  # jump between frames to see the tool moving
+            self.number_frame = 0  # diplayed frames count, image count
+            self.TotNumbOfImage = len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
+            self.print_Status()
 
 
     def new_window(self):
@@ -87,6 +94,10 @@ class CommandWindow:
         self.app = Child_window(self.newWindow, ImageId=self.currentFrameId)
         self.app_created = True
         self.app.canvas.bind('<Motion>', self.motion_all)
+        self.val_x.set(self.AllDataPoint[self.number_frame]['Redx1'])
+        self.val_y.set(self.AllDataPoint[self.number_frame]['Redy1'])
+        self.entry_val_x = Entry(self.frame, textvariable=self.val_x)
+        self.entry_val_y = Entry(self.frame, textvariable=self.val_y)
 
     def close_image(self):
         self.app.close_windows()
@@ -99,8 +110,8 @@ class CommandWindow:
 
     def next_frame(self):
         self.updatePose = True
-        if (self.number_frame < self.TotNumbOfImage-1):
-            if (self.currentFrameId + self.span <= 18000):
+        if (self.number_frame < self.TotNumbOfImage-1): #if we still have picture to display
+            if (self.currentFrameId + self.span <= 18000): #if the next picture is with the total image frame
                 self.currentFrameId = self.currentFrameId+self.span
                 self.number_frame = self.number_frame + 1
             else:
@@ -132,18 +143,6 @@ class CommandWindow:
         print(self.number_frame)
         self.print_Status()
 
-
-    # def motion(self,event):
-    #     if self.app_created:
-    #         if self.updatePose:
-    #             if self.app.clk:
-    #                 print('{}, {}'.format(self.app.x, self.app.y))
-    #                 self.app.clk = False
-    #                 self.updatePose = False
-    #                 self.val_x .set(self.app.x)
-    #                 self.entry_val_x = Entry(self.frame, textvariable = self.val_x)
-    #                 self.val_y .set(self.app.y)
-    #                 self.entry_val_y = Entry(self.frame, textvariable = self.val_y)
 
     def motion_all(self,event):
         if self.app_created:
@@ -177,7 +176,7 @@ class CommandWindow:
 
 
     def savePose(self):
-        with open('result.json', 'w') as fp:
+        with open('dictSave/result.json', 'w') as fp:
             json.dump(self.AllDataPoint, fp)
 
         self.LabelSave.grid(row=6, column=0)
