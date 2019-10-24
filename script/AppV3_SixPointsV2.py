@@ -3,7 +3,7 @@ from PIL import ImageTk, Image
 from tkinter import filedialog
 import os
 import json
-
+from functools import partial
 import tkinter as tk
 
 
@@ -49,137 +49,202 @@ class CommandWindow:
         self.var2edit = '1'
         self.LabelSave = Label(self.frame, text='Dictionnary saved')
 
+        self.entriesVarX = []
+        self.entriesVarY = []
+        self.entriesX = []
+        self.entriesY = []
+        self.updateEntryX = []
+        self.updateEntryY = []
+        self.buttonEdit = [] # tk.Button(self.frame, text='edit', width=10, command= lambda: (self.clearPose('R','1',token=1)))
+        self.buttonVal = [] # tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        self.ntable = []
+        # for n in range(self.TotNumbOfImage):
 
-        self.v = StringVar()
-        self.print_Status()
-        self.val_x = StringVar()
-        self.val_x.set(0)
-        self.val_y = StringVar()
-        self.val_y.set(0)
 
-        #Red dot 1 ----------------------------------------------------------------------------
+        for n in range(6):
+            self.ntable.append(n)
+            self.entriesVarX.append(StringVar())
+            self.entriesVarY.append(StringVar())
+            self.entriesVarX[n].set(n)
+            self.entriesVarY[n].set(n)
+            self.updateEntryX.append(False)
+            self.updateEntryY.append(False)
+            self.buttonEdit.append(tk.Button(self.frame, text='edit', width=10,command=partial(self.clearPose, n)))
+            self.buttonVal.append(tk.Button(self.frame, text='val', width=10, command=partial(self.valPose, n)))
+            print(n)
+            # create entries list
+            self.entriesX.append(Label(self.frame, width = 5, textvariable = self.entriesVarX[n]))
+            self.entriesY.append(Label(self.frame, width = 5, textvariable = self.entriesVarY[n]))
+            # # grid layout the entries
+            self.entriesX[n].grid(row=5+n, column=1)
+            self.entriesY[n].grid(row=5+n, column=4)
+            self.buttonEdit[n].grid(row=5+n, column=5)
+            self.buttonVal[n].grid(row=5+n, column=6)
+            # # bind the entries return key pressed to an action
+            # self.entries[n].bind('<Return>', partial(self.action, n))
 
-        self.Label_Rx1 = Label(self.frame, text='1)Red_1 x')
-        self.Entry_Rx1 = Entry(self.frame, width = 5, textvariable = self.val_x)
+
+
+        # #Red dot 1 ----------------------------------------------------------------------------
+        self.Label_Rx1 = Label(self.frame, text='0)Red_1 x')
         self.Label_Rx1.grid(row=5, column=0)
-        self.Entry_Rx1.grid(row=5, column=1)
 
         self.Label_Ry1 = Label(self.frame, text='Red_1 y')
-        self.Entry_Ry1 = Entry(self.frame,width = 5, textvariable = self.val_y)
         self.Label_Ry1.grid(row=5, column=3)
-        self.Entry_Ry1.grid(row=5, column=4)
 
-        self.buttonEdit_R1 = tk.Button(self.frame, text='edit', width=10, command= lambda: (self.clearPose('R','1',token=1)))
-        self.buttonVal_R1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
-        self.Entry_Rx1.insert(0,'fuck')
-
-        self.buttonEdit_R1.grid(row=5, column=5)
-        self.buttonVal_R1.grid(row=5, column=6)
-        self.updatePoseR1 = False # can the position be updated
 
         #Red dot 2 ----------------------------------------------------------------------------
-
-        self.Label_Rx2 = Label(self.frame, text='2)Red_2 x')
-        self.Entry_Rx2 = Entry(self.frame, width = 5, textvariable = self.val_x)
+        self.Label_Rx2 = Label(self.frame, text='1)Red_2 x')
         self.Label_Rx2 .grid(row=6, column=0)
-        self.Entry_Rx2 .grid(row=6, column=1)
-
         self.Label_Ry2 = Label(self.frame, text='Red_2 y')
-        self.Entry_Ry2 = Entry(self.frame,width = 5, textvariable = self.val_y)
         self.Label_Ry2 .grid(row=6, column=3)
-        self.Entry_Ry2 .grid(row=6, column=4)
-
-        self.buttonEdit_R2 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('R','2',token=2)))
-        self.buttonVal_R2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
-        self.Entry_Rx2.insert(0, 'you')
-
-        self.buttonEdit_R2.grid(row=6, column=5)
-        self.buttonVal_R2.grid(row=6, column=6)
-        self.updatePoseR2 = False # can the position be updated
-
         # Green dot 1 ----------------------------------------------------------------------------
-        self.Label_Gx1 = Label(self.frame, text='3)Green_1 x')
-        self.Entry_Gx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Gx1 = Label(self.frame, text='2)Green_1 x')
         self.Label_Gx1.grid(row=7, column=0)
-        self.Entry_Gx1.grid(row=7, column=1)
-
         self.Label_Gy1 = Label(self.frame, text='Green_1 y')
-        self.Entry_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_Gy1.grid(row=7, column=3)
-        self.Entry_Gy1.grid(row=7, column=4)
-
-        self.buttonEdit_G1 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('G','1',token=3)))
-        self.buttonVal_G1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
-
-        self.buttonEdit_G1.grid(row=7, column=5)
-        self.buttonVal_G1.grid(row=7, column=6)
-        self.updatePoseG1 = False # can the position be updated
-
         # Green dot 2 ----------------------------------------------------------------------------
-        self.Label_Gx2 = Label(self.frame, text='4)Green_2 x')
-        self.Entry_Gx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Gx2 = Label(self.frame, text='3)Green_2 x')
         self.Label_Gx2.grid(row=8, column=0)
-        self.Entry_Gx2.grid(row=8, column=1)
-
         self.Label_Gy2 = Label(self.frame, text='Green_2 y')
-        self.Entry_Gy2 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_Gy2.grid(row=8, column=3)
-        self.Entry_Gy2.grid(row=8, column=4)
-
-        self.buttonEdit_G2 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('G','2',token=4)))
-        self.buttonVal_G2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
-
-        self.buttonEdit_G2.grid(row=8, column=5)
-        self.buttonVal_G2.grid(row=8, column=6)
-        self.updatePoseG2 = False # can the position be updated
-
         # Blue dot 1 ----------------------------------------------------------------------------
-        self.Label_Bx1 = Label(self.frame, text='5)Blue_1 x')
-        self.Entry_Bx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Bx1 = Label(self.frame, text='4)Blue_1 x')
+
         self.Label_Bx1.grid(row=9, column=0)
-        self.Entry_Bx1.grid(row=9, column=1)
-
         self.Label_By1 = Label(self.frame, text='Blue_1 y')
-        self.Entry_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_By1.grid(row=9, column=3)
-        self.Entry_By1.grid(row=9, column=4)
-
-        self.buttonEdit_B1 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('B','1',token=5)))
-        self.buttonVal_B1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
-
-        self.buttonEdit_B1.grid(row=9, column=5)
-        self.buttonVal_B1.grid(row=9, column=6)
-        self.updatePoseB1 = False # can the position be updated
-
         # Blue dot 2 ----------------------------------------------------------------------------
-        self.Label_Bx2 = Label(self.frame, text='6)Blue_2 x')
-        self.Entry_Bx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        self.Label_Bx2 = Label(self.frame, text='5)Blue_2 x')
         self.Label_Bx2.grid(row=10, column=0)
-        self.Entry_Bx2.grid(row=10, column=1)
-
         self.Label_By2 = Label(self.frame, text='Blue_2 y')
-        self.Entry_By2 = Entry(self.frame, width=5, textvariable=self.val_y)
         self.Label_By2.grid(row=10, column=3)
-        self.Entry_By2.grid(row=10, column=4)
 
-        self.buttonEdit_B2 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('B','2',token=6)))
-        self.buttonVal_B2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
-
-        self.buttonEdit_B2.grid(row=10, column=5)
-        self.buttonVal_B2.grid(row=10, column=6)
-        self.updatePoseB2 = False # can the position be updated
+        # #Red dot 1 ----------------------------------------------------------------------------
+        #
+        # self.Label_Rx1 = Label(self.frame, text='1)Red_1 x')
+        # self.Entry_Rx1 = Label(self.frame, width = 5, textvariable = self.val_x1)
+        # self.Label_Rx1.grid(row=5, column=0)
+        # self.Entry_Rx1.grid(row=5, column=1)
+        #
+        # self.Label_Ry1 = Label(self.frame, text='Red_1 y')
+        # self.Entry_Ry1 = Label(self.frame,width = 5, textvariable = self.val_y1)
+        # self.Label_Ry1.grid(row=5, column=3)
+        # self.Entry_Ry1.grid(row=5, column=4)
+        #
+        # self.buttonEdit_R1 = tk.Button(self.frame, text='edit', width=10, command= lambda: (self.clearPose('R','1',token=1)))
+        # self.buttonVal_R1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        # # self.Entry_Rx1.insert(0,'fuck')
+        #
+        # self.buttonEdit_R1.grid(row=5, column=5)
+        # self.buttonVal_R1.grid(row=5, column=6)
+        # self.updatePoseR1 = False # can the position be updated
+        #
+        # #Red dot 2 ----------------------------------------------------------------------------
+        #
+        # self.Label_Rx2 = Label(self.frame, text='2)Red_2 x')
+        # self.Entry_Rx2 = Label(self.frame, width = 5, textvariable = self.val_x)
+        # self.Label_Rx2 .grid(row=6, column=0)
+        # self.Entry_Rx2 .grid(row=6, column=1)
+        #
+        # self.Label_Ry2 = Label(self.frame, text='Red_2 y')
+        # self.Entry_Ry2 = Label(self.frame,width = 5, textvariable = self.val_y)
+        # self.Label_Ry2 .grid(row=6, column=3)
+        # self.Entry_Ry2 .grid(row=6, column=4)
+        #
+        # self.buttonEdit_R2 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('R','2',token=2)))
+        # self.buttonVal_R2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        # # self.Entry_Rx2.insert(0, 'you')
+        #
+        # self.buttonEdit_R2.grid(row=6, column=5)
+        # self.buttonVal_R2.grid(row=6, column=6)
+        # self.updatePoseR2 = False # can the position be updated
+        #
+        # # Green dot 1 ----------------------------------------------------------------------------
+        # self.Label_Gx1 = Label(self.frame, text='3)Green_1 x')
+        # self.Entry_Gx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        # self.Label_Gx1.grid(row=7, column=0)
+        # self.Entry_Gx1.grid(row=7, column=1)
+        #
+        # self.Label_Gy1 = Label(self.frame, text='Green_1 y')
+        # self.Entry_Gy1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        # self.Label_Gy1.grid(row=7, column=3)
+        # self.Entry_Gy1.grid(row=7, column=4)
+        #
+        # self.buttonEdit_G1 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('G','1',token=3)))
+        # self.buttonVal_G1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        #
+        # self.buttonEdit_G1.grid(row=7, column=5)
+        # self.buttonVal_G1.grid(row=7, column=6)
+        # self.updatePoseG1 = False # can the position be updated
+        #
+        # # Green dot 2 ----------------------------------------------------------------------------
+        # self.Label_Gx2 = Label(self.frame, text='4)Green_2 x')
+        # self.Entry_Gx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        # self.Label_Gx2.grid(row=8, column=0)
+        # self.Entry_Gx2.grid(row=8, column=1)
+        #
+        # self.Label_Gy2 = Label(self.frame, text='Green_2 y')
+        # self.Entry_Gy2 = Entry(self.frame, width=5, textvariable=self.val_y)
+        # self.Label_Gy2.grid(row=8, column=3)
+        # self.Entry_Gy2.grid(row=8, column=4)
+        #
+        # self.buttonEdit_G2 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('G','2',token=4)))
+        # self.buttonVal_G2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        #
+        # self.buttonEdit_G2.grid(row=8, column=5)
+        # self.buttonVal_G2.grid(row=8, column=6)
+        # self.updatePoseG2 = False # can the position be updated
+        #
+        # # Blue dot 1 ----------------------------------------------------------------------------
+        # self.Label_Bx1 = Label(self.frame, text='5)Blue_1 x')
+        # self.Entry_Bx1 = Entry(self.frame, width=5, textvariable=self.val_x)
+        # self.Label_Bx1.grid(row=9, column=0)
+        # self.Entry_Bx1.grid(row=9, column=1)
+        #
+        # self.Label_By1 = Label(self.frame, text='Blue_1 y')
+        # self.Entry_By1 = Entry(self.frame, width=5, textvariable=self.val_y)
+        # self.Label_By1.grid(row=9, column=3)
+        # self.Entry_By1.grid(row=9, column=4)
+        #
+        # self.buttonEdit_B1 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('B','1',token=5)))
+        # self.buttonVal_B1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        #
+        # self.buttonEdit_B1.grid(row=9, column=5)
+        # self.buttonVal_B1.grid(row=9, column=6)
+        # self.updatePoseB1 = False # can the position be updated
+        #
+        # # Blue dot 2 ----------------------------------------------------------------------------
+        # self.Label_Bx2 = Label(self.frame, text='6)Blue_2 x')
+        # self.Entry_Bx2 = Entry(self.frame, width=5, textvariable=self.val_x)
+        # self.Label_Bx2.grid(row=10, column=0)
+        # self.Entry_Bx2.grid(row=10, column=1)
+        #
+        # self.Label_By2 = Label(self.frame, text='Blue_2 y')
+        # self.Entry_By2 = Entry(self.frame, width=5, textvariable=self.val_y)
+        # self.Label_By2.grid(row=10, column=3)
+        # self.Entry_By2.grid(row=10, column=4)
+        #
+        # self.buttonEdit_B2 = tk.Button(self.frame, text='edit', width=10, command=lambda: (self.clearPose('B','2',token=6)))
+        # self.buttonVal_B2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        #
+        # self.buttonEdit_B2.grid(row=10, column=5)
+        # self.buttonVal_B2.grid(row=10, column=6)
+        # self.updatePoseB2 = False # can the position be updated
 
 
         self.app_created = False #true if child is created
         self.currentColor = 'R'
         self.curentNumber = '1'
+        self.print_Status()
         self.LineToken = 1 #line 1
-        self.updatePose = self.updatePoseR1
+        # self.updatePose = self.updatePoseR1
         self.frame.pack()
 
 
 
     def print_Status(self):
+        self.v = StringVar()
         self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
         self.LabelImageProcess = Label(self.frame, textvariable=self.v)
         self.LabelImageProcess.grid(row=0, column=4)
@@ -273,25 +338,25 @@ class CommandWindow:
                 #test the update bool
                 if self.app.clk:
 
-                    self.val_x.set(self.app.x)
-                    self.val_y.set(self.app.y)
+                    self.val_x1.set(self.app.x)
+                    self.val_y1.set(self.app.y)
 
                     #choix 1, faire avec les lettre RGB 1-2 et x et exec
                     #utiliser le token et 6 etat
                     if self.LineToken == 1:
-                        self.Entry_Rx1.insert(0,'test1')
-                        # self.Entry_Rx1 = Entry(self.frame, textvariable = self.val_x)
+                        print('click')
+                        self.Entry_Rx1 = Label(self.frame, textvariable = self.val_x1)
                         self.AllDataPoint[self.number_frame]['Redx1'] = self.app.x
 
-                        self.Entry_Ry1.insert(0, 'test21')
-                        # self.Entry_Ry1 = Entry(self.frame, textvariable = self.val_y)
+                        # self.Entry_Ry1.insert(0, 'test21')
+                        self.Entry_Ry1 = Label(self.frame, textvariable = self.val_y1)
                         self.AllDataPoint[self.number_frame]['Redy1'] =self.app.y
 
                     if self.LineToken == 2:
-                        self.Entry_Rx2 = Entry(self.frame, textvariable=self.val_x)
+                        self.Entry_Rx2 = Label(self.frame, textvariable=self.val_x)
                         self.AllDataPoint[self.number_frame]['Redx2'] = self.app.x
 
-                        self.Entry_Ry2 = Entry(self.frame, textvariable=self.val_y)
+                        self.Entry_Ry2 = Label(self.frame, textvariable=self.val_y)
                         self.AllDataPoint[self.number_frame]['Redy2'] = self.app.y
 
 
@@ -315,45 +380,44 @@ class CommandWindow:
     #                 print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
     #                 self.app.clk = False
 
-    def clearPose(self, currentColor,currentNumber, val_X=0, val_Y=0, token=1):
+    def clearPose(self, n):
+        print(n)
+        self.entriesVarX[n].set(0)
+        self.entriesVarY[n].set(0)
 
-        self.currentColor = currentColor
-        self.curentNumber = currentNumber
-        self.val_x.set(val_X)
-        entry_X = "self.Entry_{}x{}".format(currentColor,currentNumber)
-        entry_Y = "self.Entry_{}y{}".format(currentColor, currentNumber)
-        Update = "self.updatePose{}{}".format(currentColor,currentNumber)
+        # self.currentColor = currentColor
+        # self.curentNumber = currentNumber
+        # self.val_x.set(val_X)
+        # entry_X = "self.Entry_{}x{}".format(currentColor,currentNumber)
+        # entry_Y = "self.Entry_{}y{}".format(currentColor, currentNumber)
+        # Update = "self.updatePose{}{}".format(currentColor,currentNumber)
+        #
+        # Varx= Entry(self.frame, textvariable=self.val_x)
+        # exec(entry_X  + " = '{}'".format(Varx))
+        # self.val_y.set(val_Y)
+        # Vary= Entry(self.frame, textvariable=self.val_y)
+        # exec(entry_Y  + " = '{}'".format(Vary))
+        #
+        # exec(Update + " = '{}'".format(True))
+        #
+        # self.LineToken = token #which line has to be changed
+        # # self.updatePose = Update #can the line be changed
+        # print(self.LineToken)
+        #
+        # # exec(entry_Y + " = '{}'".format(99))
+        # # self.updatePose = True
+        #
+        #
+        # # self.val_x.set(7)
+        # # self.Entry_Rx1 = Entry(self.frame, textvariable=self.val_x)
+        # # self.val_y.set(7)
+        # # self.Entry_Ry1 = Entry(self.frame, textvariable=self.val_y)
+        # # self.updatePose = True
 
-        Varx= Entry(self.frame, textvariable=self.val_x)
-        exec(entry_X  + " = '{}'".format(Varx))
-        self.val_y.set(val_Y)
-        Vary= Entry(self.frame, textvariable=self.val_y)
-        exec(entry_Y  + " = '{}'".format(Vary))
 
-        exec(Update + " = '{}'".format(True))
+    def valPose(self, token=1):
+        print(token)
 
-        self.LineToken = token #which line has to be changed
-        # self.updatePose = Update #can the line be changed
-        print(self.LineToken)
-
-        # exec(entry_Y + " = '{}'".format(99))
-        # self.updatePose = True
-
-
-        # self.val_x.set(7)
-        # self.Entry_Rx1 = Entry(self.frame, textvariable=self.val_x)
-        # self.val_y.set(7)
-        # self.Entry_Ry1 = Entry(self.frame, textvariable=self.val_y)
-        # self.updatePose = True
-
-
-    def valPose(self):
-        self.updatePoseR1 = False
-        self.updatePoseR2 = False
-        self.updatePoseG1 = False
-        self.updatePoseG2 = False
-        self.updatePoseB1 = False
-        self.updatePoseB2 = False
 
 
 
