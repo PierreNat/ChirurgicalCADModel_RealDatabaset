@@ -37,11 +37,12 @@ class CommandWindow:
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-        self.TotNumbOfImage = 10 # each x frame will be picked, ideally 1000 for the ground truth database
-        self.createDict()
+        self.TotNumbOfImage = 20 # each x frame will be picked, ideally 1000 for the ground truth database
 
-        self.current_cursor_pos_X = 0
-        self.current_cursor_pos_Y  = 0
+
+        self.python_green = "green"
+        self.python_red = "red"
+        self.python_blue = "blue"
 
         self.val_x =StringVar()
         self.val_y=StringVar()
@@ -68,6 +69,8 @@ class CommandWindow:
                 "Bluey1",
                 "Bluex2",
                 "Bluey2"]
+        self.createDict()
+        self.ColorTable = []
 
         # for n in range(self.TotNumbOfImage):
 
@@ -137,7 +140,6 @@ class CommandWindow:
         self.frame.pack()
 
 
-
     def print_Status(self):
         self.v = StringVar()
         self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
@@ -183,11 +185,7 @@ class CommandWindow:
     def close_image(self):
         self.app.close_windows()
         self.app_created = False
-        # self.frame.bind('<Motion>', self.motion)
 
-    # def get_coordinate(self):
-    #     self.current_cursor_pos_X, self.current_cursor_pos_Y = self.app.
-    #     print(self.current_cursor_pos_X, self.current_cursor_pos_Y)
 
     def next_frame(self):
         if self.app_created :
@@ -229,6 +227,16 @@ class CommandWindow:
 
 
     def motion_all(self,event):
+
+
+        # if self.prev_point !=None:
+            # self.app.canvas.delete(self.prev_point)
+
+        size = 4
+        x1, y1 = (self.app.x - size), (self.app.y - size)
+        x2, y2 = (self.app.x + size), (self.app.y + size)
+        self.prev_point = self.app.canvas.create_oval(x1, y1, x2, y2, fill=python_green)
+
         if self.app_created:
             if self.updateEntryX[self.currentToken]: #update allowed?
                 if self.app.clk:
@@ -264,7 +272,8 @@ class CommandWindow:
         self.updateEntryX[n] = False
         self.updateEntryY[n] = False
 
-
+    def showColorPoint(self):
+        for i in range(6):
 
 
 
@@ -277,18 +286,18 @@ class CommandWindow:
                 "ImageNo": i,
                 "Span": self.span,
                 "FrameId":0,
-                "Redx1": 0,
-                "Redy1": 0,
-                "Redx2": 0,
-                "Redy2": 0,
-                "Greenx1": 0,
-                "Greeny1": 0,
-                "Greenx2": 0,
-                "Greeny2": 0,
-                "Bluex1": 0,
-                "Bluey1": 0,
-                "Bluex2": 0,
-                "Bluey2": 0,
+                self.DictNameTable[0]: 0,
+                self.DictNameTable[1]: 0,
+                self.DictNameTable[2]: 0,
+                self.DictNameTable[3]: 0,
+                self.DictNameTable[4]: 0,
+                self.DictNameTable[5]: 0,
+                self.DictNameTable[6]: 0,
+                self.DictNameTable[7]: 0,
+                self.DictNameTable[8]: 0,
+                self.DictNameTable[9]: 0,
+                self.DictNameTable[10]: 0,
+                self.DictNameTable[11]: 0,
             }
             self.AllDataPoint.append(OneFrameDict)
 
