@@ -70,7 +70,14 @@ class CommandWindow:
                 "Bluex2",
                 "Bluey2"]
         self.createDict()
-        self.ColorTable = []
+        self.ColorTable = [
+            self.python_red,
+            self.python_red,
+            self.python_green,
+            self.python_green,
+            self.python_blue,
+            self.python_blue
+        ]
 
         # for n in range(self.TotNumbOfImage):
 
@@ -205,6 +212,7 @@ class CommandWindow:
                 self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]] )
                 self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
+            self.showColorPoint()
             self.print_Status()
 
     def prev_frame(self):
@@ -223,6 +231,7 @@ class CommandWindow:
                 self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
             print(self.number_frame)
+            self.showColorPoint()
             self.print_Status()
 
 
@@ -232,10 +241,7 @@ class CommandWindow:
         # if self.prev_point !=None:
             # self.app.canvas.delete(self.prev_point)
 
-        size = 4
-        x1, y1 = (self.app.x - size), (self.app.y - size)
-        x2, y2 = (self.app.x + size), (self.app.y + size)
-        self.prev_point = self.app.canvas.create_oval(x1, y1, x2, y2, fill=python_green)
+
 
         if self.app_created:
             if self.updateEntryX[self.currentToken]: #update allowed?
@@ -274,6 +280,14 @@ class CommandWindow:
 
     def showColorPoint(self):
         for i in range(6):
+            x = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]]
+            y = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]]
+
+            if x !=0 and y !=0 :
+                size = 4
+                x1, y1 = (x - size), (y - size)
+                x2, y2 = (x + size), (y + size)
+                prev_point = self.app.canvas.create_oval(x1, y1, x2, y2, fill=self.ColorTable[i])
 
 
 
