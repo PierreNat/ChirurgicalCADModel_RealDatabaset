@@ -59,7 +59,7 @@ class CommandWindow:
 
         #Red dot 1 ----------------------------------------------------------------------------
 
-        self.Label_Rx1 = Label(self.frame, text='Red_1 x')
+        self.Label_Rx1 = Label(self.frame, text='1)Red_1 x')
         self.Entry_Rx1 = Entry(self.frame, width = 5, textvariable = self.val_x)
         self.Label_Rx1 .grid(row=5, column=0)
         self.Entry_Rx1 .grid(row=5, column=1)
@@ -69,7 +69,7 @@ class CommandWindow:
         self.Label_Ry1 .grid(row=5, column=3)
         self.Entry_Ry1 .grid(row=5, column=4)
 
-        self.buttonEdit_R1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('R','1'))
+        self.buttonEdit_R1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('R','1',token=1))
         self.buttonVal_R1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_R1.grid(row=5, column=5)
@@ -78,7 +78,7 @@ class CommandWindow:
 
         #Red dot 2 ----------------------------------------------------------------------------
 
-        self.Label_Rx2 = Label(self.frame, text='Red_2 x')
+        self.Label_Rx2 = Label(self.frame, text='2)Red_2 x')
         self.Entry_Rx2 = Entry(self.frame, width = 5, textvariable = self.val_x)
         self.Label_Rx2 .grid(row=6, column=0)
         self.Entry_Rx2 .grid(row=6, column=1)
@@ -88,7 +88,7 @@ class CommandWindow:
         self.Label_Ry1 .grid(row=6, column=3)
         self.Entry_Ry1 .grid(row=6, column=4)
 
-        self.buttonEdit_R2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('R','2'))
+        self.buttonEdit_R2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('R','2',token=2))
         self.buttonVal_R2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_R2.grid(row=6, column=5)
@@ -96,7 +96,7 @@ class CommandWindow:
         self.updatePoseR2 = False # can the position be updated
 
         # Green dot 1 ----------------------------------------------------------------------------
-        self.Label_Gx1 = Label(self.frame, text='Green_1 x')
+        self.Label_Gx1 = Label(self.frame, text='3)Green_1 x')
         self.Entry_Gx1 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Gx1.grid(row=7, column=0)
         self.Entry_Gx1.grid(row=7, column=1)
@@ -106,7 +106,7 @@ class CommandWindow:
         self.Label_Gy1.grid(row=7, column=3)
         self.Entry_Gy1.grid(row=7, column=4)
 
-        self.buttonEdit_G1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('G','1'))
+        self.buttonEdit_G1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('G','1',token=3))
         self.buttonVal_G1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_G1.grid(row=7, column=5)
@@ -114,7 +114,7 @@ class CommandWindow:
         self.updatePoseG1 = False # can the position be updated
 
         # Green dot 2 ----------------------------------------------------------------------------
-        self.Label_Gx2 = Label(self.frame, text='Green_2 x')
+        self.Label_Gx2 = Label(self.frame, text='4)Green_2 x')
         self.Entry_Gx2 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Gx2.grid(row=8, column=0)
         self.Entry_Gx2.grid(row=8, column=1)
@@ -124,7 +124,7 @@ class CommandWindow:
         self.Label_Gy1.grid(row=8, column=3)
         self.Entry_Gy1.grid(row=8, column=4)
 
-        self.buttonEdit_G2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('G','2'))
+        self.buttonEdit_G2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('G','2',token=4))
         self.buttonVal_G2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_G2.grid(row=8, column=5)
@@ -132,7 +132,7 @@ class CommandWindow:
         self.updatePoseG2 = False # can the position be updated
 
         # Blue dot 1 ----------------------------------------------------------------------------
-        self.Label_Bx1 = Label(self.frame, text='Blue_1 x')
+        self.Label_Bx1 = Label(self.frame, text='5)Blue_1 x')
         self.Entry_Bx1 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Bx1.grid(row=9, column=0)
         self.Entry_Bx1.grid(row=9, column=1)
@@ -142,7 +142,7 @@ class CommandWindow:
         self.Label_By1.grid(row=9, column=3)
         self.Entry_By1.grid(row=9, column=4)
 
-        self.buttonEdit_B1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('B','1'))
+        self.buttonEdit_B1 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('B','1',token=5))
         self.buttonVal_B1 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_B1.grid(row=9, column=5)
@@ -150,7 +150,7 @@ class CommandWindow:
         self.updatePoseB1 = False # can the position be updated
 
         # Blue dot 2 ----------------------------------------------------------------------------
-        self.Label_Bx2 = Label(self.frame, text='Blue_2 x')
+        self.Label_Bx2 = Label(self.frame, text='6)Blue_2 x')
         self.Entry_Bx2 = Entry(self.frame, width=5, textvariable=self.val_x)
         self.Label_Bx2.grid(row=10, column=0)
         self.Entry_Bx2.grid(row=10, column=1)
@@ -160,7 +160,7 @@ class CommandWindow:
         self.Label_By1.grid(row=10, column=3)
         self.Entry_By1.grid(row=10, column=4)
 
-        self.buttonEdit_B2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('B','2'))
+        self.buttonEdit_B2 = tk.Button(self.frame, text='edit', width=10, command=self.clearPose('B','2',token=6))
         self.buttonVal_B2 = tk.Button(self.frame, text='val', width=10, command=self.valPose)
 
         self.buttonEdit_B2.grid(row=10, column=5)
@@ -171,6 +171,8 @@ class CommandWindow:
         self.app_created = False #true if child is created
         self.currentColor = 'R'
         self.curentNumber = '1'
+        self.LineToken = 1 #line 1
+        self.updatePose = self.updatePoseR1
         self.frame.pack()
 
 
@@ -296,7 +298,7 @@ class CommandWindow:
     #                 print('point saved for y of frame {} is {}'.format(self.number_frame, self.AllDataPoint[self.number_frame]['Redy1']))
     #                 self.app.clk = False
 
-    def clearPose(self, currentColor,currentNumber, val_X=0, val_Y=0):
+    def clearPose(self, currentColor,currentNumber, val_X=0, val_Y=0, token=1):
 
         self.currentColor = currentColor
         self.curentNumber = currentNumber
@@ -312,6 +314,10 @@ class CommandWindow:
         exec(entry_Y  + " = '{}'".format(Vary))
 
         exec(Update + " = '{}'".format(True))
+
+        self.LineToken = token #which line has to be changed
+        self.updatePose = Update #can the line be changed
+        print(self.LineToken)
 
         # exec(entry_Y + " = '{}'".format(99))
         # self.updatePose = True
