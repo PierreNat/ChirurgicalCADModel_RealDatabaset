@@ -12,6 +12,8 @@ class CommandWindow:
         self.master = master
         self.frame = tk.Frame(self.master)
         self.interface_creation()
+
+
         # self.TotNumbOfImage = 4  # each x frame will be picked, ideally 1000 for the ground truth database
         # self.createDict()
 
@@ -180,6 +182,7 @@ class CommandWindow:
 
 
     def new_window(self):
+        self.First = True
         self.newWindow = tk.Toplevel(self.master)
         self.app = Child_window(self.newWindow, ImageId=self.currentFrameId)
         self.app_created = True
@@ -189,12 +192,14 @@ class CommandWindow:
             self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]])
             self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
+
     def close_image(self):
         self.app.close_windows()
         self.app_created = False
 
 
     def next_frame(self):
+        self.First=True
         if self.app_created :
             self.updatePose = True
             if (self.number_frame < self.TotNumbOfImage-1): #if we still have picture to display
@@ -216,6 +221,7 @@ class CommandWindow:
             self.print_Status()
 
     def prev_frame(self):
+        self.First = True
         if self.app_created:
             self.updatePose = True
             if (self.currentFrameId-self.span >= 0):
@@ -237,12 +243,6 @@ class CommandWindow:
 
     def motion_all(self,event):
 
-
-        # if self.prev_point !=None:
-            # self.app.canvas.delete(self.prev_point)
-
-
-
         if self.app_created:
             if self.updateEntryX[self.currentToken]: #update allowed?
                 if self.app.clk:
@@ -251,12 +251,14 @@ class CommandWindow:
                     self.entriesVarX[self.currentToken].set(self.app.x)
                     self.entriesVarY[self.currentToken].set(self.app.y)
 
-                    # #update dictionnary
+                    # #update dictionnary axis
                     self.AllDataPoint[self.number_frame][self.DictNameTable[self.currentToken*2]] = self.app.x
                     self.AllDataPoint[self.number_frame][self.DictNameTable[self.currentToken*2+1]] = self.app.y
-                    # self.AllDataPoint[self.number_frame]['Redy1'] = self.app.y
 
+                    # #update dictionnary frame number
                     self.AllDataPoint[self.number_frame]['FrameId'] = self.currentFrameId
+
+                    self.currentCanvaPoint()
 
                     self.app.clk = False
 
@@ -267,8 +269,14 @@ class CommandWindow:
         self.entriesVarX[n].set(0)
         self.entriesVarY[n].set(0)
         self.currentToken = n
+        self.AllDataPoint[self.number_frame][self.DictNameTable[self.currentToken * 2]] = 0
+        self.AllDataPoint[self.number_frame][self.DictNameTable[self.currentToken * 2 + 1]] = 0
         self.updateEntryX[n] = True
         self.updateEntryY[n] = True
+
+        # for i in range(6):
+        self.app.canvas.delete(self.TablecurrentCanvaPoint[n])
+
 
 
 
@@ -280,15 +288,59 @@ class CommandWindow:
 
     def showColorPoint(self):
         for i in range(6):
+
+
             x = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]]
             y = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]]
 
+            size = 4
+            x1, y1 = (x - size), (y - size)
+            x2, y2 = (x + size), (y + size)
             if x !=0 and y !=0 :
-                size = 4
-                x1, y1 = (x - size), (y - size)
-                x2, y2 = (x + size), (y + size)
-                prev_point = self.app.canvas.create_oval(x1, y1, x2, y2, fill=self.ColorTable[i])
+                self.app.canvas.create_oval(x1, y1, x2, y2, fill=self.ColorTable[i])
+            # else
 
+    def clearPoint(self):
+        self.app.canvas.delete(all)
+        # for i in range(6):
+
+
+
+    def currentCanvaPoint(self):
+        if self.First:
+            self.TablecurrentCanvaPoint = []
+        # self.previousValue =
+        for i in range(6):
+            x = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]]
+            # self.currentValue.append(x)
+            y = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]]
+            # self.currentValue.append(y)
+            size = 4
+            x1, y1 = (x - size), (y - size)
+            x2, y2 = (x + size), (y + size)
+
+            if self.First: #if first, build the list
+
+                if x != 0 and y != 0:
+                #creation of the list of 6 point of the current canva
+                    # item2delete = self.TablecurrentCanvaPoint[i]
+                    self.TablecurrentCanvaPoint.append(self.app.canvas.create_oval(x1, y1, x2, y2, fill=self.ColorTable[i]))
+                    # self.app.canvas.delete(item2delete)
+                else:
+                    self.TablecurrentCanvaPoint.append(0)
+
+
+            else:
+                if x != 0 and y != 0:
+                    self.app.canvas.delete(self.TablecurrentCanvaPoint[i])
+                    self.TablecurrentCanvaPoint[i] = self.app.canvas.create_oval(x1, y1, x2, y2, fill=self.ColorTable[i])
+                    # self.app.canvas.delete(item2delete)
+                else:
+                    self.TablecurrentCanvaPoint[i]=0
+
+
+
+        self.First = False
 
 
     def createDict(self):
