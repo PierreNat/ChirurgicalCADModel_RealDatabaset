@@ -102,9 +102,6 @@ class CommandWindow:
             self.entriesY[n].grid(row=5+n, column=4)
             self.buttonEdit[n].grid(row=5+n, column=5)
             self.buttonVal[n].grid(row=5+n, column=6)
-            # # bind the entries return key pressed to an action
-            # self.entries[n].bind('<Return>', partial(self.action, n))
-
 
 
         # #Red dot 1 ----------------------------------------------------------------------------
@@ -182,7 +179,9 @@ class CommandWindow:
 
 
     def new_window(self):
-        self.First = True
+        #plot color point
+
+
         self.newWindow = tk.Toplevel(self.master)
         self.app = Child_window(self.newWindow, ImageId=self.currentFrameId)
         self.app_created = True
@@ -192,14 +191,19 @@ class CommandWindow:
             self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]])
             self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
+        self.First = True
+        self.currentCanvaPoint()
 
     def close_image(self):
         self.app.close_windows()
         self.app_created = False
+        self.First = True
 
 
     def next_frame(self):
-        self.First=True
+        # plot color point
+
+
         if self.app_created :
             self.updatePose = True
             if (self.number_frame < self.TotNumbOfImage-1): #if we still have picture to display
@@ -217,11 +221,15 @@ class CommandWindow:
                 self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]] )
                 self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
-            self.showColorPoint()
+            self.First = True
+            self.currentCanvaPoint()
+
+            # self.showColorPoint()
             self.print_Status()
 
     def prev_frame(self):
-        self.First = True
+        # plot color point
+
         if self.app_created:
             self.updatePose = True
             if (self.currentFrameId-self.span >= 0):
@@ -236,8 +244,9 @@ class CommandWindow:
                 self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]] )
                 self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
-            print(self.number_frame)
-            self.showColorPoint()
+            self.First = True
+            self.currentCanvaPoint()
+
             self.print_Status()
 
 
@@ -275,6 +284,8 @@ class CommandWindow:
         self.updateEntryY[n] = True
 
         # for i in range(6):
+        # self.First=True
+        # self.currentCanvaPoint()
         self.app.canvas.delete(self.TablecurrentCanvaPoint[n])
 
 
