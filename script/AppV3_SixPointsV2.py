@@ -39,7 +39,7 @@ class CommandWindow:
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-        self.TotNumbOfImage = 20 # each x frame will be picked, ideally 1000 for the ground truth database
+        self.TotNumbOfImage = 1000 # each x frame will be picked, ideally 1000 for the ground truth database
 
 
         self.python_green = "green"
@@ -92,7 +92,9 @@ class CommandWindow:
             self.updateEntryX.append(False)
             self.updateEntryY.append(False)
             self.buttonEdit.append(tk.Button(self.frame, text='edit', width=10,command=partial(self.clearPose, n)))
-            self.buttonVal.append(tk.Button(self.frame, text='val', width=10, command=partial(self.valPose, n)))
+            if n == 0:
+                self.buttonVal.append(tk.Button(self.frame, text='AutoAdv', width=10, command=partial(self.AutoAdv, n)))
+                self.buttonVal[n].grid(row=5 + n, column=6)
             print(n)
             # create entries list
             self.entriesX.append(Label(self.frame, width = 5, textvariable = self.entriesVarX[n]))
@@ -101,7 +103,7 @@ class CommandWindow:
             self.entriesX[n].grid(row=5+n, column=1)
             self.entriesY[n].grid(row=5+n, column=4)
             self.buttonEdit[n].grid(row=5+n, column=5)
-            self.buttonVal[n].grid(row=5+n, column=6)
+
 
 
         # #Red dot 1 ----------------------------------------------------------------------------
@@ -141,6 +143,7 @@ class CommandWindow:
 
 
         self.app_created = False #true if child is created
+        self.autoAdvanced = False
         self.currentToken = 0
         self.print_Status()
         self.frame.pack()
@@ -191,6 +194,8 @@ class CommandWindow:
             self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]])
             self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
+        # self.autoAdvanced = True
+        self.currentToken = 0  # auto advanced starts at first position
         self.First = True
         self.currentCanvaPoint()
 
@@ -221,6 +226,8 @@ class CommandWindow:
                 self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]] )
                 self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
+
+            self.currentToken = 0 #auto advanced starts at first position
             self.First = True
             self.currentCanvaPoint()
 
@@ -244,6 +251,7 @@ class CommandWindow:
                 self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]] )
                 self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
 
+            self.currentToken = 0 #auto advanced starts at first position
             self.First = True
             self.currentCanvaPoint()
 
@@ -269,6 +277,19 @@ class CommandWindow:
 
                     self.currentCanvaPoint()
 
+
+
+                    if self.autoAdvanced:
+                        if self.currentToken < 6:
+                            self.currentToken = self.currentToken+1
+                            print(self.currentToken)
+                            self.updateEntryX[self.currentToken] = True
+                            self.updateEntryY[self.currentToken] = True
+                        else:
+                            self.currentToken = 0
+                            self.updateEntryX[self.currentToken] = True
+                            self.updateEntryY[self.currentToken] = True
+
                     self.app.clk = False
 
 
@@ -286,16 +307,27 @@ class CommandWindow:
         # for i in range(6):
         # self.First=True
         # self.currentCanvaPoint()
+        self.autoAdvanced = False
+        self.Label_Rx1 = Label(self.frame, text='  off  ')
+        self.Label_Rx1.grid(row=6, column=6)
         self.app.canvas.delete(self.TablecurrentCanvaPoint[n])
 
 
 
 
 
-    def valPose(self, n):
-        print(n)
-        self.updateEntryX[n] = False
-        self.updateEntryY[n] = False
+    def AutoAdv(self, n):
+        self.autoAdvanced = not self.autoAdvanced
+        print('auto advanced is {}'.format(self.autoAdvanced))
+
+        if self.autoAdvanced:
+            self.Label_Rx1 = Label(self.frame, text='  on  ')
+            self.Label_Rx1.grid(row=6, column=6)
+        else:
+            self.Label_Rx1 = Label(self.frame, text='  off  ')
+            self.Label_Rx1.grid(row=6, column=6)
+
+
 
     def showColorPoint(self):
         for i in range(6):
