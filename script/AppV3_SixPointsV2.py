@@ -58,6 +58,7 @@ class CommandWindow:
         self.updateEntryY = []
         self.buttonEdit = [] # tk.Button(self.frame, text='edit', width=10, command= lambda: (self.clearPose('R','1',token=1)))
         self.buttonVal = [] # tk.Button(self.frame, text='val', width=10, command=self.valPose)
+        self.buttonPlotLine = []
         self.DictNameTable = \
                 ["Redx1",
                 "Redy1",
@@ -95,6 +96,9 @@ class CommandWindow:
             if n == 0:
                 self.buttonVal.append(tk.Button(self.frame, text='AutoAdv', width=10, command=partial(self.AutoAdv, n)))
                 self.buttonVal[n].grid(row=5 + n, column=6)
+                self.buttonPlotLine.append(tk.Button(self.frame, text='PlotLIne', width=10, command=partial(self.drawLine, n)))
+                self.buttonPlotLine[n].grid(row=5 + 3, column=6)
+
             print(n)
             # create entries list
             self.entriesX.append(Label(self.frame, width = 5, textvariable = self.entriesVarX[n]))
@@ -144,6 +148,7 @@ class CommandWindow:
 
         self.app_created = False #true if child is created
         self.autoAdvanced = False
+        self.AllowDrawLine = False
         self.currentToken = 0
         self.print_Status()
         self.frame.pack()
@@ -193,11 +198,14 @@ class CommandWindow:
         for i in range(6):
             self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]])
             self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
+            self.updateEntryX[i] = True
+            self.updateEntryY[i] = True
 
         # self.autoAdvanced = True
         self.currentToken = 0  # auto advanced starts at first position
         self.First = True
         self.currentCanvaPoint()
+        self.AllowDrawLine = True
 
     def close_image(self):
         self.app.close_windows()
@@ -230,6 +238,7 @@ class CommandWindow:
             self.currentToken = 0 #auto advanced starts at first position
             self.First = True
             self.currentCanvaPoint()
+            self.AllowDrawLine = True
 
             # self.showColorPoint()
             self.print_Status()
@@ -253,7 +262,9 @@ class CommandWindow:
 
             self.currentToken = 0 #auto advanced starts at first position
             self.First = True
-            self.currentCanvaPoint()
+            self.currentCanvaPoint() #create the data base of the color point with .First = True to create and draw
+            self.AllowDrawLine = True
+
 
             self.print_Status()
 
@@ -275,20 +286,25 @@ class CommandWindow:
                     # #update dictionnary frame number
                     self.AllDataPoint[self.number_frame]['FrameId'] = self.currentFrameId
 
-                    self.currentCanvaPoint()
 
+                    self.currentCanvaPoint() #update the data base of the color point .First = False to update and draw
+                    self.AllowDrawLine = True
 
 
                     if self.autoAdvanced:
-                        if self.currentToken < 6:
+                        if self.currentToken < 5:
                             self.currentToken = self.currentToken+1
                             print(self.currentToken)
                             self.updateEntryX[self.currentToken] = True
                             self.updateEntryY[self.currentToken] = True
+                            self.app.clk = False
                         else:
                             self.currentToken = 0
                             self.updateEntryX[self.currentToken] = True
                             self.updateEntryY[self.currentToken] = True
+                            self.app.clk = False
+                            self.next_frame()
+
 
                     self.app.clk = False
 
@@ -307,9 +323,9 @@ class CommandWindow:
         # for i in range(6):
         # self.First=True
         # self.currentCanvaPoint()
-        self.autoAdvanced = False
-        self.Label_Rx1 = Label(self.frame, text='  off  ')
-        self.Label_Rx1.grid(row=6, column=6)
+        # self.autoAdvanced = False
+        # self.Label_Rx1 = Label(self.frame, text='  off  ')
+        # self.Label_Rx1.grid(row=6, column=6)
         self.app.canvas.delete(self.TablecurrentCanvaPoint[n])
 
 
@@ -347,7 +363,17 @@ class CommandWindow:
         self.app.canvas.delete(all)
         # for i in range(6):
 
+    def drawLine(self,n):
+        self.point2pointAngle = []
+        self.AllPointVrac = []
 
+        for i in range(6):
+            x = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]]
+            # self.currentValue.append(x)
+            y = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]]
+            self.AllPointVrac.append([x,y])
+
+        print()
 
     def currentCanvaPoint(self):
         if self.First:
@@ -380,7 +406,6 @@ class CommandWindow:
                     # self.app.canvas.delete(item2delete)
                 else:
                     self.TablecurrentCanvaPoint[i]=0
-
 
 
         self.First = False
