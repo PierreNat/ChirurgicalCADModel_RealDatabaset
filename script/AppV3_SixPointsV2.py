@@ -379,23 +379,24 @@ class CommandWindow:
             # self.currentValue.append(x)
             y = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]]
 
-            if i == 0 or i==1:
-                if i%2 == 0:
-                    self.PointTableWithColor.append([x,y,'R',1])
-                else:
-                    self.PointTableWithColor.append([x,y,'R',2])
-            if i == 2 or i==3:
-                if i%2 == 0:
-                    self.PointTableWithColor.append([x,y,'G',1])
-                else:
-                    self.PointTableWithColor.append([x,y,'G',2])
-            if i == 4 or i==5:
-                if i%2 == 0:
-                    self.PointTableWithColor.append([x,y,'B',1])
-                else:
-                    self.PointTableWithColor.append([x,y,'B',2])
+            if x !=0 and y !=0:
+                if i == 0 or i==1:
+                    if i%2 == 0:
+                        self.PointTableWithColor.append([x,y,'R',1])
+                    else:
+                        self.PointTableWithColor.append([x,y,'R',2])
+                if i == 2 or i==3:
+                    if i%2 == 0:
+                        self.PointTableWithColor.append([x,y,'G',1])
+                    else:
+                        self.PointTableWithColor.append([x,y,'G',2])
+                if i == 4 or i==5:
+                    if i%2 == 0:
+                        self.PointTableWithColor.append([x,y,'B',1])
+                    else:
+                        self.PointTableWithColor.append([x,y,'B',2])
 
-        print(len(self.PointTableWithColor))
+        # print(len(self.PointTableWithColor))
         for i in range(len(self.PointTableWithColor)):
             point_start = self.PointTableWithColor[i][0:2]
             color_start = self.PointTableWithColor[i][2]
@@ -411,7 +412,7 @@ class CommandWindow:
 
             #in the new 4x3 candidate matrix, pick the first one and compare ange with next, store if same and then iterate in the 4x3table
             for k in range(len(second_point_candidate)):
-                print(second_point_candidate[k])
+                # print(second_point_candidate[k])
                 color_second = second_point_candidate[k][2]
                 color_number_second =  second_point_candidate[k][3]
                 third_point_candidate = []
@@ -438,6 +439,8 @@ class CommandWindow:
                     if alpha2_cand > alpha1-self.AngleThreshold and alpha2_cand < alpha1 + self.AngleThreshold:
                         code_color = [color_start,color_second,color_third]
                         code_number = [color_number_start,color_number_second,color_number_third]
+                        print(code_color)
+                        print(code_number)
                         self.LineColorCombination.append(code_color)
                         self.LineNumberCombination.append(code_number)
 
