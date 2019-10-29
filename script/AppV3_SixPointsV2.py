@@ -430,12 +430,12 @@ class CommandWindow:
                 # #go through
                 # for n in range(len(second_point_candidate))
                 alpha1 = math.degrees(math.atan2(second_point_candidate[k][1]-point_start[1], second_point_candidate[k][0]-point_start[0]))
-
+                print('alpha1 is {}'.format(alpha1))
                 #comupute Alpha 2 for the remaining color-
                 for m in range(len(third_point_candidate)):
                     color_number_third = third_point_candidate[m][3]
                     alpha2_cand =  math.degrees(math.atan2(third_point_candidate[m][1]-second_point_candidate[k][1], third_point_candidate[m][0]-second_point_candidate[k][1]))
-
+                    print('alpha2 is {}'.format(alpha2_cand))
                     if alpha2_cand > alpha1-self.AngleThreshold and alpha2_cand < alpha1 + self.AngleThreshold:
                         code_color = [color_start,color_second,color_third]
                         code_number = [color_number_start,color_number_second,color_number_third]
