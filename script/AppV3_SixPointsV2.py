@@ -405,18 +405,22 @@ class CommandWindow:
                 third_point_candidate = []
                 #now build the 2x2 list
                 for l in range(len(second_point_candidate)):
+
+
                     if second_point_candidate[l][2] != color_second:
 
                         third_candidate = second_point_candidate[l]
                         color_third = third_candidate[2]
                         third_point_candidate.append(third_candidate)
 
-                alpha1 = math.degrees(math.atan2(second_point_candidate[l][1]-point_start[1], second_point_candidate[l][0]-point_start[0]))
+                # #go through
+                # for n in range(len(second_point_candidate))
+                alpha1 = math.degrees(math.atan2(second_point_candidate[k][1]-point_start[1], second_point_candidate[k][0]-point_start[0]))
 
-                #comupute Alpha 2 for the remaining color
+                #comupute Alpha 2 for the remaining color-
                 for m in range(len(third_point_candidate)):
 
-                    alpha2_cand =  math.degrees(math.atan2(third_point_candidate[m][1]-second_point_candidate[l][1], third_point_candidate[m][0]-second_point_candidate[l][1]))
+                    alpha2_cand =  math.degrees(math.atan2(third_point_candidate[m][1]-second_point_candidate[k][1], third_point_candidate[m][0]-second_point_candidate[k][1]))
 
                     if alpha2_cand > alpha1-self.AngleThreshold and alpha2_cand < alpha1 + self.AngleThreshold:
                         code = [color_start,color_second,color_third]
