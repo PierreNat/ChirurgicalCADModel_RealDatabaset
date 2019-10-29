@@ -3,6 +3,7 @@ from PIL import ImageTk, Image
 from tkinter import filedialog
 import os
 import json
+import math
 from functools import partial
 import tkinter as tk
 
@@ -365,15 +366,81 @@ class CommandWindow:
 
     def drawLine(self,n):
         self.point2pointAngle = []
-        self.AllPointVrac = []
+        self.TableColor = []
+        self.AllPointWithColor = []
+        self.Angles = []
+
 
         for i in range(6):
             x = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]]
             # self.currentValue.append(x)
             y = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]]
-            self.AllPointVrac.append([x,y])
 
-        print()
+            if i == 0 or i==1:
+                self.TableColor.append([x,y,'R'])
+            if i == 2 or i==3:
+                self.TableColor.append([x,y,'G'])
+            if i == 4 or i==5:
+                self.TableColor.append([x,y,'B'])
+
+        print(self.TableColor[0][0], self.TableColor[0][1])
+        print(self.TableColor[1][0], self.TableColor[1][1])
+
+
+
+        self.R1find=[]
+        self.R2find=[]
+        self.G1find=[]
+        self.G2find=[]
+        self.B1find=[]
+        self.B2find=[]
+        self.SameAngleList = []
+        # print(R1[1])
+        #Red1 find blue and green
+        R1B1 = math.degrees(math.atan2(B1[1]-R1[1], B1[0]-R1[0]))
+        R1B2 = math.degrees(math.atan2(B2[1]-R1[1], B2[0]-R1[0]))
+        R1G1 = math.degrees(math.atan2(G1[1]-R1[1], G1[0]-R1[0]))
+        R1G2 = math.degrees(math.atan2(G2[1]-R1[1], G2[0]-R1[0]))
+
+
+        # Red2 find blue and green
+        R2B1 = math.degrees(math.atan2(B1[1]- R2[1], B1[0] - R2[0]))
+        R2B2 = math.degrees(math.atan2(B2[1]- R2[1], B2[0] - R2[0]))
+        R2G1 = math.degrees(math.atan2(G1[1]-R2[1], G1[0] - R2[0]))
+        R2G2 = math.degrees(math.atan2(G2[1]- R2[1], G2[0] - R2[0]))
+
+
+        #Blue1
+        B1G1 = math.degrees(math.atan2(G1[1]-B1[1], G1[0]-B1[0]))
+        B1G2 = math.degrees(math.atan2(G2[1]-B1[1], G2[0]-B1[0]))
+        B1R1 = math.degrees(math.atan2(R1[1]-B1[1], G1[0]-R1[0]))
+        B1R2 = math.degrees(math.atan2(R2[1]-B1[1], R2[0]-B1[0]))
+
+        #Blue2
+        B2G1 = math.degrees(math.atan2(G1[1]-B2[1], G1[0]-B2[0]))
+        B2G2 = math.degrees(math.atan2(G2[1]-B2[1], G2[0]-B2[0]))
+        B2R1 = math.degrees(math.atan2(R1[1]-B2[1], G1[0]-R1[0]))
+        B2R2 = math.degrees(math.atan2(R2[1]-B2[1], R2[0]-B2[0]))
+
+        #Green1
+        G1B1  = math.degrees(math.atan2(B1[1]-G1[1], B1[0]-G1[0]))
+        G1B2 = math.degrees(math.atan2(B2[1]-G1[1], B2[0]-G1[0]))
+        G1R1  = math.degrees(math.atan2(R1[1]-G1[1], R1[0]-G1[0]))
+        G1R2 = math.degrees(math.atan2(R2[1]-G1[1], R2[0]-G1[0]))
+
+        #Green2
+        G2B1  = math.degrees(math.atan2(B1[1]-G2[1], B1[0]-G2[0]))
+        G2B2 = math.degrees(math.atan2(B2[1]-G2[1], B2[0]-G2[0]))
+        G2R1  = math.degrees(math.atan2(R1[1]-G2[1], R1[0]-G2[0]))
+        G2R2 = math.degrees(math.atan2(R2[1]-G2[1], R2[0]-G2[0]))
+
+
+
+
+
+        # for i in range(5):
+        #     self.Angles.append(math.degrees(math.atan2(self.TableColor[i+1][1]-self.TableColor[0][1], self.TableColor[i+1][0]-self.TableColor[0][0] )))
+        #     print(self.Angles)
 
     def currentCanvaPoint(self):
         if self.First:
@@ -411,7 +478,7 @@ class CommandWindow:
         self.First = False
 
 
-    def createDict(self):
+    def createDict(self): #creation of the dictionnary, one full set of point for each frame of the video
 
         self.AllDataPoint = []
 
