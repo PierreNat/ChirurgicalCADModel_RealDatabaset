@@ -366,9 +366,11 @@ class CommandWindow:
 
     def drawLine(self,n):
         self.point2pointAngle = []
-        self.TableColor = []
+        self.PointTableWithColor = []
         self.AllPointWithColor = []
+        self.LineCombination = []
         self.Angles = []
+        self.AngleThreshold = 4
 
 
         for i in range(6):
@@ -377,70 +379,52 @@ class CommandWindow:
             y = self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]]
 
             if i == 0 or i==1:
-                self.TableColor.append([x,y,'R'])
+                self.PointTableWithColor.append([x,y,'R'])
             if i == 2 or i==3:
-                self.TableColor.append([x,y,'G'])
+                self.PointTableWithColor.append([x,y,'G'])
             if i == 4 or i==5:
-                self.TableColor.append([x,y,'B'])
+                self.PointTableWithColor.append([x,y,'B'])
 
-        print(self.TableColor[0][0], self.TableColor[0][1])
-        print(self.TableColor[1][0], self.TableColor[1][1])
+        colors = ['R','G', 'B']
+        print(len(self.PointTableWithColor))
+        for i in range(len(self.PointTableWithColor)):
+            point_start = self.PointTableWithColor[i][0:2]
+            color_start = self.PointTableWithColor[i][2]
+            second_point_candidate = []
+            for j in range(len(self.PointTableWithColor)): #create the [4,3] list without the color start
+                if self.PointTableWithColor[j][2] != color_start: #check the color of each row
+                    # print( self.PointTableWithColor[i])
+                    candidate = self.PointTableWithColor[j]
+                    second_point_candidate.append(candidate)
+            # print(len(point_candidate))
 
+            #in the new 4x3 candidate matrix, pick the first one and compare ange with next, store if same and then iterate in the 4x3table
+            for k in range(len(second_point_candidate)):
+                print(second_point_candidate[k])
+                color_second = second_point_candidate[k][2]
+                third_point_candidate = []
+                #now build the 2x2 list
+                for l in range(len(second_point_candidate)):
+                    if second_point_candidate[l][2] != color_second:
 
+                        third_candidate = second_point_candidate[l]
+                        color_third = third_candidate[2]
+                        third_point_candidate.append(third_candidate)
 
-        self.R1find=[]
-        self.R2find=[]
-        self.G1find=[]
-        self.G2find=[]
-        self.B1find=[]
-        self.B2find=[]
-        self.SameAngleList = []
-        # print(R1[1])
-        #Red1 find blue and green
-        R1B1 = math.degrees(math.atan2(B1[1]-R1[1], B1[0]-R1[0]))
-        R1B2 = math.degrees(math.atan2(B2[1]-R1[1], B2[0]-R1[0]))
-        R1G1 = math.degrees(math.atan2(G1[1]-R1[1], G1[0]-R1[0]))
-        R1G2 = math.degrees(math.atan2(G2[1]-R1[1], G2[0]-R1[0]))
+                alpha1 = math.degrees(math.atan2(second_point_candidate[l][1]-point_start[1], second_point_candidate[l][0]-point_start[0]))
 
+                #comupute Alpha 2 for the remaining color
+                for m in range(len(third_point_candidate)):
 
-        # Red2 find blue and green
-        R2B1 = math.degrees(math.atan2(B1[1]- R2[1], B1[0] - R2[0]))
-        R2B2 = math.degrees(math.atan2(B2[1]- R2[1], B2[0] - R2[0]))
-        R2G1 = math.degrees(math.atan2(G1[1]-R2[1], G1[0] - R2[0]))
-        R2G2 = math.degrees(math.atan2(G2[1]- R2[1], G2[0] - R2[0]))
+                    alpha2_cand =  math.degrees(math.atan2(third_point_candidate[m][1]-second_point_candidate[l][1], third_point_candidate[m][0]-second_point_candidate[l][1]))
 
-
-        #Blue1
-        B1G1 = math.degrees(math.atan2(G1[1]-B1[1], G1[0]-B1[0]))
-        B1G2 = math.degrees(math.atan2(G2[1]-B1[1], G2[0]-B1[0]))
-        B1R1 = math.degrees(math.atan2(R1[1]-B1[1], G1[0]-R1[0]))
-        B1R2 = math.degrees(math.atan2(R2[1]-B1[1], R2[0]-B1[0]))
-
-        #Blue2
-        B2G1 = math.degrees(math.atan2(G1[1]-B2[1], G1[0]-B2[0]))
-        B2G2 = math.degrees(math.atan2(G2[1]-B2[1], G2[0]-B2[0]))
-        B2R1 = math.degrees(math.atan2(R1[1]-B2[1], G1[0]-R1[0]))
-        B2R2 = math.degrees(math.atan2(R2[1]-B2[1], R2[0]-B2[0]))
-
-        #Green1
-        G1B1  = math.degrees(math.atan2(B1[1]-G1[1], B1[0]-G1[0]))
-        G1B2 = math.degrees(math.atan2(B2[1]-G1[1], B2[0]-G1[0]))
-        G1R1  = math.degrees(math.atan2(R1[1]-G1[1], R1[0]-G1[0]))
-        G1R2 = math.degrees(math.atan2(R2[1]-G1[1], R2[0]-G1[0]))
-
-        #Green2
-        G2B1  = math.degrees(math.atan2(B1[1]-G2[1], B1[0]-G2[0]))
-        G2B2 = math.degrees(math.atan2(B2[1]-G2[1], B2[0]-G2[0]))
-        G2R1  = math.degrees(math.atan2(R1[1]-G2[1], R1[0]-G2[0]))
-        G2R2 = math.degrees(math.atan2(R2[1]-G2[1], R2[0]-G2[0]))
+                    if alpha2_cand > alpha1-self.AngleThreshold and alpha2_cand < alpha1 + self.AngleThreshold:
+                        code = [color_start,color_second,color_third]
+                        self.LineCombination.append(code)
 
 
 
 
-
-        # for i in range(5):
-        #     self.Angles.append(math.degrees(math.atan2(self.TableColor[i+1][1]-self.TableColor[0][1], self.TableColor[i+1][0]-self.TableColor[0][0] )))
-        #     print(self.Angles)
 
     def currentCanvaPoint(self):
         if self.First:
