@@ -459,6 +459,8 @@ class CommandWindow:
         table_index = []
         line_start_point = color[0]
         line_start_point_number = number[0]
+        line_middle_point = color[1]
+        line_middle_point_number = number[1]
         line_stop_point = color[2]
         line_stop_point_number = number[2]
 
@@ -468,6 +470,13 @@ class CommandWindow:
                if line_start_point_number in self.PointTableWithColor[i]:
                 x1 = self.PointTableWithColor[i][0]
                 y1 = self.PointTableWithColor[i][1]
+
+        # find the middle point coordinates in the table
+        for i in range(len(self.PointTableWithColor)):
+            if line_middle_point in self.PointTableWithColor[i]:
+                if line_middle_point_number in self.PointTableWithColor[i]:
+                    x1_2 = self.PointTableWithColor[i][0]
+                    y1_2 = self.PointTableWithColor[i][1]
         #find the ending point coordinates in the table
         for i in range(len(self.PointTableWithColor)):
             if line_stop_point in self.PointTableWithColor[i]:
@@ -475,7 +484,11 @@ class CommandWindow:
                 x2= self.PointTableWithColor[i][0]
                 y2 = self.PointTableWithColor[i][1]
 
+        text_dist = 4
         self.TablecurrentCanvaLine.append(self.app.canvas.create_line(x1, y1, x2, y2, fill='red'))
+        self.app.canvas.create_text(x1+text_dist, y1+text_dist, anchor = 'nw', text='1', fill='red')
+        self.app.canvas.create_text(x1_2+text_dist, y1_2+text_dist, anchor = 'nw', text='2',fill='red')
+        self.app.canvas.create_text(x2+text_dist, y2+text_dist, anchor = 'nw', text='3', fill='red')
         # canvas.create_line(15, 25, 200, 25)
     #
 
