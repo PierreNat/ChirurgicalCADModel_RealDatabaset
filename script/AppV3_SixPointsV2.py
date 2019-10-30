@@ -450,6 +450,7 @@ class CommandWindow:
                         print(code_number)
                         self.LineColorCombination.append(code_color)
                         self.LineNumberCombination.append(code_number)
+
                         self.drawCanvaLine(code_color,code_number)
                         
 
@@ -483,6 +484,19 @@ class CommandWindow:
                if line_stop_point_number in self.PointTableWithColor[i]:
                 x2= self.PointTableWithColor[i][0]
                 y2 = self.PointTableWithColor[i][1]
+
+        #is the order of the point correct given the distance between points
+        distP1_P12 = math.sqrt((x1 - x1_2)**2 + (y1 - y1_2)**2)
+        distP2_P12 = math.sqrt((x2 - x1_2)**2 + (y2 - y1_2)**2)
+
+        # if distP2_P12<distP1_P12:
+        #     #flip the order
+        #     tempx1 = x1
+        #     tempx2 = y2
+        #     x1 = x2
+        #     y1 = y2
+        #     x2 = tempx1
+        #     y2 = tempx2
 
         text_dist = 4
         self.TablecurrentCanvaLine.append(self.app.canvas.create_line(x1, y1, x2, y2, fill='red'))
