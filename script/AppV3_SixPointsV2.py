@@ -208,6 +208,9 @@ class CommandWindow:
         self.currentCanvaPoint()
         self.AllowDrawLine = True
 
+        self.ComputePointAngle()
+
+
     def close_image(self):
         self.app.close_windows()
         self.app_created = False
@@ -248,6 +251,7 @@ class CommandWindow:
         # plot color point
 
         if self.app_created:
+            #selection of the frame in the database
             self.updatePose = True
             if (self.currentFrameId-self.span >= 0):
                 self.currentFrameId = self.currentFrameId-self.span
@@ -257,6 +261,7 @@ class CommandWindow:
             self.close_image()
             self.new_window()
 
+            #update field with already known coordinate stored in the dictionnary
             for i in range(6):
                 self.entriesVarX[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2]] )
                 self.entriesVarY[i].set(self.AllDataPoint[self.number_frame][self.DictNameTable[i * 2 + 1]])
@@ -364,8 +369,7 @@ class CommandWindow:
         self.app.canvas.delete(all)
         # for i in range(6):
 
-    def ComputePointAngle(self,n):
-        self.TablecurrentCanvaPoint = []
+    def ComputePointAngle(self,n=0):
         self.point2pointAngle = []
         self.PointTableWithColor = []
         self.AllPointWithColor = []
@@ -446,12 +450,34 @@ class CommandWindow:
                         print(code_number)
                         self.LineColorCombination.append(code_color)
                         self.LineNumberCombination.append(code_number)
+                        self.drawCanvaLine(code_color,code_number)
                         
-                        
 
 
+    def drawCanvaLine(self, color, number):
+        self.TablecurrentCanvaLine = []
+        table_index = []
+        line_start_point = color[0]
+        line_start_point_number = number[0]
+        line_stop_point = color[2]
+        line_stop_point_number = number[2]
 
+        #find the starting point coordinates in the table
+        for i in range(len(self.PointTableWithColor)):
+            if line_start_point in self.PointTableWithColor[i]:
+               if line_start_point_number in self.PointTableWithColor[i]:
+                x1 = self.PointTableWithColor[i][0]
+                y1 = self.PointTableWithColor[i][1]
+        #find the ending point coordinates in the table
+        for i in range(len(self.PointTableWithColor)):
+            if line_stop_point in self.PointTableWithColor[i]:
+               if line_stop_point_number in self.PointTableWithColor[i]:
+                x2= self.PointTableWithColor[i][0]
+                y2 = self.PointTableWithColor[i][1]
 
+        self.TablecurrentCanvaLine.append(self.app.canvas.create_line(x1, y1, x2, y2, fill='red'))
+        # canvas.create_line(15, 25, 200, 25)
+    #
 
     def currentCanvaPoint(self):
         if self.First:
