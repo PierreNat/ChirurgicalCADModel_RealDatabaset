@@ -97,7 +97,7 @@ class CommandWindow:
             if n == 0:
                 self.buttonVal.append(tk.Button(self.frame, text='AutoAdv', width=10, command=partial(self.AutoAdv, n)))
                 self.buttonVal[n].grid(row=5 + n, column=6)
-                self.buttonPlotLine.append(tk.Button(self.frame, text='PlotLIne', width=10, command=partial(self.drawLine, n)))
+                self.buttonPlotLine.append(tk.Button(self.frame, text='PlotLIne', width=10, command=partial(self.ComputePointAngle, n)))
                 self.buttonPlotLine[n].grid(row=5 + 3, column=6)
 
             print(n)
@@ -364,7 +364,8 @@ class CommandWindow:
         self.app.canvas.delete(all)
         # for i in range(6):
 
-    def drawLine(self,n):
+    def ComputePointAngle(self,n):
+        self.TablecurrentCanvaPoint = []
         self.point2pointAngle = []
         self.PointTableWithColor = []
         self.AllPointWithColor = []
@@ -401,6 +402,7 @@ class CommandWindow:
             point_start = self.PointTableWithColor[i][0:2]
             color_start = self.PointTableWithColor[i][2]
             color_number_start = self.PointTableWithColor[i][3]
+            print('starting color is now {} {} at {}'.format(color_start,color_number_start, point_start))
 
             second_point_candidate = []
             for j in range(len(self.PointTableWithColor)): #create the [4,3] list without the color start
@@ -429,13 +431,14 @@ class CommandWindow:
 
                 # #go through
                 # for n in range(len(second_point_candidate))
-                alpha1 = math.degrees(math.atan2(second_point_candidate[k][1]-point_start[1], second_point_candidate[k][0]-point_start[0]))
-                print('alpha1 is {}'.format(alpha1))
+                alpha1 = math.degrees(math.atan2(point_start[1]-second_point_candidate[k][1], point_start[0]-second_point_candidate[k][0]))
+                print('alpha1 is {} between {}{} and {}{}'.format(alpha1,color_start,color_number_start,color_second,color_number_second))
                 #comupute Alpha 2 for the remaining color-
                 for m in range(len(third_point_candidate)):
                     color_number_third = third_point_candidate[m][3]
-                    alpha2_cand =  math.degrees(math.atan2(third_point_candidate[m][1]-second_point_candidate[k][1], third_point_candidate[m][0]-second_point_candidate[k][1]))
-                    print('alpha2 is {}'.format(alpha2_cand))
+                    alpha2_cand =  math.degrees(math.atan2(second_point_candidate[k][1]-third_point_candidate[m][1],second_point_candidate[k][0]- third_point_candidate[m][0]))
+                    print('alpha2 is {} between {}{} and {}{}'.format(alpha2_cand, color_second,color_number_second,color_third,color_number_third))
+                    # print('alpha2 is {}'.format(alpha2_cand))
                     if alpha2_cand > alpha1-self.AngleThreshold and alpha2_cand < alpha1 + self.AngleThreshold:
                         code_color = [color_start,color_second,color_third]
                         code_number = [color_number_start,color_number_second,color_number_third]
@@ -443,6 +446,8 @@ class CommandWindow:
                         print(code_number)
                         self.LineColorCombination.append(code_color)
                         self.LineNumberCombination.append(code_number)
+                        
+                        
 
 
 
