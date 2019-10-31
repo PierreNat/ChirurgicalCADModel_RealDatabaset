@@ -469,25 +469,25 @@ class CommandWindow:
             line_stop_point_number = self.LineNumberCombination[i][2]
 
             #find the starting point coordinates in the table
-            for i in range(len(self.PointTableWithColor)):
-                if line_start_point in self.PointTableWithColor[i]:
-                   if line_start_point_number in self.PointTableWithColor[i]: #if the line found is the correct one
-                    x1 = self.PointTableWithColor[i][0]
-                    y1 = self.PointTableWithColor[i][1]
+            for j in range(len(self.PointTableWithColor)):
+                if line_start_point in self.PointTableWithColor[j]:
+                   if line_start_point_number in self.PointTableWithColor[j]: #if the line found is the correct one
+                    x1 = self.PointTableWithColor[j][0]
+                    y1 = self.PointTableWithColor[j][1]
 
             # find the middle point coordinates in the table
-            for i in range(len(self.PointTableWithColor)):
-                if line_middle_point in self.PointTableWithColor[i]:
-                    if line_middle_point_number in self.PointTableWithColor[i]:
-                        x1_2 = self.PointTableWithColor[i][0]
-                        y1_2 = self.PointTableWithColor[i][1]
+            for k in range(len(self.PointTableWithColor)):
+                if line_middle_point in self.PointTableWithColor[k]:
+                    if line_middle_point_number in self.PointTableWithColor[k]:
+                        x1_2 = self.PointTableWithColor[k][0]
+                        y1_2 = self.PointTableWithColor[k][1]
 
             #find the ending point coordinates in the table
-            for i in range(len(self.PointTableWithColor)):
-                if line_stop_point in self.PointTableWithColor[i]:
-                   if line_stop_point_number in self.PointTableWithColor[i]:
-                    x2= self.PointTableWithColor[i][0]
-                    y2 = self.PointTableWithColor[i][1]
+            for l in range(len(self.PointTableWithColor)):
+                if line_stop_point in self.PointTableWithColor[l]:
+                   if line_stop_point_number in self.PointTableWithColor[l]:
+                    x2= self.PointTableWithColor[l][0]
+                    y2 = self.PointTableWithColor[l][1]
 
             distP1_P12 = math.sqrt((x1 - x1_2) ** 2 + (y1 - y1_2) ** 2)
             distP2_P12 = math.sqrt((x2 - x1_2) ** 2 + (y2 - y1_2) ** 2)
@@ -500,68 +500,46 @@ class CommandWindow:
                 y1 = y2
                 x2 = tempx
                 y2 = tempy
+                #swap in the table
+                temp_color = self.LineColorCombination[i][0]
+                temp_number =  self.LineNumberCombination[i][0]
+                self.LineColorCombination[i][0] = self.LineColorCombination[i][2]
+                self.LineNumberCombination[i][0] = self.LineNumberCombination[i][2]
+                self.LineColorCombination[i][2] = temp_color
+                self.LineNumberCombination[i][2] = temp_number
+
 
             firstpoint.append([x1,y1])
             secondpoint.append([x1_2,y1_2])
             thirdpoint.append([x2,y2])
+
+
             text_dist = 4
 
-        for i in range(len(self.LineColorCombination)):
-            self.app.canvas.create_line(firstpoint[i][0], firstpoint[i][1], thirdpoint[i][0], thirdpoint[i][1], fill='red')
-            self.app.canvas.create_text(firstpoint[i][0] + text_dist, firstpoint[i][1] + text_dist, anchor='nw', text='1', fill='red')
-            self.app.canvas.create_text(secondpoint[i][0] + text_dist, secondpoint[i][1] + text_dist, anchor='nw', text='2', fill='red')
-            self.app.canvas.create_text(thirdpoint[i][0]+ text_dist, thirdpoint[i][1] + text_dist, anchor='nw', text='3', fill='red')
 
-    # def drawCanvaLine(self, color, number):
-    #     self.TablecurrentCanvaLine = []
-    #     table_index = []
-    #     line_start_point = color[0]
-    #     line_start_point_number = number[0]
-    #     line_middle_point = color[1]
-    #     line_middle_point_number = number[1]
-    #     line_stop_point = color[2]
-    #     line_stop_point_number = number[2]
-    #
-    #     #find the starting point coordinates in the table
-    #     for i in range(len(self.PointTableWithColor)):
-    #         if line_start_point in self.PointTableWithColor[i]:
-    #            if line_start_point_number in self.PointTableWithColor[i]:
-    #             x1 = self.PointTableWithColor[i][0]
-    #             y1 = self.PointTableWithColor[i][1]
-    #
-    #     # find the middle point coordinates in the table
-    #     for i in range(len(self.PointTableWithColor)):
-    #         if line_middle_point in self.PointTableWithColor[i]:
-    #             if line_middle_point_number in self.PointTableWithColor[i]:
-    #                 x1_2 = self.PointTableWithColor[i][0]
-    #                 y1_2 = self.PointTableWithColor[i][1]
-    #     #find the ending point coordinates in the table
-    #     for i in range(len(self.PointTableWithColor)):
-    #         if line_stop_point in self.PointTableWithColor[i]:
-    #            if line_stop_point_number in self.PointTableWithColor[i]:
-    #             x2= self.PointTableWithColor[i][0]
-    #             y2 = self.PointTableWithColor[i][1]
-    #
-    #     #is the order of the point correct given the distance between points
-    #     distP1_P12 = math.sqrt((x1 - x1_2)**2 + (y1 - y1_2)**2)
-    #     distP2_P12 = math.sqrt((x2 - x1_2)**2 + (y2 - y1_2)**2)
-    #
-    #     # if distP2_P12<distP1_P12:
-    #     #     #flip the order
-    #     #     tempx1 = x1
-    #     #     tempx2 = y2
-    #     #     x1 = x2
-    #     #     y1 = y2
-    #     #     x2 = tempx1
-    #     #     y2 = tempx2
-    #
-    #     text_dist = 4
-    #     self.TablecurrentCanvaLine.append(self.app.canvas.create_line(x1, y1, x2, y2, fill='red'))
-    #     self.app.canvas.create_text(x1+text_dist, y1+text_dist, anchor = 'nw', text='1', fill='red')
-    #     self.app.canvas.create_text(x1_2+text_dist, y1_2+text_dist, anchor = 'nw', text='2',fill='red')
-    #     self.app.canvas.create_text(x2+text_dist, y2+text_dist, anchor = 'nw', text='3', fill='red')
-    #     # canvas.create_line(15, 25, 200, 25)
-    #
+        #remove duplicate
+        self.no_dupes_NumberCombination = [x for n, x in enumerate(self.LineNumberCombination) if x not in self.LineNumberCombination[:n]]
+        self.no_dupes_ColorCombination = [x for n, x in enumerate(self.LineColorCombination) if x not in self.LineColorCombination[:n]]
+        self.no_dupes_FirstPointCoord =  [x for n, x in enumerate(firstpoint) if x not in firstpoint[:n]]
+        self.no_dupes_SecondPointCoord = [x for n, x in enumerate(secondpoint) if x not in secondpoint[:n]]
+        self.no_dupes_ThirdPointCoord = [x for n, x in enumerate(thirdpoint) if x not in thirdpoint[:n]]
+        # for item in range(len(self.LineNumberCombination)):
+
+
+        for i in range(len(self.no_dupes_NumberCombination)):
+            self.app.canvas.create_line(self.no_dupes_FirstPointCoord [i][0], self.no_dupes_FirstPointCoord [i][1], self.no_dupes_ThirdPointCoord [i][0], self.no_dupes_ThirdPointCoord [i][1], fill='red')
+            self.app.canvas.create_text(self.no_dupes_FirstPointCoord [i][0] + text_dist, self.no_dupes_FirstPointCoord [i][1] + text_dist, anchor='nw', text='1', fill='red')
+            self.app.canvas.create_text(self.no_dupes_SecondPointCoord [i][0] + text_dist, self.no_dupes_SecondPointCoord [i][1] + text_dist, anchor='nw', text='2', fill='red')
+            self.app.canvas.create_text(self.no_dupes_ThirdPointCoord [i][0]+ text_dist, self.no_dupes_ThirdPointCoord [i][1] + text_dist, anchor='nw', text='3', fill='red')
+
+
+        # for i in range(len(self.LineColorCombination)):
+        #     self.app.canvas.create_line(firstpoint[i][0], firstpoint[i][1], thirdpoint[i][0], thirdpoint[i][1], fill='red')
+        #     self.app.canvas.create_text(firstpoint[i][0] + text_dist, firstpoint[i][1] + text_dist, anchor='nw', text='1', fill='red')
+        #     self.app.canvas.create_text(secondpoint[i][0] + text_dist, secondpoint[i][1] + text_dist, anchor='nw', text='2', fill='red')
+        #     self.app.canvas.create_text(thirdpoint[i][0]+ text_dist, thirdpoint[i][1] + text_dist, anchor='nw', text='3', fill='red')
+
+
 
     def currentCanvaPoint(self):
         if self.First:
