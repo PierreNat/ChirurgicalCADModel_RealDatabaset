@@ -601,7 +601,7 @@ class CommandWindow:
 
         print('dictionnary created with {} elements'.format(self.TotNumbOfImage))
 
-    def rotate_point_around_shaft(point, a):
+    def rotate_point_around_shaft(self,point, a):
         r_m = np.zeros((4, 4))
         r_m[0, 0] = np.cos(a)
         r_m[0, 1] = -np.sin(a)
@@ -614,8 +614,8 @@ class CommandWindow:
 
     def compute_initial_transform(self):
 
-        camera_points = np.empty((1, 2))
-        model_points = np.empty((1, 3))
+        camera_points = np.empty((0, 2))
+        model_points = np.empty((0, 3))
         p_1 = [0, shaft_diameter / 2, -1.5 * 1e-2, 1]
         p_2 = [0, shaft_diameter / 2, -2.5 * 1e-2, 1]
         p_3 = [0, shaft_diameter / 2, -4.0 * 1e-2, 1]
@@ -645,6 +645,17 @@ class CommandWindow:
                 found = False
 
             print('rotation of {}{}{} is {} degree'.format(p[0], p[1], p[2], rot))
+
+            #first point, closest to origin in the camera space
+            camera_points = np.vstack((camera_points, np.expand_dims(self.no_dupes_FirstPointCoord[l], axis=0)))
+            #second point
+            camera_points = np.vstack((camera_points, np.expand_dims(self.no_dupes_SecondPointCoord[l], axis=0)))
+            #third point, furthest to origin in the camera space
+            camera_points = np.vstack((camera_points, np.expand_dims(self.no_dupes_ThirdPointCoord[l], axis=0)))
+            #equivalence of the first point in the 3d model space, and the second and third point converted into model space
+            model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_1, rot)[0:3]))
+            model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_2, rot)[0:3]))
+            model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_3, rot)[0:3]))
 
 class Child_window:
     def __init__(self, master, ImageId=0):
