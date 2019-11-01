@@ -6,12 +6,26 @@ import json
 import math
 from functools import partial
 import tkinter as tk
-
+import cv2
 import numpy as np
 
 
 ##### PARAMETERS GO HERE ###########
 shaft_diameter = 8.25*1e-3
+
+
+c_x = 590
+c_y = 508
+
+f_x = 1067
+f_y = 1067
+
+camera_calibration = np.zeros((4,4))
+camera_calibration[0,0] = f_x
+camera_calibration[1,1] = f_y
+camera_calibration[0,2] = c_x
+camera_calibration[1,2] = c_y
+camera_calibration[2,2] = 1
 
 class CommandWindow:
     def __init__(self, master):
@@ -656,6 +670,74 @@ class CommandWindow:
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_1, rot)[0:3]))
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_2, rot)[0:3]))
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_3, rot)[0:3]))
+
+        if (camera_points.shape[0] > 3):
+
+            a = math.pi
+            correction = np.zeros((4, 4))
+            correction[0, 0] = 1
+            correction[1, 1] = -1
+            correction[2, 2] = -1
+            correction[3, 3] = 1
+
+            for i in range(camera_points.shape[0]):
+                print('model point {} projects to camera pixel {}'.format(model_points[i], camera_points[i]))
+
+            if (camera_points.shape[0] > 3):
+                retval, rvec, tvec, inliers = cv2.solvePnPRansac(objectPoints=np.expand_dims(model_points, axis=2),
+                                                                 imagePoints=np.expand_dims(camera_points, axis=2),
+                                                                 cameraMatrix=camera_calibration[0:3, 0:3],
+                                                                 distCoeffs=None)
+                # flags=cv2.SOLVEPNP_ITERATIVE)
+                # useExtrinsicGuess=True,
+                # rvec=cv2.Rodrigues((transform_matrix)[0:3,0:3])[0], tvec=(transform_matrix)[0:3,3])
+            else:
+                if (self.delta is not None):
+                    corrected_transform = np.matmul(self.delta, transform_matrix)
+                    corrected_transform = np.matmul(correction, corrected_transform)
+                    tvec = corrected_transform[0:3, 3]
+                else:
+                    corrected_transform = np.matmul(correction, transform_matrix)
+                    tvec = transform_matrix[0:3, 3]
+                    tvec[2] = -tvec[2]
+
+                retval, rvec, tvec = cv2.solvePnP(objectPoints=np.expand_dims(model_points, axis=2),
+                                                  imagePoints=np.expand_dims(camera_points, axis=2),
+                                                  cameraMatrix=camera_calibration[0:3, 0:3],
+                                                  distCoeffs=None,
+                                                  flags=cv2.SOLVEPNP_ITERATIVE,
+                                                  useExtrinsicGuess=True,
+                                                  rvec=cv2.Rodrigues(corrected_transform[0:3, 0:3])[0], tvec=tvec)
+            R = cv2.Rodrigues(rvec)[0]
+            T_m = np.zeros((4, 4))
+            T_m[0:3, 0:3] = R
+            T_m[0:3, 3] = np.squeeze(tvec)
+            T_m[3, 3] = 1
+            T_m_nc = T_m
+            # rotate around y axis so that z axis is inverted for rendering
+            correction = np.zeros((4, 4))
+            correction[0, 0] = 1
+            correction[1, 1] = -1
+            correction[2, 2] = -1
+            correction[3, 3] = 1
+            self.T_m = np.matmul(correction, T_m)
+            self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
+            self.points = points
+
+            print('found an updated transform')
+            print(self.T_m)
+
+            return True
+
+        else:
+
+            self.T_m = transform_matrix
+            self.points = points
+
+            print('failed to find an updated transform. not enough matched points. only found {}'.format(
+                camera_points.shape[0]))
+
+            return False
 
 class Child_window:
     def __init__(self, master, ImageId=0):
