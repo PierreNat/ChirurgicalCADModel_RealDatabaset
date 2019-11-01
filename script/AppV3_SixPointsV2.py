@@ -537,7 +537,7 @@ class CommandWindow:
             self.app.canvas.create_text(self.no_dupes_SecondPointCoord [i][0] + text_dist, self.no_dupes_SecondPointCoord [i][1] + text_dist, anchor='nw', text='2', fill='red')
             self.app.canvas.create_text(self.no_dupes_ThirdPointCoord [i][0]+ text_dist, self.no_dupes_ThirdPointCoord [i][1] + text_dist, anchor='nw', text='3', fill='red')
 
-
+        self.compute_initial_transform()
 
     def currentCanvaPoint(self):
         if self.First:
