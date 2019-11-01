@@ -537,7 +537,7 @@ class CommandWindow:
             self.app.canvas.create_text(self.no_dupes_SecondPointCoord [i][0] + text_dist, self.no_dupes_SecondPointCoord [i][1] + text_dist, anchor='nw', text='2', fill='red')
             self.app.canvas.create_text(self.no_dupes_ThirdPointCoord [i][0]+ text_dist, self.no_dupes_ThirdPointCoord [i][1] + text_dist, anchor='nw', text='3', fill='red')
 
-    # def compute_initial_transform(self):
+
 
     def currentCanvaPoint(self):
         if self.First:
@@ -614,48 +614,37 @@ class CommandWindow:
 
     def compute_initial_transform(self):
 
-        camera_points = np.empty((0, 2))
-        model_points = np.empty((0, 3))
+        camera_points = np.empty((1, 2))
+        model_points = np.empty((1, 3))
         p_1 = [0, shaft_diameter / 2, -1.5 * 1e-2, 1]
         p_2 = [0, shaft_diameter / 2, -2.5 * 1e-2, 1]
         p_3 = [0, shaft_diameter / 2, -4.0 * 1e-2, 1]
-        for l in range(line_points.shape[0]):
-            line = line_points[l]
-            p = points[line.astype(np.int32), :]
+        for l in range(len(self.no_dupes_ColorCombination)):
+            p = self.no_dupes_ColorCombination[l]
             found = False
 
-            if (p[0, 2] == 3 and p[1, 2] == 1 and p[2, 2] == 2):  # PGB
+            if (p[0] == 'R'  and p[1] == 'G' and p[2] == 'B'):  # PGB
                 rot = 0
                 found = True
-            elif (p[0, 2] == 2 and p[1, 2] == 3 and p[2, 2] == 1):  # BPG
+            elif (p[0] == 'B' and p[1] == 'R'  and p[2] == 'G'):  # BPG
                 rot = -60
                 found = True
-            elif (p[0, 2] == 1 and p[1, 2] == 2 and p[2, 2] == 3):  # GBP
+            elif (p[0] == 'G' and p[1] == 'B' and p[2] == 'R' ):  # GBP
                 rot = 240
                 found = True
-            elif (p[0, 2] == 3 and p[1, 2] == 2 and p[2, 2] == 1):  # PBG
+            elif (p[0] == 'R'  and p[1] == 'B' and p[2] == 'G'):  # PBG
                 rot = 180
                 found = True
-            elif (p[0, 2] == 2 and p[1, 2] == 1 and p[2, 2] == 3):  # BGP
+            elif (p[0] == 'B' and p[1] == 'G' and p[2] == 'R' ):  # BGP
                 rot = 60 + 59.999
                 found = True
-            elif (p[0, 2] == 1 and p[1, 2] == 3 and p[2, 2] == 2):  # GPB
+            elif (p[0] == 'G' and p[1] == 'R'  and p[2] == 'B'):  # GPB
                 rot = 0 + 60
                 found = True
-            elif (p[0, 2] == p[1, 2] and p[1, 2] == p[2, 2]):
+            elif (p[0] == p[1] and p[1] == p[2]):
                 found = False
 
-            if (found):
-                # rot+=180
-                rot = rot / 360.0 * 2.0 * math.pi
-                camera_points = np.vstack((camera_points, np.expand_dims(p[0, 0:2], axis=0)))
-                model_points = np.vstack((model_points, rotate_point_around_shaft(p_1, rot)[0:3]))
-                camera_points = np.vstack((camera_points, np.expand_dims(p[1, 0:2], axis=0)))
-                model_points = np.vstack((model_points, rotate_point_around_shaft(p_2, rot)[0:3]))
-                camera_points = np.vstack((camera_points, np.expand_dims(p[2, 0:2], axis=0)))
-                model_points = np.vstack((model_points, rotate_point_around_shaft(p_3, rot)[0:3]))
-
-        transform_matrix = self.rIface.get_transform_instrument_to_camera(self.usms, self.sus)
+            print('rotation of {}{}{} is {} degree'.format(p[0], p[1], p[2], rot))
 
 class Child_window:
     def __init__(self, master, ImageId=0):
