@@ -551,7 +551,12 @@ class CommandWindow:
             self.app.canvas.create_text(self.no_dupes_SecondPointCoord [i][0] + text_dist, self.no_dupes_SecondPointCoord [i][1] + text_dist, anchor='nw', text='2', fill='red')
             self.app.canvas.create_text(self.no_dupes_ThirdPointCoord [i][0]+ text_dist, self.no_dupes_ThirdPointCoord [i][1] + text_dist, anchor='nw', text='3', fill='red')
 
-        self.compute_initial_transform()
+        state = self.compute_initial_transform()
+
+        if state: #if a transform as been found
+            self.renderingGivenTm()
+
+
 
     def currentCanvaPoint(self):
         if self.First:
@@ -671,6 +676,8 @@ class CommandWindow:
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_2, rot)[0:3]))
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_3, rot)[0:3]))
 
+        # transform_matrix = self.rIface.get_transform_instrument_to_camera(self.usms, self.sus)
+
         if (camera_points.shape[0] > 3):
 
             a = math.pi
@@ -691,23 +698,24 @@ class CommandWindow:
                 # flags=cv2.SOLVEPNP_ITERATIVE)
                 # useExtrinsicGuess=True,
                 # rvec=cv2.Rodrigues((transform_matrix)[0:3,0:3])[0], tvec=(transform_matrix)[0:3,3])
-            else:
-                if (self.delta is not None):
-                    corrected_transform = np.matmul(self.delta, transform_matrix)
-                    corrected_transform = np.matmul(correction, corrected_transform)
-                    tvec = corrected_transform[0:3, 3]
-                else:
-                    corrected_transform = np.matmul(correction, transform_matrix)
-                    tvec = transform_matrix[0:3, 3]
-                    tvec[2] = -tvec[2]
+            # else:
+            #     if (self.delta is not None):
+            #         corrected_transform = np.matmul(self.delta, transform_matrix)
+            #         corrected_transform = np.matmul(correction, corrected_transform)
+            #         tvec = corrected_transform[0:3, 3]
+            #     else:
+            #         corrected_transform = np.matmul(correction, transform_matrix)
+            #         tvec = transform_matrix[0:3, 3]
+            #         tvec[2] = -tvec[2]
+            #
+            #     retval, rvec, tvec = cv2.solvePnP(objectPoints=np.expand_dims(model_points, axis=2),
+            #                                       imagePoints=np.expand_dims(camera_points, axis=2),
+            #                                       cameraMatrix=camera_calibration[0:3, 0:3],
+            #                                       distCoeffs=None,
+            #                                       flags=cv2.SOLVEPNP_ITERATIVE,
+            #                                       useExtrinsicGuess=True,
+            #                                       rvec=cv2.Rodrigues(corrected_transform[0:3, 0:3])[0], tvec=tvec)
 
-                retval, rvec, tvec = cv2.solvePnP(objectPoints=np.expand_dims(model_points, axis=2),
-                                                  imagePoints=np.expand_dims(camera_points, axis=2),
-                                                  cameraMatrix=camera_calibration[0:3, 0:3],
-                                                  distCoeffs=None,
-                                                  flags=cv2.SOLVEPNP_ITERATIVE,
-                                                  useExtrinsicGuess=True,
-                                                  rvec=cv2.Rodrigues(corrected_transform[0:3, 0:3])[0], tvec=tvec)
             R = cv2.Rodrigues(rvec)[0]
             T_m = np.zeros((4, 4))
             T_m[0:3, 0:3] = R
@@ -721,8 +729,8 @@ class CommandWindow:
             correction[2, 2] = -1
             correction[3, 3] = 1
             self.T_m = np.matmul(correction, T_m)
-            self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
-            self.points = points
+            # self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
+            # self.points = points
 
             print('found an updated transform')
             print(self.T_m)
@@ -731,13 +739,18 @@ class CommandWindow:
 
         else:
 
-            self.T_m = transform_matrix
-            self.points = points
+            # self.T_m = transform_matrix
+            # self.points = points
 
             print('failed to find an updated transform. not enough matched points. only found {}'.format(
                 camera_points.shape[0]))
 
             return False
+
+    def renderingGivenTm(self):
+        print('rendering the 3D cad tool')
+
+
 
 class Child_window:
     def __init__(self, master, ImageId=0):
