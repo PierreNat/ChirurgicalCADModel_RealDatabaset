@@ -36,8 +36,8 @@ def main():
     file_name_extension = 'shaft_1im_180_M15_15_5_7'
 
 
-    nb_im = 1
-    useTransformMatrix = True
+    nb_im = 10
+    useTransformMatrix = False
     instrument_to_camera_transform = np.array([(0, 0, 0, 0),
                                                (0, 0, 0, 0),
                                                (0, 0, 0, 0),
@@ -54,8 +54,8 @@ def main():
 
         # # define transfomration parameter from angle and translation
         if useTransformMatrix :
-            R_test = np.array([np.radians(145), np.radians(5), np.radians(-89)])  # test value alpha beta gamma
-            T_test = np.array([-0.007, 0.008, 0.08])
+            R_test = np.array([np.radians(0), np.radians(45), np.radians(0)])  # test value alpha beta gamma
+            T_test = np.array([0, 0.00, 1])
             T_test_vector, R_test_matrix = BuildTransformationMatrix(tx=T_test[0], ty=T_test[1], tz=T_test[2], alpha=R_test[0], beta=R_test[1],
                                                                      gamma=R_test[2]) #return 1x3 vector and 3x3matrix
             instrument_to_camera_transform[0, 0:3] = R_test_matrix[0, :]
@@ -95,11 +95,11 @@ def main():
 
         else:
             alpha =0#uniform(0, 180)
-            beta = 90#uniform(0, 180)
+            beta = 0#uniform(0, 180)
             gamma =  0 #uniform(0, 180)
-            x = 0.00 #uniform(-1.5, 1.5)
+            x = 0 #uniform(-1.5, 1.5)
             y = 0 #uniform(-1.5, 1.5)
-            z = 0.9 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+            z = 1 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
 
 
 
@@ -132,7 +132,7 @@ def main():
                           mode='silhouettes',
                           K=torch.cuda.FloatTensor(cam.K_vertices),
                           R=torch.cuda.FloatTensor(cam.R_vertices),
-                          t=torch.cuda.FloatTensor(cam.t_vertices))  # [batch_size, RGB, image_size, image_size]
+                             t=torch.cuda.FloatTensor(cam.t_vertices))  # [batch_size, RGB, image_size, image_size]
 
         sil = sils_1.detach().cpu().numpy().transpose((1, 2, 0))
         sil = np.squeeze((sil * 255)).astype(np.uint8) # change from float 0-1 [512,512,1] to uint8 0-255 [512,512]
