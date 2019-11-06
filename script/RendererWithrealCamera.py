@@ -22,7 +22,7 @@ def main():
     params_database = []
     im_nr = 1
 
-    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaft.obj", load_texture=True) #, texture_size=4)
+    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/rubik_color.obj", load_texture=True) #, texture_size=4)
     print(vertices_1.shape)
     print(faces_1.shape)
     vertices_1 = vertices_1[None, :, :]  # add dimension
@@ -36,8 +36,8 @@ def main():
     file_name_extension = 'shaft_1im_180_M15_15_5_7'
 
 
-    nb_im = 10
-    useTransformMatrix = False
+    nb_im = 20
+    useTransformMatrix = True
     instrument_to_camera_transform = np.array([(0, 0, 0, 0),
                                                (0, 0, 0, 0),
                                                (0, 0, 0, 0),
@@ -54,8 +54,8 @@ def main():
 
         # # define transfomration parameter from angle and translation
         if useTransformMatrix :
-            R_test = np.array([np.radians(0), np.radians(45), np.radians(0)])  # test value alpha beta gamma
-            T_test = np.array([0, 0.00, 1])
+            R_test = np.array([np.radians(i*15), np.radians(0), np.radians(0)])  # test value alpha beta gamma
+            T_test = np.array([0, 0, 6])
             T_test_vector, R_test_matrix = BuildTransformationMatrix(tx=T_test[0], ty=T_test[1], tz=T_test[2], alpha=R_test[0], beta=R_test[1],
                                                                      gamma=R_test[2]) #return 1x3 vector and 3x3matrix
             instrument_to_camera_transform[0, 0:3] = R_test_matrix[0, :]
@@ -94,12 +94,12 @@ def main():
             print(x,y,z, alpha,beta,gamma)
 
         else:
-            alpha =0#uniform(0, 180)
-            beta = 0#uniform(0, 180)
-            gamma =  0 #uniform(0, 180)
-            x = 0 #uniform(-1.5, 1.5)
-            y = 0 #uniform(-1.5, 1.5)
-            z = 1 #uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+            alpha =145#uniform(0, 180)
+            beta = 5.2#uniform(0, 180)
+            gamma =  -89 #uniform(0, 180)
+            x = 0#uniform(-1.5, 1.5)
+            y =0 #uniform(-1.5, 1.5)
+            z = 1#uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
 
 
 
@@ -112,11 +112,11 @@ def main():
 
         cam = camera_setttings(R=R, t=t, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=590, cy=508, fx=1067, fy=1067) # degree angle will be converted  and stored in radian
 
-        renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,
-                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0.001, background_color=[1, 1, 1],
+        renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,anti_aliasing=False,
+                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0.01, background_color=[1, 1, 1],
                                # background is filled now with  value 0-1 instead of 0-255
                                # changed from 0-255 to 0-1
-                               far=10, orig_size=1280,
+                               far=10, orig_size=500,
                                light_intensity_ambient=1, light_intensity_directional=1, light_direction=[0, 1, 0],
                                light_color_ambient=[1, 1, 1], light_color_directional=[1, 1, 1])
 

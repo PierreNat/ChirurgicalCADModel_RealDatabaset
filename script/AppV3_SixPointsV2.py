@@ -724,6 +724,7 @@ class CommandWindow:
             T_m[0:3, 0:3] = R
             T_m[0:3, 3] = np.squeeze(tvec)
             T_m[3, 3] = 1
+
             T_m_nc = T_m
             # rotate around y axis so that z axis is inverted for rendering
             correction = np.zeros((4, 4))
@@ -755,6 +756,7 @@ class CommandWindow:
 
         instrument_to_camera_transform= self.T_m
 
+        #angle and translation vector extraction from transformation matrix
         Extracted_theta3_rad = math.atan2(instrument_to_camera_transform[1, 0], instrument_to_camera_transform[0, 0])
         C_2 = math.sqrt(instrument_to_camera_transform[2, 1] * instrument_to_camera_transform[2, 1] +
                      instrument_to_camera_transform[2, 2] * instrument_to_camera_transform[2, 2])
@@ -771,13 +773,15 @@ class CommandWindow:
 
         # define transfomration parameter from json file
         alpha = Extracted_theta1_deg
-        beta = Extracted_theta2_deg
-        gamma = Extracted_theta3_deg
-        x = Extracted_X
-        y = Extracted_Y
-        z = Extracted_Z
+        beta =  -Extracted_theta2_deg
+        gamma =  Extracted_theta3_deg
+        x = 1
+        y = 0
+        z = 1
         print('parameter found are: ',x, y, z, alpha, beta, gamma)
-        vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaft.obj", load_texture=True)  # , texture_size=4)
+
+        #renderer the 3D cad model
+        vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/AllTool2.obj", load_texture=True)  # , texture_size=4)
         vertices_1 = vertices_1[None, :, :]  # add dimension
         faces_1 = faces_1[None, :, :]  # add dimension
         textures_1 = textures_1[None, :, :]  # add dimension
@@ -793,7 +797,7 @@ class CommandWindow:
         cam = camera_setttings(R=R, t=t, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=590, cy=508, fx=1067, fy=1067) # degree angle will be converted  and stored in radian
 
         renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,
-                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0.01, background_color=[1, 1, 1],
+                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0.0000001, background_color=[1, 1, 1],
                                # background is filled now with  value 0-1 instead of 0-255
                                # changed from 0-255 to 0-1
                                far=10, orig_size=1280,
