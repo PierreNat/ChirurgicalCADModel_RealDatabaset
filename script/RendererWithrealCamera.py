@@ -12,17 +12,42 @@ import random
 from scipy.misc import imsave
 from utils_functions.R2Rmat import R2Rmat
 import imageio
+import os
+from skimage.io import imread, imsave
+import glob
 import json
 from utils_functions.camera_settings import camera_setttings
+import argparse
+
+
+
+
+def make_gif(filename):
+    with imageio.get_writer(filename, mode='I') as writer:
+        for filename in sorted(glob.glob('/tmp/_tmp_*.png')):
+            writer.append_data(imread(filename))
+            os.remove(filename)
+    writer.close()
 
 def main():
+    processcount = 0
+
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    data_dir = os.path.join(current_dir, 'data')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-or', '--filename_output', type=str,
+                        default=os.path.join(current_dir, 'ResultRender_{}.gif'.format('test2')))
+    parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
+    parser.add_argument('-g', '--gpu', type=int, default=0)
+    args = parser.parse_args()
 
     cubes_database = []
     sils_database = []
     params_database = []
     im_nr = 1
 
-    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/rubik_color.obj", load_texture=True) #, texture_size=4)
+    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaftshort.obj", load_texture=True, normalization=False) #, texture_size=4)
     print(vertices_1.shape)
     print(faces_1.shape)
     vertices_1 = vertices_1[None, :, :]  # add dimension
@@ -36,7 +61,7 @@ def main():
     file_name_extension = 'shaft_1im_180_M15_15_5_7'
 
 
-    nb_im = 20
+    nb_im = 100
     useTransformMatrix = True
     instrument_to_camera_transform = np.array([(0, 0, 0, 0),
                                                (0, 0, 0, 0),
@@ -54,8 +79,13 @@ def main():
 
         # # define transfomration parameter from angle and translation
         if useTransformMatrix :
-            R_test = np.array([np.radians(i*15), np.radians(0), np.radians(0)])  # test value alpha beta gamma
-            T_test = np.array([0, 0, 6])
+            tempx =  -105
+            tempy = -80
+            tempz =  -130
+            R_test = np.array([np.radians(tempx), np.radians(tempy), np.radians(tempz)])  # test value alpha beta gamma
+            T_test = np.array([0, 0, 0.08])
+            print(T_test, tempx, tempy, tempz)
+
             T_test_vector, R_test_matrix = BuildTransformationMatrix(tx=T_test[0], ty=T_test[1], tz=T_test[2], alpha=R_test[0], beta=R_test[1],
                                                                      gamma=R_test[2]) #return 1x3 vector and 3x3matrix
             instrument_to_camera_transform[0, 0:3] = R_test_matrix[0, :]
@@ -84,7 +114,7 @@ def main():
             Extracted_theta2_deg = np.degrees(Extracted_theta2_rad)
             Extracted_theta3_deg = np.degrees(Extracted_theta3_rad)
 
-            # define transfomration parameter from json file
+            # define transfomration parameter from json fileprint(x,y,z, alpha,beta,gamma)
             alpha =Extracted_theta1_deg
             beta = Extracted_theta2_deg
             gamma =  Extracted_theta3_deg
@@ -97,9 +127,10 @@ def main():
             alpha =145#uniform(0, 180)
             beta = 5.2#uniform(0, 180)
             gamma =  -89 #uniform(0, 180)
-            x = 0#uniform(-1.5, 1.5)
-            y =0 #uniform(-1.5, 1.5)
-            z = 1#uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+            x = 0.00#uniform(-1.5, 1.5)
+            y =0.00 #uniform(-1.5, 1.5)
+            z = 0.08#uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+            print(x, y, z, alpha, beta, gamma)
 
 
 
@@ -112,12 +143,12 @@ def main():
 
         cam = camera_setttings(R=R, t=t, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=590, cy=508, fx=1067, fy=1067) # degree angle will be converted  and stored in radian
 
-        renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,anti_aliasing=False,
-                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0.01, background_color=[1, 1, 1],
+        renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,anti_aliasing=True, fill_back=True, perspective=False,
+                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0, background_color=[1, 1, 1],
                                # background is filled now with  value 0-1 instead of 0-255
                                # changed from 0-255 to 0-1
-                               far=10, orig_size=500,
-                               light_intensity_ambient=1, light_intensity_directional=1, light_direction=[0, 1, 0],
+                               far=20, orig_size=1280,
+                               light_intensity_ambient=1, light_intensity_directional=0.5, light_direction=[0, 1, 0],
                                light_color_ambient=[1, 1, 1], light_color_directional=[1, 1, 1])
 
         images_1 = renderer(vertices_1, faces_1, textures_1,
@@ -129,10 +160,10 @@ def main():
         image = (image*255).astype(np.uint8) #cast from float32 255.0 to 255 uint8
 
         sils_1 = renderer(vertices_1, faces_1, textures_1,
-                          mode='silhouettes',
-                          K=torch.cuda.FloatTensor(cam.K_vertices),
-                          R=torch.cuda.FloatTensor(cam.R_vertices),
-                             t=torch.cuda.FloatTensor(cam.t_vertices))  # [batch_size, RGB, image_size, image_size]
+                            mode='silhouettes',
+                            K=torch.cuda.FloatTensor(cam.K_vertices),
+                            R=torch.cuda.FloatTensor(cam.R_vertices),
+                            t=torch.cuda.FloatTensor(cam.t_vertices))  # [batch_size, RGB, image_size, image_size]
 
         sil = sils_1.detach().cpu().numpy().transpose((1, 2, 0))
         sil = np.squeeze((sil * 255)).astype(np.uint8) # change from float 0-1 [512,512,1] to uint8 0-255 [512,512]
@@ -155,6 +186,11 @@ def main():
             plt.imshow(sil, cmap='gray')
             plt.show()
             plt.close(fig)
+
+        imsave('/tmp/_tmp_%04d.png' % processcount, image)
+        processcount = processcount + 1
+
+    make_gif(args.filename_output)
 
 # save database
 # # reshape in the form (nbr of image, x dim, y dim, layers)

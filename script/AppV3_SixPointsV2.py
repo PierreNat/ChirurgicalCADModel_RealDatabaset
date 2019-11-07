@@ -62,7 +62,7 @@ class CommandWindow:
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-        self.TotNumbOfImage = 1000 # each x frame will be picked, ideally 1000 for the ground truth database
+        self.TotNumbOfImage = 14 # each x frame will be picked, ideally 1000 for the ground truth database
 
 
         self.python_green = "green"
@@ -775,13 +775,13 @@ class CommandWindow:
         alpha = Extracted_theta1_deg
         beta =  -Extracted_theta2_deg
         gamma =  Extracted_theta3_deg
-        x = 1
-        y = 0
-        z = 1
+        x = Extracted_X
+        y = Extracted_Y
+        z = -Extracted_Z
         print('parameter found are: ',x, y, z, alpha, beta, gamma)
 
         #renderer the 3D cad model
-        vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/AllTool2.obj", load_texture=True)  # , texture_size=4)
+        vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaftshort.obj", load_texture=True, normalization=False)  # , texture_size=4)
         vertices_1 = vertices_1[None, :, :]  # add dimension
         faces_1 = faces_1[None, :, :]  # add dimension
         textures_1 = textures_1[None, :, :]  # add dimension
@@ -796,12 +796,12 @@ class CommandWindow:
 
         cam = camera_setttings(R=R, t=t, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=590, cy=508, fx=1067, fy=1067) # degree angle will be converted  and stored in radian
 
-        renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,
-                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0.0000001, background_color=[1, 1, 1],
+        renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,anti_aliasing=True, fill_back=True, perspective=False,
+                               K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0, background_color=[1, 1, 1],
                                # background is filled now with  value 0-1 instead of 0-255
                                # changed from 0-255 to 0-1
-                               far=10, orig_size=1280,
-                               light_intensity_ambient=1, light_intensity_directional=1, light_direction=[0, 1, 0],
+                               far=20, orig_size=1280,
+                               light_intensity_ambient=1, light_intensity_directional=0.5, light_direction=[0, 1, 0],
                                light_color_ambient=[1, 1, 1], light_color_directional=[1, 1, 1])
 
         images_1 = renderer(vertices_1, faces_1, textures_1,
@@ -840,8 +840,8 @@ class Child_window:
         # master.minsize(width=1280, height=1024)
         self.frame = tk.Frame(self.master)
         self.master.title("Frame number {}".format(ImageId))
-        imageinfo = Image.open("framesLeft/frameL{}.jpg".format(ImageId))
-        self.img = ImageTk.PhotoImage(Image.open("framesLeft/frameL{}.jpg".format(ImageId)))
+        imageinfo = Image.open("framestest/frameL{}.jpg".format(ImageId))
+        self.img = ImageTk.PhotoImage(Image.open("framestest/frameL{}.jpg".format(ImageId)))
         self.canvas = Canvas(self.master, width = imageinfo.size[0], height = imageinfo.size[1])
         # print( imageinfo.size[0], imageinfo.size[1]) #print canva size
         self.canvas.create_image(0,0, image=self.img, anchor="nw")
