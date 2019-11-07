@@ -79,11 +79,11 @@ def main():
 
         # # define transfomration parameter from angle and translation
         if useTransformMatrix :
-            tempx =  -105
-            tempy = -80
-            tempz =  -130
+            tempx =  27
+            tempy = 25
+            tempz =  -52
             R_test = np.array([np.radians(tempx), np.radians(tempy), np.radians(tempz)])  # test value alpha beta gamma
-            T_test = np.array([0, 0, 0.08])
+            T_test = np.array([0, 0, 0.04])
             print(T_test, tempx, tempy, tempz)
 
             T_test_vector, R_test_matrix = BuildTransformationMatrix(tx=T_test[0], ty=T_test[1], tz=T_test[2], alpha=R_test[0], beta=R_test[1],

@@ -62,7 +62,7 @@ class CommandWindow:
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-        self.TotNumbOfImage = 14 # each x frame will be picked, ideally 1000 for the ground truth database
+        self.TotNumbOfImage = 11 # each x frame will be picked, ideally 1000 for the ground truth database
 
 
         self.python_green = "green"
@@ -554,9 +554,11 @@ class CommandWindow:
             self.app.canvas.create_text(self.no_dupes_SecondPointCoord [i][0] + text_dist, self.no_dupes_SecondPointCoord [i][1] + text_dist, anchor='nw', text='2', fill='red')
             self.app.canvas.create_text(self.no_dupes_ThirdPointCoord [i][0]+ text_dist, self.no_dupes_ThirdPointCoord [i][1] + text_dist, anchor='nw', text='3', fill='red')
 
+
+        #search for the transform given 6 points points
         state = self.compute_initial_transform()
 
-        if state: #if a transform as been found
+        if state: #if a transform T_m as been found, state is true
             self.renderingGivenTm()
 
 
@@ -680,6 +682,12 @@ class CommandWindow:
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_3, rot)[0:3]))
 
         # transform_matrix = self.rIface.get_transform_instrument_to_camera(self.usms, self.sus)
+
+        # plt.scatter(camera_points[:,0], camera_points[:,1])
+        # plt.show()
+
+        plt.scatter(model_points[:,0], model_points[:,1], model_points[:,2])
+        plt.show()
 
         if (camera_points.shape[0] > 3):
 
