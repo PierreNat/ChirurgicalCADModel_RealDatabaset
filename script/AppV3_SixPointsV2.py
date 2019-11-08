@@ -741,8 +741,8 @@ class CommandWindow:
             # rotate around y axis so that z axis is inverted for rendering
             correction = np.zeros((4, 4))
             correction[0, 0] = 1
-            correction[1, 1] = -1
-            correction[2, 2] = -1
+            correction[1, 1] = -1 #-1
+            correction[2, 2] = -1 #-1
             correction[3, 3] = 1
             self.T_m = np.matmul(correction, T_m)
             # self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
@@ -784,8 +784,8 @@ class CommandWindow:
         Extracted_theta3_deg = np.degrees(Extracted_theta3_rad)
 
         # define transfomration parameter from json file
-        alpha = Extracted_theta1_deg
-        beta =  -Extracted_theta2_deg
+        alpha =  Extracted_theta1_deg
+        beta =    Extracted_theta1_deg
         gamma =  Extracted_theta3_deg
         x = Extracted_X
         y = Extracted_Y
@@ -833,6 +833,15 @@ class CommandWindow:
         sil = sils_1.detach().cpu().numpy().transpose((1, 2, 0))
         sil = np.squeeze((sil * 255)).astype(np.uint8) # change from float 0-1 [512,512,1] to uint8 0-255 [512,512]
 
+
+
+        backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
+        toolbck = backgroundImage.load()
+        toolIm = Image.fromarray(np.uint8(self.image))
+        alpha = 0.4
+        out = Image.blend(backgroundImage,toolIm,alpha)
+        out.show()
+
         # fig = plt.figure()
         # fig.add_subplot(2, 1, 1)
         # plt.imshow(self.image)
@@ -841,13 +850,6 @@ class CommandWindow:
         # fig.add_subplot(2, 1, 2)
         # plt.imshow(sil, cmap='gray')
         # plt.show()
-
-        backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
-        toolbck = backgroundImage.load()
-        toolIm = Image.fromarray(np.uint8(self.image))
-        alpha = 0.4
-        out = Image.blend(backgroundImage,toolIm,alpha)
-        out.show()
 
 
 
