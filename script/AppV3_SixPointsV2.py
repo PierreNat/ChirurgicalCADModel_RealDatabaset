@@ -627,6 +627,7 @@ class CommandWindow:
 
     def rotate_point_around_shaft(self,point, a):
         r_m = np.zeros((4, 4))
+        a = np.deg2rad(a)
         r_m[0, 0] = np.cos(a)
         r_m[0, 1] = -np.sin(a)
         r_m[1, 0] = np.sin(a)
@@ -651,19 +652,19 @@ class CommandWindow:
                 rot = 0
                 found = True
             elif (p[0] == 'B' and p[1] == 'R'  and p[2] == 'G'):  # BPG
-                rot = -60
+                rot = 60
                 found = True
             elif (p[0] == 'G' and p[1] == 'B' and p[2] == 'R' ):  # GBP
-                rot = 240
+                rot = 120
                 found = True
             elif (p[0] == 'R'  and p[1] == 'B' and p[2] == 'G'):  # PBG
                 rot = 180
                 found = True
             elif (p[0] == 'B' and p[1] == 'G' and p[2] == 'R' ):  # BGP
-                rot = 60 + 59.999
+                rot = 240
                 found = True
             elif (p[0] == 'G' and p[1] == 'R'  and p[2] == 'B'):  # GPB
-                rot = 0 + 60
+                rot = 300
                 found = True
             elif (p[0] == p[1] and p[1] == p[2]):
                 found = False
@@ -686,8 +687,8 @@ class CommandWindow:
         # plt.scatter(camera_points[:,0], camera_points[:,1])
         # plt.show()
 
-        plt.scatter(model_points[:,0], model_points[:,1], model_points[:,2])
-        plt.show()
+        # plt.scatter(model_points[:,0], model_points[:,1], model_points[:,2])
+        # plt.show()
 
         if (camera_points.shape[0] > 3):
 
@@ -819,7 +820,7 @@ class CommandWindow:
 
         image = images_1[0].detach().cpu().numpy()[0].transpose((1, 2, 0)) #float32 from 0-1
         image = (image*255).astype(np.uint8) #cast from float32 255.0 to 255 uint8
-
+        self.image = image[0:1024,0:1280:,:]
         sils_1 = renderer(vertices_1, faces_1, textures_1,
                           mode='silhouettes',
                           K=torch.cuda.FloatTensor(cam.K_vertices),
@@ -831,7 +832,7 @@ class CommandWindow:
 
         fig = plt.figure()
         fig.add_subplot(2, 1, 1)
-        plt.imshow(image)
+        plt.imshow(self.image)
         # imageio.imwrite("3D_objects/{}_ref.png".format(file_name_extension), image)
 
         fig.add_subplot(2, 1, 2)
@@ -850,6 +851,9 @@ class Child_window:
         self.master.title("Frame number {}".format(ImageId))
         imageinfo = Image.open("framestest/frameL{}.jpg".format(ImageId))
         self.img = ImageTk.PhotoImage(Image.open("framestest/frameL{}.jpg".format(ImageId)))
+        # im2blend = self.img
+        #     if 'self.image' in locals():
+        #     self.blendImCad = im2blend.blend(self.img, self.image, 0.5)
         self.canvas = Canvas(self.master, width = imageinfo.size[0], height = imageinfo.size[1])
         # print( imageinfo.size[0], imageinfo.size[1]) #print canva size
         self.canvas.create_image(0,0, image=self.img, anchor="nw")
