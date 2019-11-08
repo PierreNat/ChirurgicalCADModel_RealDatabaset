@@ -14,9 +14,11 @@ from utils_functions.camera_settings import camera_setttings
 import matplotlib.pyplot as plt
 
 ##### PARAMETERS GO HERE ###########
+
+
 shaft_diameter = 8.25*1e-3
 
-
+pathfile = 'framestest'
 c_x = 590
 c_y = 508
 
@@ -32,6 +34,7 @@ camera_calibration[2,2] = 1
 
 class CommandWindow:
     def __init__(self, master):
+        self.pathfile = pathfile
         self.master = master
         self.frame = tk.Frame(self.master)
         self.interface_creation()
@@ -830,18 +833,27 @@ class CommandWindow:
         sil = sils_1.detach().cpu().numpy().transpose((1, 2, 0))
         sil = np.squeeze((sil * 255)).astype(np.uint8) # change from float 0-1 [512,512,1] to uint8 0-255 [512,512]
 
-        fig = plt.figure()
-        fig.add_subplot(2, 1, 1)
-        plt.imshow(self.image)
-        # imageio.imwrite("3D_objects/{}_ref.png".format(file_name_extension), image)
+        # fig = plt.figure()
+        # fig.add_subplot(2, 1, 1)
+        # plt.imshow(self.image)
+        # # imageio.imwrite("3D_objects/{}_ref.png".format(file_name_extension), image)
+        #
+        # fig.add_subplot(2, 1, 2)
+        # plt.imshow(sil, cmap='gray')
+        # plt.show()
 
-        fig.add_subplot(2, 1, 2)
-        plt.imshow(sil, cmap='gray')
-        plt.show()
-        # plt.close(fig)
+        backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
+        toolbck = backgroundImage.load()
+        toolIm = Image.fromarray(np.uint8(self.image))
+        alpha = 0.4
+        out = Image.blend(backgroundImage,toolIm,alpha)
+        out.show()
+
+
 
 class Child_window:
     def __init__(self, master, ImageId=0):
+        self.pathfile = pathfile
         self.master = master
         self.x = 0
         self.y =0
@@ -849,8 +861,8 @@ class Child_window:
         # master.minsize(width=1280, height=1024)
         self.frame = tk.Frame(self.master)
         self.master.title("Frame number {}".format(ImageId))
-        imageinfo = Image.open("framestest/frameL{}.jpg".format(ImageId))
-        self.img = ImageTk.PhotoImage(Image.open("framestest/frameL{}.jpg".format(ImageId)))
+        imageinfo = Image.open("{}/frameL{}.jpg".format(self.pathfile,ImageId))
+        self.img = ImageTk.PhotoImage(Image.open("{}/frameL{}.jpg".format(self.pathfile, ImageId)))
         # im2blend = self.img
         #     if 'self.image' in locals():
         #     self.blendImCad = im2blend.blend(self.img, self.image, 0.5)
