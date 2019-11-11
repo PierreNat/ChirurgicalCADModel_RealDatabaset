@@ -62,7 +62,7 @@ def main():
 
 
     nb_im = 100
-    useTransformMatrix = True
+    useTransformMatrix = False
     instrument_to_camera_transform = np.array([(0, 0, 0, 0),
                                                (0, 0, 0, 0),
                                                (0, 0, 0, 0),
@@ -79,11 +79,11 @@ def main():
 
         # # define transfomration parameter from angle and translation
         if useTransformMatrix :
-            tempx =  143
-            tempy = -12.31
-            tempz =  -112
+            tempx =  145
+            tempy = 52
+            tempz =  -114
             R_test = np.array([np.radians(tempx), np.radians(tempy), np.radians(tempz)])  # test value alpha beta gamma
-            T_test = np.array([0, 0, 0.08])
+            T_test = np.array([0.017, -0.008, 0.1])
             print(T_test, tempx, tempy, tempz)
 
             T_test_vector, R_test_matrix = BuildTransformationMatrix(tx=T_test[0], ty=T_test[1], tz=T_test[2], alpha=R_test[0], beta=R_test[1],
@@ -124,12 +124,12 @@ def main():
             print(x,y,z, alpha,beta,gamma)
 
         else:
-            alpha =145#uniform(0, 180)
-            beta = 5.2#uniform(0, 180)
-            gamma =  -89 #uniform(0, 180)
-            x = 0.00#uniform(-1.5, 1.5)
-            y =0.00 #uniform(-1.5, 1.5)
-            z = 0.08#uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+            alpha =-149 #uniform(0, 180)
+            beta = -23#uniform(0, 180)
+            gamma =  116 #uniform(0, 180)
+            x = -0.0043#uniform(-1.5, 1.5)
+            y =0.00915 #uniform(-1.5, 1.5)
+            z = 0.08625#uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
             print(x, y, z, alpha, beta, gamma)
 
 

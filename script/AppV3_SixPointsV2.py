@@ -632,8 +632,8 @@ class CommandWindow:
         r_m = np.zeros((4, 4))
         a = np.deg2rad(a)
         r_m[0, 0] = np.cos(a)
-        r_m[0, 1] = -np.sin(a)
-        r_m[1, 0] = np.sin(a)
+        r_m[0, 1] = np.sin(a)
+        r_m[1, 0] = -np.sin(a)
         r_m[1, 1] = np.cos(a)
         r_m[2, 2] = 1
         r_m[3, 3] = 1
@@ -649,6 +649,10 @@ class CommandWindow:
         p_3 = [0, shaft_diameter / 2, -4.0 * 1e-2, 1]
         for l in range(len(self.no_dupes_ColorCombination)):
             p = self.no_dupes_ColorCombination[l]
+            #test
+            # p[0] ='G'
+            # p[1] ='R'
+            # p[2] ='B'
             found = False
 
             if (p[0] == 'R'  and p[1] == 'G' and p[2] == 'B'):  # PGB
@@ -696,20 +700,29 @@ class CommandWindow:
         if (camera_points.shape[0] > 3):
 
             a = math.pi
-            correction = np.zeros((4, 4))
-            correction[0, 0] = 1
-            correction[1, 1] = -1
-            correction[2, 2] = -1
-            correction[3, 3] = 1
+            # correction = np.zeros((4, 4))
+            # correction[0, 0] = 1
+            # correction[1, 1] = -1
+            # correction[2, 2] = -1
+            # correction[3, 3] = 1
 
             for i in range(camera_points.shape[0]):
                 print('model point {} projects to camera pixel {}'.format(model_points[i], camera_points[i]))
 
             if (camera_points.shape[0] > 3):
-                retval, rvec, tvec, inliers = cv2.solvePnPRansac(objectPoints=np.expand_dims(model_points, axis=2),
-                                                                 imagePoints=np.expand_dims(camera_points, axis=2),
+                expModel_points = np.expand_dims(model_points, axis=2)
+                expCamera_points = np.expand_dims(camera_points, axis=2)
+                IntCam = camera_calibration[0:3, 0:3]
+
+                retval, rvec, tvec, inliers = cv2.solvePnPRansac(objectPoints=model_points,
+                                                                 imagePoints=camera_points,
                                                                  cameraMatrix=camera_calibration[0:3, 0:3],
                                                                  distCoeffs=None)
+
+                # retval2, rvec2, tvec2, inliers2 = cv2.solvePnPRansac(objectPoints=np.expand_dims(model_points, axis=2),
+                #                                                  imagePoints=np.expand_dims(camera_points, axis=2),
+                #                                                  cameraMatrix=camera_calibration[0:3, 0:3],
+                #                                                  distCoeffs=None)
                 # flags=cv2.SOLVEPNP_ITERATIVE)
                 # useExtrinsicGuess=True,
                 # rvec=cv2.Rodrigues((transform_matrix)[0:3,0:3])[0], tvec=(transform_matrix)[0:3,3])
@@ -732,25 +745,37 @@ class CommandWindow:
             #                                       rvec=cv2.Rodrigues(corrected_transform[0:3, 0:3])[0], tvec=tvec)
 
             R = cv2.Rodrigues(rvec)[0]
+            R2 = cv2.Rodrigues(rvec)
             T_m = np.zeros((4, 4))
             T_m[0:3, 0:3] = R
             T_m[0:3, 3] = np.squeeze(tvec)
             T_m[3, 3] = 1
 
-            T_m_nc = T_m
-            # rotate around y axis so that z axis is inverted for rendering
-            correction = np.zeros((4, 4))
-            correction[0, 0] = 1
-            correction[1, 1] = -1 #-1
-            correction[2, 2] = -1 #-1
-            correction[3, 3] = 1
-            self.T_m = np.matmul(correction, T_m)
+            self.T_m = T_m
             # self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
             # self.points = points
 
             print('found an updated transform')
             print(self.T_m)
 
+            #pinhole camera to project back the 3d point into 2d space
+            pinhole_point1 = np.empty((0, 3))
+            for i in range(len(model_points)):
+                pointcoord =  model_points[i,:]
+                pointRot = np.matmul(R,pointcoord)
+                pointTrans = pointRot + tvec.T
+                pinhole_point1 =  np.vstack((pinhole_point1, np.expand_dims(pointTrans[0], axis=0)))
+
+            f = f_x
+            # X_recov = -(f/)
+            pinhole_point2 = np.empty((0, 2))
+            for i in range(len(model_points)):
+                px = -(f/pinhole_point1[i,2])*pinhole_point1[i,0] +c_x
+                py = -(f /pinhole_point1[i, 2]) * pinhole_point1[i, 1] + c_y
+                pinhole_point2 = np.vstack((pinhole_point2, np.expand_dims([px,py], axis=0)))
+
+            plt.scatter(pinhole_point2[:,0], pinhole_point2[:,1])
+            plt.show()
             return True
 
         else:
@@ -785,7 +810,7 @@ class CommandWindow:
 
         # define transfomration parameter from json file
         alpha =  Extracted_theta1_deg
-        beta =    Extracted_theta1_deg
+        beta =    Extracted_theta2_deg
         gamma =  Extracted_theta3_deg
         x = Extracted_X
         y = Extracted_Y
