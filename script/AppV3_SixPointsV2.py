@@ -1,5 +1,5 @@
 from tkinter import *
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw
 from tkinter import filedialog
 import os
 import json
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 
 shaft_diameter = 8.25*1e-3
-
+plt.close("all")
 pathfile = 'framestest'
 c_x = 590
 c_y = 508
@@ -638,7 +638,23 @@ class CommandWindow:
         r_m[2, 2] = 1
         r_m[3, 3] = 1
 
+
         return np.matmul(r_m, point)
+
+    def rotate_correction(self, RotMat, a):
+        r_m = np.zeros((3, 3))
+        a = np.deg2rad(a)
+        r_m[0, 0] =  np.cos(a)
+        r_m[0, 1] =  -np.sin(a)
+        r_m[0, 2] = np.sin(a)
+        r_m[1, 0] = 0
+        r_m[1, 1] = 1
+        r_m[1, 2] = 0
+        r_m[2, 0] = 0
+        r_m[2, 1]  =0
+        r_m[2, 2] = np.cos(a)
+
+        return np.matmul(r_m, RotMat)
 
     def compute_initial_transform(self):
 
@@ -745,11 +761,19 @@ class CommandWindow:
             #                                       rvec=cv2.Rodrigues(corrected_transform[0:3, 0:3])[0], tvec=tvec)
 
             R = cv2.Rodrigues(rvec)[0]
+            # R = self.rotate_correction(R, 180)
             R2 = cv2.Rodrigues(rvec)
             T_m = np.zeros((4, 4))
             T_m[0:3, 0:3] = R
             T_m[0:3, 3] = np.squeeze(tvec)
             T_m[3, 3] = 1
+
+            # correction = np.zeros((4,4))
+            # correction[0,0] = 1
+            # correction[1,1] = -1
+            # correction[2,2] = -1
+            # correction[3,3] = 1
+            # self.T_m = np.matmul(correction, T_m)
 
             self.T_m = T_m
             # self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
@@ -766,6 +790,7 @@ class CommandWindow:
                 pointTrans = pointRot + tvec.T
                 pinhole_point1 =  np.vstack((pinhole_point1, np.expand_dims(pointTrans[0], axis=0)))
 
+            self.pinhole_point1 = pinhole_point1
             f = f_x
             # X_recov = -(f/)
             pinhole_point2 = np.empty((0, 2))
@@ -774,8 +799,9 @@ class CommandWindow:
                 py = -(f /pinhole_point1[i, 2]) * pinhole_point1[i, 1] + c_y
                 pinhole_point2 = np.vstack((pinhole_point2, np.expand_dims([px,py], axis=0)))
 
-            plt.scatter(pinhole_point2[:,0], pinhole_point2[:,1])
-            plt.show()
+            # plt.scatter(pinhole_point2[:,0], pinhole_point2[:,1])
+            # plt.show()
+            self.pinhole_point2 = pinhole_point2
             return True
 
         else:
@@ -791,7 +817,7 @@ class CommandWindow:
     def renderingGivenTm(self):
         print('rendering the 3D cad tool')
 
-        instrument_to_camera_transform= self.T_m
+        instrument_to_camera_transform = self.T_m
 
         #angle and translation vector extraction from transformation matrix
         Extracted_theta3_rad = math.atan2(instrument_to_camera_transform[1, 0], instrument_to_camera_transform[0, 0])
@@ -809,12 +835,12 @@ class CommandWindow:
         Extracted_theta3_deg = np.degrees(Extracted_theta3_rad)
 
         # define transfomration parameter from json file
-        alpha =  Extracted_theta1_deg
-        beta =    Extracted_theta2_deg
+        alpha =   Extracted_theta1_deg+25
+        beta =    -Extracted_theta2_deg
         gamma =  Extracted_theta3_deg
-        x = Extracted_X
-        y = Extracted_Y
-        z = -Extracted_Z
+        x = -Extracted_X
+        y =- Extracted_Y
+        z = Extracted_Z
         print('parameter found are: ',x, y, z, alpha, beta, gamma)
 
         #renderer the 3D cad model
@@ -831,7 +857,7 @@ class CommandWindow:
 
         Rt = np.concatenate((R, t), axis=None).astype(np.float16)  # create one array of parameter in radian, this arraz will be saved in .npy file
 
-        cam = camera_setttings(R=R, t=t, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=590, cy=508, fx=1067, fy=1067) # degree angle will be converted  and stored in radian
+        cam = camera_setttings(R=R, t=t, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=c_x, cy=c_y, fx=f_x, fy=f_y) # degree angle will be converted  and stored in radian
 
         renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,anti_aliasing=True, fill_back=True, perspective=False,
                                K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0, background_color=[1, 1, 1],
@@ -864,7 +890,15 @@ class CommandWindow:
         toolbck = backgroundImage.load()
         toolIm = Image.fromarray(np.uint8(self.image))
         alpha = 0.4
+        size = 10 #ellipse size
         out = Image.blend(backgroundImage,toolIm,alpha)
+        draw = ImageDraw.Draw(out)
+        for i in range(len(self.pinhole_point2)):
+            px = self.pinhole_point2[i,0]
+            py = self.pinhole_point2[i,1]
+            draw.ellipse([px,py,px+size, py+size], fill='blue')
+        # draw.show()
+        draw.ellipse([c_x, c_y, c_x + size, c_y + size], fill='red')
         out.show()
 
         # fig = plt.figure()
