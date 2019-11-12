@@ -644,17 +644,45 @@ class CommandWindow:
     def rotate_correction(self, RotMat, a):
         r_m = np.zeros((3, 3))
         a = np.deg2rad(a)
-        r_m[0, 0] =  np.cos(a)
-        r_m[0, 1] =  -np.sin(a)
-        r_m[0, 2] = np.sin(a)
-        r_m[1, 0] = 0
-        r_m[1, 1] = 1
+
+        # # alpha
+        # r_m[0, 0] = 1
+        # r_m[0, 1] = 0
+        # r_m[0, 2] = 0
+        # r_m[1, 0] = 0
+        # r_m[1, 1] = np.cos(a)
+        # r_m[1, 2] = -np.sin(a)
+        # r_m[2, 0] = 0
+        # r_m[2, 1] = np.sin(a)
+        # r_m[2, 2] = np.cos(a)
+
+        # #beta
+        #
+        # r_m[0, 0] = np.cos(a)
+        # r_m[0, 1] = 0
+        # r_m[0, 2] = np.sin(a)
+        # r_m[1, 0] = 0
+        # r_m[1, 1] = 1
+        # r_m[1, 2] = 0
+        # r_m[2, 0] = -np.sin(a)
+        # r_m[2, 1] = 0
+        # r_m[2, 2] = np.cos(a)
+        #
+        # #gamma
+        #
+        r_m[0, 0] = np.cos(a)
+        r_m[0, 1] = -np.sin(a)
+        r_m[0, 2] = 0
+        r_m[1, 0] = np.sin(a)
+        r_m[1, 1] = np.cos(a)
         r_m[1, 2] = 0
         r_m[2, 0] = 0
-        r_m[2, 1]  =0
-        r_m[2, 2] = np.cos(a)
+        r_m[2, 1] = 0
+        r_m[2, 2] = 1
 
         return np.matmul(r_m, RotMat)
+
+
 
     def compute_initial_transform(self):
 
@@ -735,33 +763,10 @@ class CommandWindow:
                                                                  cameraMatrix=camera_calibration[0:3, 0:3],
                                                                  distCoeffs=None)
 
-                # retval2, rvec2, tvec2, inliers2 = cv2.solvePnPRansac(objectPoints=np.expand_dims(model_points, axis=2),
-                #                                                  imagePoints=np.expand_dims(camera_points, axis=2),
-                #                                                  cameraMatrix=camera_calibration[0:3, 0:3],
-                #                                                  distCoeffs=None)
-                # flags=cv2.SOLVEPNP_ITERATIVE)
-                # useExtrinsicGuess=True,
-                # rvec=cv2.Rodrigues((transform_matrix)[0:3,0:3])[0], tvec=(transform_matrix)[0:3,3])
-            # else:
-            #     if (self.delta is not None):
-            #         corrected_transform = np.matmul(self.delta, transform_matrix)
-            #         corrected_transform = np.matmul(correction, corrected_transform)
-            #         tvec = corrected_transform[0:3, 3]
-            #     else:
-            #         corrected_transform = np.matmul(correction, transform_matrix)
-            #         tvec = transform_matrix[0:3, 3]
-            #         tvec[2] = -tvec[2]
-            #
-            #     retval, rvec, tvec = cv2.solvePnP(objectPoints=np.expand_dims(model_points, axis=2),
-            #                                       imagePoints=np.expand_dims(camera_points, axis=2),
-            #                                       cameraMatrix=camera_calibration[0:3, 0:3],
-            #                                       distCoeffs=None,
-            #                                       flags=cv2.SOLVEPNP_ITERATIVE,
-            #                                       useExtrinsicGuess=True,
-            #                                       rvec=cv2.Rodrigues(corrected_transform[0:3, 0:3])[0], tvec=tvec)
+
 
             R = cv2.Rodrigues(rvec)[0]
-            # R = self.rotate_correction(R, 180)
+            # R = self.rotate_correction(R, 0)
             R2 = cv2.Rodrigues(rvec)
             T_m = np.zeros((4, 4))
             T_m[0:3, 0:3] = R
@@ -770,7 +775,7 @@ class CommandWindow:
 
             # correction = np.zeros((4,4))
             # correction[0,0] = 1
-            # correction[1,1] = -1
+            # correction[1,1] = 1
             # correction[2,2] = -1
             # correction[3,3] = 1
             # self.T_m = np.matmul(correction, T_m)
@@ -795,8 +800,8 @@ class CommandWindow:
             # X_recov = -(f/)
             pinhole_point2 = np.empty((0, 2))
             for i in range(len(model_points)):
-                px = -(f/pinhole_point1[i,2])*pinhole_point1[i,0] +c_x
-                py = -(f /pinhole_point1[i, 2]) * pinhole_point1[i, 1] + c_y
+                px = (f/pinhole_point1[i,2])*pinhole_point1[i,0] +c_x
+                py = (f /pinhole_point1[i, 2]) * pinhole_point1[i, 1] + c_y
                 pinhole_point2 = np.vstack((pinhole_point2, np.expand_dims([px,py], axis=0)))
 
             # plt.scatter(pinhole_point2[:,0], pinhole_point2[:,1])
@@ -814,10 +819,7 @@ class CommandWindow:
 
             return False
 
-    def renderingGivenTm(self):
-        print('rendering the 3D cad tool')
-
-        instrument_to_camera_transform = self.T_m
+    def matrix2angle(self,instrument_to_camera_transform):
 
         #angle and translation vector extraction from transformation matrix
         Extracted_theta3_rad = math.atan2(instrument_to_camera_transform[1, 0], instrument_to_camera_transform[0, 0])
@@ -834,13 +836,26 @@ class CommandWindow:
         Extracted_theta2_deg = np.degrees(Extracted_theta2_rad)
         Extracted_theta3_deg = np.degrees(Extracted_theta3_rad)
 
+        return Extracted_X, Extracted_Y, Extracted_Z, Extracted_theta1_deg, Extracted_theta2_deg, Extracted_theta3_deg
+
+
+
+
+    def renderingGivenTm(self):
+        print('rendering the 3D cad tool')
+
+        instrument_to_camera_transform = self.T_m
+
+        Extracted_X, Extracted_Y, Extracted_Z, Extracted_theta1_deg, Extracted_theta2_deg, Extracted_theta3_deg = self.matrix2angle(self.T_m)
+
+
         # define transfomration parameter from json file
-        alpha =   Extracted_theta1_deg+25
-        beta =    -Extracted_theta2_deg
-        gamma =  Extracted_theta3_deg
-        x = -Extracted_X
-        y =- Extracted_Y
-        z = Extracted_Z
+        alpha =Extracted_theta1_deg+180 # 0 #
+        beta = Extracted_theta2_deg+180 #90  #
+        gamma =Extracted_theta3_deg  #0  #
+        x = Extracted_X#0#
+        y = Extracted_Y#0#
+        z = Extracted_Z #0.08#
         print('parameter found are: ',x, y, z, alpha, beta, gamma)
 
         #renderer the 3D cad model
@@ -874,6 +889,8 @@ class CommandWindow:
 
         image = images_1[0].detach().cpu().numpy()[0].transpose((1, 2, 0)) #float32 from 0-1
         image = (image*255).astype(np.uint8) #cast from float32 255.0 to 255 uint8
+        # image = np.fliplr(image)
+        # image = np.flipud(image)
         self.image = image[0:1024,0:1280:,:]
         sils_1 = renderer(vertices_1, faces_1, textures_1,
                           mode='silhouettes',
@@ -898,7 +915,7 @@ class CommandWindow:
             py = self.pinhole_point2[i,1]
             draw.ellipse([px,py,px+size, py+size], fill='blue')
         # draw.show()
-        draw.ellipse([c_x, c_y, c_x + size, c_y + size], fill='red')
+        draw.ellipse([c_x- size/2, c_y- size/2, c_x + size/2, c_y + size/2], fill='red')
         out.show()
 
         # fig = plt.figure()
