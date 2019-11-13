@@ -773,14 +773,16 @@ class CommandWindow:
             T_m[0:3, 3] = np.squeeze(tvec)
             T_m[3, 3] = 1
 
-            # correction = np.zeros((4,4))
-            # correction[0,0] = 1
-            # correction[1,1] = 1
-            # correction[2,2] = -1
-            # correction[3,3] = 1
-            # self.T_m = np.matmul(correction, T_m)
+            self.T_m1 = T_m #brings points from the model coordinate system to the camera coordinate system
 
-            self.T_m = T_m
+            correction = np.zeros((4,4))
+            correction[0,0] = 1
+            correction[1,1] = 1
+            correction[2,2] = 1
+            correction[3,3] = 1
+            self.T_m = np.matmul(correction, T_m)
+
+
             # self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
             # self.points = points
 
@@ -850,9 +852,9 @@ class CommandWindow:
 
 
         # define transfomration parameter from json file
-        alpha =Extracted_theta1_deg+180 # 0 #
-        beta = Extracted_theta2_deg+180 #90  #
-        gamma =Extracted_theta3_deg  #0  #
+        alpha =Extracted_theta1_deg  # +180# 0 #
+        beta = Extracted_theta2_deg #+180 #90  #
+        gamma =Extracted_theta3_deg #0  #
         x = Extracted_X#0#
         y = Extracted_Y#0#
         z = Extracted_Z #0.08#
@@ -872,7 +874,7 @@ class CommandWindow:
 
         Rt = np.concatenate((R, t), axis=None).astype(np.float16)  # create one array of parameter in radian, this arraz will be saved in .npy file
 
-        cam = camera_setttings(R=R, t=t, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=c_x, cy=c_y, fx=f_x, fy=f_y) # degree angle will be converted  and stored in radian
+        cam = camera_setttings(R=R, t=t, PnPtm = self.T_m, PnPtmFlag = False, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=c_x, cy=c_y, fx=f_x, fy=f_y) # degree angle will be converted  and stored in radian
 
         renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None,anti_aliasing=True, fill_back=True, perspective=False,
                                K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0, background_color=[1, 1, 1],
@@ -892,6 +894,8 @@ class CommandWindow:
         # image = np.fliplr(image)
         # image = np.flipud(image)
         self.image = image[0:1024,0:1280:,:]
+
+
         sils_1 = renderer(vertices_1, faces_1, textures_1,
                           mode='silhouettes',
                           K=torch.cuda.FloatTensor(cam.K_vertices),

@@ -3,9 +3,13 @@ import math as m
 import torch
 
 
-def BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=0, beta=0, gamma=0):
+def BuildTransformationMatrix(tx=0, ty=0, tz=0, beta=0, alpha=0, gamma=0):
 
     # alpha = alpha - pi/2
+    alpha = alpha
+    beta = -beta
+    gamma = gamma
+
 
     Rx = np.array([[1, 0, 0],
                    [0, m.cos(alpha), -m.sin(alpha)],
@@ -37,10 +41,12 @@ def BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=0, beta=0, gamma=0):
 class camera_setttings():
 
     # define extrinsinc and instrinsic camera parameter
-    def __init__(self, R= np.array([np.radians(0), np.radians(0), np.radians(0)]), t=np.array([0, 0, 0]),
+    def __init__(self, R= np.array([np.radians(0), np.radians(0), np.radians(0)]), t=np.array([0, 0, 0]), PnPtm= 0, PnPtmFlag = False,
                  vert=1, resolutionx=0, resolutiony=0, cx=0, cy=0, fx=0, fy=0): #R 1x3 array, t 1x2 array, number of vertices
+
         self.R = R
         self.t = t
+        self.PnPtm = PnPtm
         self.alpha = R[0]
         self.beta= R[1]
         self.gamma = R[2]
@@ -78,7 +84,18 @@ class camera_setttings():
                       [0, 0, 1]])  # shape of [nb_vertice, 3, 3]
 
         # angle in radian
-        self.t_mat, self.R_mat = BuildTransformationMatrix(self.tx, self.ty, self.tz, self.alpha, self.beta, self.gamma)
+        if PnPtmFlag:
+            self.t_mat = torch.from_numpy(np.array([PnPtm[0,3], PnPtm[1,3], PnPtm[2,3]]).astype(np.float32))
+            self.R_mat = PnPtm[0:3,0:3]
+
+            self.t_mat2, self.R_mat2 = BuildTransformationMatrix(self.tx, self.ty, self.tz, self.alpha, self.beta,
+                                                               self.gamma)
+
+        else:
+
+            self.t_mat, self.R_mat = BuildTransformationMatrix(self.tx, self.ty, self.tz, self.alpha, self.beta,
+                                                               self.gamma)
+
         self.K_vertices = np.repeat(self.K[np.newaxis, :, :], vert, axis=0)
         self.R_vertices = np.repeat(self.R_mat[np.newaxis, :, :], vert, axis=0)
         self.t_vertices = np.repeat(self.t_mat[np.newaxis, :], 1, axis=0).cuda()
