@@ -852,9 +852,9 @@ class CommandWindow:
 
 
         # define transfomration parameter from json file
-        alpha =Extracted_theta1_deg # +180# 0 #
-        beta = -Extracted_theta2_deg #+180 #90  #
-        gamma =Extracted_theta3_deg +180 #0  #
+        alpha =Extracted_theta1_deg+90 # +180# 0 #
+        beta = Extracted_theta2_deg #+180 #90  #
+        gamma =Extracted_theta3_deg #0  #
         x = Extracted_X#0#
         y = Extracted_Y#0#
         z = Extracted_Z #0.08#
