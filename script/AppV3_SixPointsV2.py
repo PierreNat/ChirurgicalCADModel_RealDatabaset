@@ -18,7 +18,8 @@ import matplotlib.pyplot as plt
 
 shaft_diameter = 8.25*1e-3
 plt.close("all")
-pathfile = 'framestest'
+# pathfile = 'framestest'
+pathfile = 'framesLeft'
 c_x = 590
 c_y = 508
 
