@@ -3,11 +3,11 @@ import math as m
 import torch
 
 
-def BuildTransformationMatrix(tx=0, ty=0, tz=0, beta=0, alpha=0, gamma=0):
+def BuildTransformationMatrix(tx=0, ty=0, tz=0, alpha=0, beta=0, gamma=0):
 
     # alpha = alpha - pi/2
     alpha = alpha
-    beta = -beta
+    beta = beta
     gamma = gamma
 
 
