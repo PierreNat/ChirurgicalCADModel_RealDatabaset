@@ -1,8 +1,8 @@
 import cv2
 import os
 import tqdm
-image_folder = 'framesgif/cameraSet1/re'
-video_name = 'video.avi'
+image_folder = 'framesLeft'
+video_name = 'framesleftvideo.avi'
 
 images = [img for img in os.listdir(image_folder) if img.endswith(".jpg")]
 images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
@@ -10,9 +10,11 @@ frame = cv2.imread(os.path.join(image_folder, images[0]))
 height, width, layers = frame.shape
 
 video = cv2.VideoWriter(video_name, cv2.VideoWriter_fourcc(*'XVID'), 60, (width,height))
-
+span = 0
 for image in tqdm.tqdm(images):
-    video.write(cv2.imread(os.path.join(image_folder, image)))
+    if span%10 == 0:
+        video.write(cv2.imread(os.path.join(image_folder, image)))
+    span = span+1
 
 cv2.destroyAllWindows()
 video.release()
