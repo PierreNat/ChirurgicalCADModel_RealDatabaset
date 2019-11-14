@@ -5,9 +5,17 @@ import os
 import json
 import math
 import tqdm
+from scipy.misc import imsave
 from functools import partial
 import tkinter as tk
 import cv2
+import os
+from skimage.io import imread, imsave
+import glob
+import imageio
+import json
+from utils_functions.camera_settings import camera_setttings
+import argparse
 import numpy as np
 import neural_renderer as nr
 import torch
@@ -33,6 +41,24 @@ camera_calibration[1,1] = f_y
 camera_calibration[0,2] = c_x
 camera_calibration[1,2] = c_y
 camera_calibration[2,2] = 1
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+sil_dir = os.path.join(current_dir, 'SilOutput')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-or', '--filename_output', type=str,
+                    default=os.path.join(sil_dir, 'ResultSilhouette_{}.gif'.format('test1')))
+parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
+parser.add_argument('-g', '--gpu', type=int, default=0)
+args = parser.parse_args()
+
+
+def make_gif(filename):
+    with imageio.get_writer(filename, mode='I') as writer:
+        for filename in sorted(glob.glob('/tmp/_tmp_*.png')):
+            writer.append_data(imread(filename))
+            os.remove(filename)
+    writer.close()
 
 class CommandWindow:
     def __init__(self, master):
@@ -789,7 +815,7 @@ class CommandWindow:
         print('parameter found are: ',x, y, z, alpha, beta, gamma)
 
         #renderer the 3D cad model
-        vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaftshort.obj", load_texture=True, normalization=False)  # , texture_size=4)
+        vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaftshortOnly.obj", load_texture=True, normalization=False)  # , texture_size=4)
         vertices_1 = vertices_1[None, :, :]  # add dimension
         faces_1 = faces_1[None, :, :]  # add dimension
         textures_1 = textures_1[None, :, :]  # add dimension
@@ -834,40 +860,45 @@ class CommandWindow:
         self.sil = sil[0:1024, 0:1280]
 
 
-        # #create window of the overlap of the tool and renderer
-        # backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
-        # toolbck = backgroundImage.load()
-        # toolIm = Image.fromarray(np.uint8(self.image))
-        # alpha = 0.4
-        # size = 10 #ellipse size
-        # out = Image.blend(backgroundImage,toolIm,alpha)
-        # draw = ImageDraw.Draw(out)
-        # for i in range(len(self.pinhole_point2)):
-        #     px = self.pinhole_point2[i,0]
-        #     py = self.pinhole_point2[i,1]
-        #     draw.ellipse([px,py,px+size, py+size], fill='blue')
-        # # draw.show()
-        # draw.ellipse([c_x- size/2, c_y- size/2, c_x + size/2, c_y + size/2], fill='red')
+        #create window of the overlap of the tool and renderer
+        backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
+        toolbck = backgroundImage.load()
+        sil3d = self.sil[:, :, np.newaxis]
+        renderim = np.concatenate((sil3d,sil3d,sil3d), axis=2)
+        toolIm = Image.fromarray(np.uint8(renderim ))
+        alpha = 0.2
+        size = 10 #ellipse size
+        out = Image.blend(backgroundImage,toolIm,alpha)
+        draw = ImageDraw.Draw(out)
+        for i in range(len(self.pinhole_point2)):
+            px = self.pinhole_point2[i,0]
+            py = self.pinhole_point2[i,1]
+            draw.ellipse([px- size/2,py- size/2,px+ size/2, py+ size/2], fill='blue')
+        # draw.show()
+        draw.ellipse([c_x- size/2, c_y- size/2, c_x + size/2, c_y + size/2], fill='red')
+        self.out = np.array(out)
+
+
         # out.show()
-
-        fig = plt.figure()
-        fig.add_subplot(2, 1, 1)
-        plt.imshow(self.image)
-        # imageio.imwrite("3D_objects/{}_ref.png".format(file_name_extension), image)
-
-        fig.add_subplot(2, 1, 2)
-        plt.imshow(self.sil, cmap='gray')
-        plt.show()
+        #
+        # fig = plt.figure()
+        # fig.add_subplot(2, 1, 1)
+        # plt.imshow(self.image)
+        # # imageio.imwrite("3D_objects/{}_ref.png".format(file_name_extension), image)
+        #
+        # fig.add_subplot(2, 1, 2)
+        # plt.imshow(self.sil, cmap='gray')
+        # plt.show()
 
 
     def GTcreation(self,n=0):
         print('Ground truth creation')
         self.load_dict() #open the dictionnary to compute the ground truth
         self.NumberOfImageWith6Points = 0
-
+        processcount = 0
         #for each position, control that we have 6 positions, if yes save them in a new directory and add alpha beta gamm x y z field
-
-        loop = tqdm.tqdm(range(self.TotNumbOfImage))
+        # loop = tqdm.tqdm(range(self.TotNumbOfImage))
+        loop = tqdm.tqdm(range(0,100))
         for i in loop:
             if self.AllDataPoint[i]['Redx1'] != 0 and self.AllDataPoint[i]['Redx2'] != 0 and self.AllDataPoint[i]['Greenx1'] != 0 and self.AllDataPoint[i]['Greenx2'] != 0 and self.AllDataPoint[i]['Bluex1'] != 0 and self.AllDataPoint[i]['Bluex2'] != 0:
                 self.NumberOfImageWith6Points = self.NumberOfImageWith6Points +1
@@ -875,7 +906,10 @@ class CommandWindow:
                 self.drawOK = False #dont draw on the child windows cause it does not exist
                 self.ComputePointAngle()
 
+                imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
+                processcount = processcount + 1
 
+        make_gif(args.filename_output)
 
 
         print('{}/{} have 6 points '.format(self.NumberOfImageWith6Points,self.TotNumbOfImage))
