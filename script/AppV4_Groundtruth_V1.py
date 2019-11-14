@@ -71,6 +71,12 @@ class CommandWindow:
         # self.TotNumbOfImage = 4  # each x frame will be picked, ideally 1000 for the ground truth database
         # self.createDict()
 
+    def goToImageNumber(self):
+        self.currentFrameId = np.int(self.entryfield.get())
+        print('image to reach is {}'.format(self.currentFrameId))
+        self.next_frame()
+
+
     def interface_creation(self):
 
         #frame creation
@@ -78,6 +84,10 @@ class CommandWindow:
         self.buttonOpen.grid(row=0, column=0)
         self.buttonClose = tk.Button(self.frame, text = 'close', width = 20, command = self.close_image)
         self.buttonClose.grid(row=1, column=0)
+        self.entryfield= tk.Entry(self.frame)
+        self.entryfield.grid(row=1, column=5)
+        self.entrybutton =  tk.Button(self.frame, text = 'reach', width = 10, command = self.goToImageNumber)
+        self.entrybutton.grid(row=1, column=6)
         self.buttonNext = tk.Button(self.frame, text = 'Next', width = 20, command = self.next_frame)
         self.buttonNext.grid(row=2, column=0)
         self.buttonPrev = tk.Button(self.frame, text = 'Previous', width = 20, command = self.prev_frame)
@@ -94,8 +104,9 @@ class CommandWindow:
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-        self.TotNumbOfImage = 1000 # each x frame will be picked, ideally 1000 for the ground truth database
+        self.TotNumbOfImage = 19226 # each x frame will be picked, ideally 1000 for the ground truth database
         self.drawOK = True #will be disable if we create ground truth databse
+        self.im2reach = 0
 
 
         self.python_green = "green"
@@ -149,7 +160,7 @@ class CommandWindow:
             self.updateEntryX.append(False)
             self.updateEntryY.append(False)
             self.buttonEdit.append(tk.Button(self.frame, text='edit', width=10,command=partial(self.clearPose, n)))
-            if n == 0:
+            if n == 0: #only create those stuff ones
                 self.buttonVal.append(tk.Button(self.frame, text='AutoAdv', width=10, command=partial(self.AutoAdv, n)))
                 self.buttonVal[n].grid(row=5 + n, column=6)
                 self.buttonPlotLine.append(tk.Button(self.frame, text='Create GT', width=10, command=partial(self.GTcreation, n))) #befor elf.ComputePointAngle
@@ -879,7 +890,7 @@ class CommandWindow:
         self.out = np.array(out)
 
 
-        # out.show()
+        out.show()
         #
         # fig = plt.figure()
         # fig.add_subplot(2, 1, 1)
@@ -897,11 +908,12 @@ class CommandWindow:
         self.NumberOfImageWith6Points = 0
         processcount = 0
         #for each position, control that we have 6 positions, if yes save them in a new directory and add alpha beta gamm x y z field
-        # loop = tqdm.tqdm(range(self.TotNumbOfImage))
-        loop = tqdm.tqdm(range(0,100))
+        # loop = tqdm.tqdm(range(len(self.AllDataPoint)))
+        loop = tqdm.tqdm(range(0,900))
         for i in loop:
             if self.AllDataPoint[i]['Redx1'] != 0 and self.AllDataPoint[i]['Redx2'] != 0 and self.AllDataPoint[i]['Greenx1'] != 0 and self.AllDataPoint[i]['Greenx2'] != 0 and self.AllDataPoint[i]['Bluex1'] != 0 and self.AllDataPoint[i]['Bluex2'] != 0:
                 self.NumberOfImageWith6Points = self.NumberOfImageWith6Points +1
+                self.currentFrameId = self.AllDataPoint[i]['FrameId']
                 self.number_frame = i
                 self.drawOK = False #dont draw on the child windows cause it does not exist
                 self.ComputePointAngle()
