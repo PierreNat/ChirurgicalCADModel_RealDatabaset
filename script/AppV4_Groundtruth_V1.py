@@ -4,6 +4,7 @@ from tkinter import filedialog
 import os
 import json
 import math
+import tqdm
 from functools import partial
 import tkinter as tk
 import cv2
@@ -63,10 +64,12 @@ class CommandWindow:
         # self.frame.bind('<Motion>', self.motion)
 
 
+        #set default value
         self.currentFrameId = 0 #contain the frame number to pick in the set
         self.span = 10 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-        self.TotNumbOfImage = 11 # each x frame will be picked, ideally 1000 for the ground truth database
+        self.TotNumbOfImage = 1000 # each x frame will be picked, ideally 1000 for the ground truth database
+        self.drawOK = True #will be disable if we create ground truth databse
 
 
         self.python_green = "green"
@@ -111,7 +114,7 @@ class CommandWindow:
 
         # for n in range(self.TotNumbOfImage):
 
-
+        #create every interface button for each point in a loop
         for n in range(6):
             self.entriesVarX.append(StringVar())
             self.entriesVarY.append(StringVar())
@@ -123,7 +126,7 @@ class CommandWindow:
             if n == 0:
                 self.buttonVal.append(tk.Button(self.frame, text='AutoAdv', width=10, command=partial(self.AutoAdv, n)))
                 self.buttonVal[n].grid(row=5 + n, column=6)
-                self.buttonPlotLine.append(tk.Button(self.frame, text='PlotLIne', width=10, command=partial(self.ComputePointAngle, n)))
+                self.buttonPlotLine.append(tk.Button(self.frame, text='Create GT', width=10, command=partial(self.GTcreation, n))) #befor elf.ComputePointAngle
                 self.buttonPlotLine[n].grid(row=5 + 3, column=6)
 
             print(n)
@@ -136,7 +139,7 @@ class CommandWindow:
             self.buttonEdit[n].grid(row=5+n, column=5)
 
 
-
+        #write every label separately for each color in the GUI
         # #Red dot 1 ----------------------------------------------------------------------------
         self.Label_Rx1 = Label(self.frame, text='0)Red_1 x')
         self.Label_Rx1.grid(row=5, column=0)
@@ -201,6 +204,7 @@ class CommandWindow:
                 self.span = self.AllDataPoint[0]['Span']  # jump between frames to see the tool moving
                 self.number_frame = 0  # diplayed frames count, image count
                 self.TotNumbOfImage = len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
+                print('loaded dictionary contains {} positions'.format(self.TotNumbOfImage))
                 self.print_Status()
 
     def saveDict(self):
@@ -211,7 +215,6 @@ class CommandWindow:
             json.dump(self.AllDataPoint, fp)
 
         self.LabelSave.grid(row=11, column=0)
-
 
     def new_window(self):
         #plot color point
@@ -300,7 +303,6 @@ class CommandWindow:
 
             self.print_Status()
 
-
     def motion_all(self,event):
 
         if self.app_created:
@@ -340,8 +342,6 @@ class CommandWindow:
 
                     self.app.clk = False
 
-
-
     def clearPose(self, n):
         print(n)
         self.entriesVarX[n].set(0)
@@ -359,9 +359,6 @@ class CommandWindow:
         # self.Label_Rx1 = Label(self.frame, text='  off  ')
         # self.Label_Rx1.grid(row=6, column=6)
         self.app.canvas.delete(self.TablecurrentCanvaPoint[n])
-
-
-
 
 
     def AutoAdv(self, n):
@@ -551,12 +548,12 @@ class CommandWindow:
         self.no_dupes_ThirdPointCoord = [x for n, x in enumerate(thirdpoint) if x not in thirdpoint[:n]]
         # for item in range(len(self.LineNumberCombination)):
 
-
-        for i in range(len(self.no_dupes_NumberCombination)):
-            self.app.canvas.create_line(self.no_dupes_FirstPointCoord [i][0], self.no_dupes_FirstPointCoord [i][1], self.no_dupes_ThirdPointCoord [i][0], self.no_dupes_ThirdPointCoord [i][1], fill='red')
-            self.app.canvas.create_text(self.no_dupes_FirstPointCoord [i][0] + text_dist, self.no_dupes_FirstPointCoord [i][1] + text_dist, anchor='nw', text='1', fill='red')
-            self.app.canvas.create_text(self.no_dupes_SecondPointCoord [i][0] + text_dist, self.no_dupes_SecondPointCoord [i][1] + text_dist, anchor='nw', text='2', fill='red')
-            self.app.canvas.create_text(self.no_dupes_ThirdPointCoord [i][0]+ text_dist, self.no_dupes_ThirdPointCoord [i][1] + text_dist, anchor='nw', text='3', fill='red')
+        if self.drawOK:
+            for i in range(len(self.no_dupes_NumberCombination)):
+                self.app.canvas.create_line(self.no_dupes_FirstPointCoord [i][0], self.no_dupes_FirstPointCoord [i][1], self.no_dupes_ThirdPointCoord [i][0], self.no_dupes_ThirdPointCoord [i][1], fill='red')
+                self.app.canvas.create_text(self.no_dupes_FirstPointCoord [i][0] + text_dist, self.no_dupes_FirstPointCoord [i][1] + text_dist, anchor='nw', text='1', fill='red')
+                self.app.canvas.create_text(self.no_dupes_SecondPointCoord [i][0] + text_dist, self.no_dupes_SecondPointCoord [i][1] + text_dist, anchor='nw', text='2', fill='red')
+                self.app.canvas.create_text(self.no_dupes_ThirdPointCoord [i][0]+ text_dist, self.no_dupes_ThirdPointCoord [i][1] + text_dist, anchor='nw', text='3', fill='red')
 
 
         #search for the transform given 6 points points
@@ -642,48 +639,6 @@ class CommandWindow:
 
         return np.matmul(r_m, point)
 
-    def rotate_correction(self, RotMat, a):
-        r_m = np.zeros((3, 3))
-        a = np.deg2rad(a)
-
-        # # alpha
-        # r_m[0, 0] = 1
-        # r_m[0, 1] = 0
-        # r_m[0, 2] = 0
-        # r_m[1, 0] = 0
-        # r_m[1, 1] = np.cos(a)
-        # r_m[1, 2] = -np.sin(a)
-        # r_m[2, 0] = 0
-        # r_m[2, 1] = np.sin(a)
-        # r_m[2, 2] = np.cos(a)
-
-        # #beta
-        #
-        # r_m[0, 0] = np.cos(a)
-        # r_m[0, 1] = 0
-        # r_m[0, 2] = np.sin(a)
-        # r_m[1, 0] = 0
-        # r_m[1, 1] = 1
-        # r_m[1, 2] = 0
-        # r_m[2, 0] = -np.sin(a)
-        # r_m[2, 1] = 0
-        # r_m[2, 2] = np.cos(a)
-        #
-        # #gamma
-        #
-        r_m[0, 0] = np.cos(a)
-        r_m[0, 1] = -np.sin(a)
-        r_m[0, 2] = 0
-        r_m[1, 0] = np.sin(a)
-        r_m[1, 1] = np.cos(a)
-        r_m[1, 2] = 0
-        r_m[2, 0] = 0
-        r_m[2, 1] = 0
-        r_m[2, 2] = 1
-
-        return np.matmul(r_m, RotMat)
-
-
 
     def compute_initial_transform(self):
 
@@ -734,22 +689,9 @@ class CommandWindow:
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_2, rot)[0:3]))
             model_points = np.vstack((model_points, self.rotate_point_around_shaft(p_3, rot)[0:3]))
 
-        # transform_matrix = self.rIface.get_transform_instrument_to_camera(self.usms, self.sus)
-
-        # plt.scatter(camera_points[:,0], camera_points[:,1])
-        # plt.show()
-
-        # plt.scatter(model_points[:,0], model_points[:,1], model_points[:,2])
-        # plt.show()
 
         if (camera_points.shape[0] > 3):
 
-            a = math.pi
-            # correction = np.zeros((4, 4))
-            # correction[0, 0] = 1
-            # correction[1, 1] = -1
-            # correction[2, 2] = -1
-            # correction[3, 3] = 1
 
             for i in range(camera_points.shape[0]):
                 print('model point {} projects to camera pixel {}'.format(model_points[i], camera_points[i]))
@@ -776,8 +718,6 @@ class CommandWindow:
 
             self.T_m = T_m #brings points from the model coordinate system to the camera coordinate system
 
-            # self.delta = np.matmul(self.T_m, np.linalg.inv(transform_matrix))
-            # self.points = points
 
             print('found an updated transform')
             print(self.T_m)
@@ -806,9 +746,6 @@ class CommandWindow:
 
         else:
 
-            # self.T_m = transform_matrix
-            # self.points = points
-
             print('failed to find an updated transform. not enough matched points. we only found {}'.format(
                 camera_points.shape[0]))
 
@@ -834,8 +771,6 @@ class CommandWindow:
         return Extracted_X, Extracted_Y, Extracted_Z, Extracted_theta1_deg, Extracted_theta2_deg, Extracted_theta3_deg
 
 
-
-
     def renderingGivenTm(self):
         print('rendering the 3D cad tool')
 
@@ -845,12 +780,12 @@ class CommandWindow:
 
 
         # define transfomration parameter from json file
-        alpha =Extracted_theta1_deg+90 # +180# 0 #
-        beta = Extracted_theta2_deg #+180 #90  #
-        gamma =Extracted_theta3_deg #0  #
-        x = Extracted_X#0#
-        y = Extracted_Y#0#
-        z = Extracted_Z #0.08#
+        alpha =Extracted_theta1_deg+90 #adapt from openCV to renderer axis system
+        beta = Extracted_theta2_deg
+        gamma =Extracted_theta3_deg
+        x = Extracted_X
+        y = Extracted_Y
+        z = Extracted_Z
         print('parameter found are: ',x, y, z, alpha, beta, gamma)
 
         #renderer the 3D cad model
@@ -899,20 +834,21 @@ class CommandWindow:
         self.sil = sil[0:1024, 0:1280]
 
 
-        backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
-        toolbck = backgroundImage.load()
-        toolIm = Image.fromarray(np.uint8(self.image))
-        alpha = 0.4
-        size = 10 #ellipse size
-        out = Image.blend(backgroundImage,toolIm,alpha)
-        draw = ImageDraw.Draw(out)
-        for i in range(len(self.pinhole_point2)):
-            px = self.pinhole_point2[i,0]
-            py = self.pinhole_point2[i,1]
-            draw.ellipse([px,py,px+size, py+size], fill='blue')
-        # draw.show()
-        draw.ellipse([c_x- size/2, c_y- size/2, c_x + size/2, c_y + size/2], fill='red')
-        out.show()
+        # #create window of the overlap of the tool and renderer
+        # backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
+        # toolbck = backgroundImage.load()
+        # toolIm = Image.fromarray(np.uint8(self.image))
+        # alpha = 0.4
+        # size = 10 #ellipse size
+        # out = Image.blend(backgroundImage,toolIm,alpha)
+        # draw = ImageDraw.Draw(out)
+        # for i in range(len(self.pinhole_point2)):
+        #     px = self.pinhole_point2[i,0]
+        #     py = self.pinhole_point2[i,1]
+        #     draw.ellipse([px,py,px+size, py+size], fill='blue')
+        # # draw.show()
+        # draw.ellipse([c_x- size/2, c_y- size/2, c_x + size/2, c_y + size/2], fill='red')
+        # out.show()
 
         fig = plt.figure()
         fig.add_subplot(2, 1, 1)
@@ -924,7 +860,31 @@ class CommandWindow:
         plt.show()
 
 
+    def GTcreation(self,n=0):
+        print('Ground truth creation')
+        self.load_dict() #open the dictionnary to compute the ground truth
+        self.NumberOfImageWith6Points = 0
 
+        #for each position, control that we have 6 positions, if yes save them in a new directory and add alpha beta gamm x y z field
+
+        loop = tqdm.tqdm(range(self.TotNumbOfImage))
+        for i in loop:
+            if self.AllDataPoint[i]['Redx1'] != 0 and self.AllDataPoint[i]['Redx2'] != 0 and self.AllDataPoint[i]['Greenx1'] != 0 and self.AllDataPoint[i]['Greenx2'] != 0 and self.AllDataPoint[i]['Bluex1'] != 0 and self.AllDataPoint[i]['Bluex2'] != 0:
+                self.NumberOfImageWith6Points = self.NumberOfImageWith6Points +1
+                self.number_frame = i
+                self.drawOK = False #dont draw on the child windows cause it does not exist
+                self.ComputePointAngle()
+
+
+
+
+        print('{}/{} have 6 points '.format(self.NumberOfImageWith6Points,self.TotNumbOfImage))
+
+
+
+
+
+#----------------------------------------------------------------------
 class Child_window:
     def __init__(self, master, ImageId=0):
         self.pathfile = pathfile
