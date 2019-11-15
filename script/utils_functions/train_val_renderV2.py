@@ -6,6 +6,7 @@ import torch.nn as nn
 import  pandas as pd
 import matplotlib.pyplot as plt
 from utils_functions.R2Rmat import R2Rmat
+from utils_functions.camera_settings import BuildTransformationMatrix
 from numpy.random import uniform
 import matplotlib2tikz
 
@@ -61,7 +62,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
         for image, silhouette, parameter in t:
             image = image.to(device)
             parameter = parameter.to(device)
-
+            print(parameter )
             params = model(image)  # should be size [batchsize, 6]
             # print(params)
             numbOfImage = image.size()[0]
@@ -69,10 +70,14 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
             for i in range(0,numbOfImage):
                 #create and store silhouette
-                model.t = params[i, 3:6]
-                R = params[i, 0:3]
-                model.R = R2Rmat(R)  # angle from resnet are in radian
-
+                model.t = parameter[i, 3:6]
+                print(model.t)
+                R = parameter[i, 0:3]
+                print(R)
+                model.R = R2Rmat(R)  # angle from resnet are in radian, function controlled
+                # print(model.R)
+                # t_mat, R_mat = BuildTransformationMatrix(parameter[i,3], parameter[i,4], parameter[i,5], parameter[i,0], parameter[i,1], parameter[i,2])
+                # print(R_mat)
                 current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t, mode='silhouettes').squeeze()
                 current_sil =  current_sil[0:1024, 0:1280]
                 # print(current_sil.size())
@@ -141,13 +146,13 @@ def train_renderV2(model, train_dataloader, test_dataloader,
         renderCount = 0
         regressionCount = 0
 
-        torch.save(model.state_dict(),
-                   'models/{}epoch_{}_TempModel_train_{}_{}batchs_{}epochs_Noise{}_{}_RenderRegr.pth'.format(epoch, date4File,
-                                                                                                      cubeSetName,
-                                                                                                      str(batch_size),
-                                                                                                      str(n_epochs),
-                                                                                                      noise * 100,
-                                                                                                      fileExtension))
+        # torch.save(model.state_dict(),
+        #            'models/{}epoch_{}_TempModel_train_{}_{}batchs_{}epochs_Noise{}_{}_RenderRegr.pth'.format(epoch, date4File,
+        #                                                                                               cubeSetName,
+        #                                                                                               str(batch_size),
+        #                                                                                               str(n_epochs),
+        #                                                                                               noise * 100,
+        #                                                                                               fileExtension))
 #         # validation phase
 #         print('test phase epoch epoch {}/{}'.format(epoch, n_epochs))
 #         model.eval()
