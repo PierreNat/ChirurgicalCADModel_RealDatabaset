@@ -24,11 +24,10 @@ print(device)
 
 file_name_extension = '693_images2'  # choose the corresponding database to use
 
-batch_size = 5
+batch_size = 2
 
 n_epochs = 1
 
-target_size = (512, 512)
 
 
 Background_file = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension)
@@ -85,25 +84,25 @@ val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, nu
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
 
 
-for image, sil, param in train_dataloader:
-
-#plot silhouette
-    print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
-    im = 0
-    print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
-
-    image2show = image[im]  # indexing random  one image
-    print(image2show.size()) #torch.Size([3, 512, 512])
-    plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
-    plt.show()
-
-    image2show = sil[im]  # indexing random  one image
-    print(image2show.size())  # torch.Size([3, 512, 512])
-    image2show = image2show.numpy()
-    plt.imshow(image2show, cmap='gray')
-    plt.show()
-
-    break  # break here just to show 1 batch of data
+# for image, sil, param in train_dataloader:
+#
+# #plot silhouette
+#     print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
+#     im = 0
+#     print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
+#
+#     image2show = image[im]  # indexing random  one image
+#     print(image2show.size()) #torch.Size([3, 512, 512])
+#     plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
+#     plt.show()
+#
+#     image2show = sil[im]  # indexing random  one image
+#     print(image2show.size())  # torch.Size([3, 512, 512])
+#     image2show = image2show.numpy()
+#     plt.imshow(image2show, cmap='gray')
+#     plt.show()
+#
+#     break  # break here just to show 1 batch of data
 
 
 # for image, sil, param in test_dataloader:
