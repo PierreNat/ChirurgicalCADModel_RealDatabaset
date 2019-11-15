@@ -22,9 +22,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.cuda.empty_cache()
 print(device)
 
-file_name_extension = '606_images'  # choose the corresponding database to use
+file_name_extension = '693_images2'  # choose the corresponding database to use
 
-batch_size = 6
+batch_size = 5
 
 n_epochs = 1
 
@@ -131,7 +131,7 @@ for image, sil, param in train_dataloader:
 # Setup the model
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
-data_dir = os.path.join(current_dir, 'data')
+data_dir = os.path.join(current_dir, '3D_objects')
 
 
 noise = 0.0
@@ -141,6 +141,8 @@ parser.add_argument('-or', '--filename_output', type=str,default=os.path.join(da
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
+
+#camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 
 model = Myresnet50(filename_obj=args.filename_obj)
 

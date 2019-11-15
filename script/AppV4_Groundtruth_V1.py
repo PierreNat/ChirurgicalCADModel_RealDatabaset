@@ -14,7 +14,6 @@ from skimage.io import imread, imsave
 import glob
 import imageio
 import json
-from utils_functions.camera_settings import camera_setttings
 import argparse
 import numpy as np
 import neural_renderer as nr
@@ -466,7 +465,7 @@ class CommandWindow:
             point_start = self.PointTableWithColor[i][0:2]
             color_start = self.PointTableWithColor[i][2]
             color_number_start = self.PointTableWithColor[i][3]
-            print('starting color is now {} {} at {}'.format(color_start,color_number_start, point_start))
+            # print('starting color is now {} {} at {}'.format(color_start,color_number_start, point_start))
 
             second_point_candidate = []
             for j in range(len(self.PointTableWithColor)): #create the [4,3] list without the color start
@@ -496,18 +495,18 @@ class CommandWindow:
                 # #go through
                 # for n in range(len(second_point_candidate))
                 alpha1 = math.degrees(math.atan2(point_start[1]-second_point_candidate[k][1], point_start[0]-second_point_candidate[k][0]))
-                print('alpha1 is {} between {}{} and {}{}'.format(alpha1,color_start,color_number_start,color_second,color_number_second))
+                # print('alpha1 is {} between {}{} and {}{}'.format(alpha1,color_start,color_number_start,color_second,color_number_second))
                 #comupute Alpha 2 for the remaining color-
                 for m in range(len(third_point_candidate)):
                     color_number_third = third_point_candidate[m][3]
                     alpha2_cand =  math.degrees(math.atan2(second_point_candidate[k][1]-third_point_candidate[m][1],second_point_candidate[k][0]- third_point_candidate[m][0]))
-                    print('alpha2 is {} between {}{} and {}{}'.format(alpha2_cand, color_second,color_number_second,color_third,color_number_third))
+                    # print('alpha2 is {} between {}{} and {}{}'.format(alpha2_cand, color_second,color_number_second,color_third,color_number_third))
                     # print('alpha2 is {}'.format(alpha2_cand))
                     if alpha2_cand > alpha1-self.AngleThreshold and alpha2_cand < alpha1 + self.AngleThreshold:
                         code_color = [color_start,color_second,color_third]
                         code_number = [color_number_start,color_number_second,color_number_third]
-                        print(code_color)
-                        print(code_number)
+                        # print(code_color)
+                        # print(code_number)
                         self.LineColorCombination.append(code_color)
                         self.LineNumberCombination.append(code_number)
 
@@ -661,7 +660,7 @@ class CommandWindow:
             }
             self.AllDataPoint.append(OneFrameDict)
 
-        print('dictionnary created with {} elements'.format(self.TotNumbOfImage))
+        # print('dictionnary created with {} elements'.format(self.TotNumbOfImage))
 
     def rotate_point_around_shaft(self,point, a):
         r_m = np.zeros((4, 4))
@@ -713,7 +712,7 @@ class CommandWindow:
             elif (p[0] == p[1] and p[1] == p[2]):
                 found = False
 
-            print('rotation of {}{}{} is {} degree'.format(p[0], p[1], p[2], rot))
+            # print('rotation of {}{}{} is {} degree'.format(p[0], p[1], p[2], rot))
 
             #first point, closest to origin in the camera space
             camera_points = np.vstack((camera_points, np.expand_dims(self.no_dupes_FirstPointCoord[l], axis=0)))
@@ -730,8 +729,8 @@ class CommandWindow:
         if (camera_points.shape[0] > 3):
 
 
-            for i in range(camera_points.shape[0]):
-                print('model point {} projects to camera pixel {}'.format(model_points[i], camera_points[i]))
+            # for i in range(camera_points.shape[0]):
+            #     print('model point {} projects to camera pixel {}'.format(model_points[i], camera_points[i]))
 
             if (camera_points.shape[0] > 3):
                 expModel_points = np.expand_dims(model_points, axis=2)
@@ -756,8 +755,8 @@ class CommandWindow:
             self.T_m = T_m #brings points from the model coordinate system to the camera coordinate system
 
 
-            print('found an updated transform')
-            print(self.T_m)
+            # print('found an updated transform')
+            # print(self.T_m)
 
             #pinhole camera to project back the 3d point into 2d space
             pinhole_point1 = np.empty((0, 3))
@@ -809,7 +808,7 @@ class CommandWindow:
 
 
     def renderingGivenTm(self):
-        print('rendering the 3D cad tool')
+        # print('rendering the 3D cad tool')
 
         instrument_to_camera_transform = self.T_m
 
@@ -823,7 +822,7 @@ class CommandWindow:
         x = Extracted_X
         y = Extracted_Y
         z = Extracted_Z
-        print('parameter found are: ',x, y, z, alpha, beta, gamma)
+        # print('parameter found are: ',x, y, z, alpha, beta, gamma)
 
         #renderer the 3D cad model
         vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaftshortOnly.obj", load_texture=True, normalization=False)  # , texture_size=4)
@@ -837,7 +836,7 @@ class CommandWindow:
 
         # define transformation by transformation matrix
 
-        Rt = np.concatenate((R, t), axis=None).astype(np.float16)  # create one array of parameter in radian, this arraz will be saved in .npy file
+        self.Rt = np.concatenate((R, t), axis=None).astype(np.float16)  # create one array of parameter in radian, this arraz will be saved in .npy file
 
         cam = camera_setttings(R=R, t=t, PnPtm = self.T_m, PnPtmFlag = False, vert=nb_vertices, resolutionx=1280, resolutiony=1024,cx=c_x, cy=c_y, fx=f_x, fy=f_y) # degree angle will be converted  and stored in radian
 
@@ -873,6 +872,7 @@ class CommandWindow:
 
         #create window of the overlap of the tool and renderer
         backgroundImage = Image.open("{}/frameL{}.jpg".format(self.pathfile, self.currentFrameId))
+        self.backgroundIm = np.array(backgroundImage)
         toolbck = backgroundImage.load()
         sil3d = self.sil[:, :, np.newaxis]
         renderim = np.concatenate((sil3d,sil3d,sil3d), axis=2)
@@ -890,7 +890,7 @@ class CommandWindow:
         self.out = np.array(out)
 
 
-        out.show()
+        # out.show()
         #
         # fig = plt.figure()
         # fig.add_subplot(2, 1, 1)
@@ -902,14 +902,19 @@ class CommandWindow:
         # plt.show()
 
 
-    def GTcreation(self,n=0):
+    def GTcreation(self,n=0): #this function will create the ground truth to train the neural network
+        backgroundImage_database = []
+        RGBshaft_database = []
+        BWshaft_database = []
+        params_database = []
+
         print('Ground truth creation')
         self.load_dict() #open the dictionnary to compute the ground truth
         self.NumberOfImageWith6Points = 0
         processcount = 0
         #for each position, control that we have 6 positions, if yes save them in a new directory and add alpha beta gamm x y z field
-        # loop = tqdm.tqdm(range(len(self.AllDataPoint)))
-        loop = tqdm.tqdm(range(0,900))
+        loop = tqdm.tqdm(range(len(self.AllDataPoint)))
+        # loop = tqdm.tqdm(range(0,20))
         for i in loop:
             if self.AllDataPoint[i]['Redx1'] != 0 and self.AllDataPoint[i]['Redx2'] != 0 and self.AllDataPoint[i]['Greenx1'] != 0 and self.AllDataPoint[i]['Greenx2'] != 0 and self.AllDataPoint[i]['Bluex1'] != 0 and self.AllDataPoint[i]['Bluex2'] != 0:
                 self.NumberOfImageWith6Points = self.NumberOfImageWith6Points +1
@@ -918,13 +923,34 @@ class CommandWindow:
                 self.drawOK = False #dont draw on the child windows cause it does not exist
                 self.ComputePointAngle()
 
-                imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
-                processcount = processcount + 1
 
-        make_gif(args.filename_output)
+                backgroundImage_database.extend(self.backgroundIm)
+                RGBshaft_database.extend(self.image)
+                BWshaft_database.extend(self.sil)
+                params_database.extend(self.Rt)
+
+                #make gif
+                # imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
+                # processcount = processcount + 1
 
 
+        # make_gif(args.filename_output)
+        height, width, depth = np.shape(self.image) #1280x1024x3
         print('{}/{} have 6 points '.format(self.NumberOfImageWith6Points,self.TotNumbOfImage))
+
+        # reshape for tensor format
+        backgroundImage_database = np.reshape(backgroundImage_database, (self.NumberOfImageWith6Points,  height, width,  3))  # 3 channel rgb
+        RGBshaft_database = np.reshape(RGBshaft_database, (self.NumberOfImageWith6Points,  height, width, 3))  # 3 channel rgb
+        BWshaft_database = np.reshape(BWshaft_database, (self.NumberOfImageWith6Points,  height, width,))  # binary mask monochannel
+        params_database = np.reshape(params_database, (self.NumberOfImageWith6Points, 6))  # array of 6 params, angle are stored in radian
+
+        file_name_extension = '{}_images2'.format(self.NumberOfImageWith6Points)
+
+        np.save('Npydatabase/endoscIm_{}.npy'.format(file_name_extension), backgroundImage_database)
+        np.save('Npydatabase/RGBShaft_{}.npy'.format(file_name_extension), RGBshaft_database)
+        np.save('Npydatabase/BWShaft_{}.npy'.format(file_name_extension), BWshaft_database)
+        np.save('Npydatabase/params_{}.npy'.format(file_name_extension), params_database)
+        print('Ground truth database saved')
 
 
 

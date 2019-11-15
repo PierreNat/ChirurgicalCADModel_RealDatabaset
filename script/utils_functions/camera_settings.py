@@ -58,20 +58,6 @@ class camera_setttings():
         self.resolutionY = resolutiony
 
 
-        # scale = 1
-        # f = 35  # focal on lens
-        # sensor_width = 32  # in mm given in blender , camera sensor type
-        # pixels_in_u_per_mm = (self.resolutionX * scale) / sensor_width
-        # pixels_in_v_per_mm = (self.resolutionY * scale) / sensor_width
-        # pix_sizeX = 1 / pixels_in_u_per_mm
-        # pix_sizeY = 1 / pixels_in_v_per_mm
-        #
-        # Cam_centerX = self.resolutionX / 2
-        # Cam_centerY = self.resolutionY / 2
-
-        # K = np.array([[f/pix_sizeX,0,Cam_centerX],
-        #               [0,f/pix_sizeY,Cam_centerY],
-        #               [0,0,1]])  # shape of [nb_vertice, 3, 3]
 
         # K from file
         self.c_x = cx # 1080
@@ -85,8 +71,8 @@ class camera_setttings():
 
         # angle in radian
         if PnPtmFlag:
-            self.t_mat = torch.from_numpy(np.array([PnPtm[0,3], PnPtm[1,3], PnPtm[2,3]]).astype(np.float32))
-            self.R_mat = PnPtm[0:3,0:3]
+            # self.t_mat = torch.from_numpy(np.array([PnPtm[0,3], PnPtm[1,3], PnPtm[2,3]]).astype(np.float32))
+            # self.R_mat = PnPtm[0:3,0:3]
 
             self.t_mat2, self.R_mat2 = BuildTransformationMatrix(self.tx, self.ty, self.tz, self.alpha, self.beta,
                                                                self.gamma)
