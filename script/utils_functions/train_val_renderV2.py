@@ -5,10 +5,21 @@ import torch
 import torch.nn as nn
 import  pandas as pd
 import matplotlib.pyplot as plt
+from utils_functions.camera_settings import camera_setttings
+import neural_renderer as nr
 from utils_functions.R2Rmat import R2Rmat
 from utils_functions.camera_settings import BuildTransformationMatrix
 from numpy.random import uniform
 import matplotlib2tikz
+
+
+##### PARAMETERS GO HERE ###########
+
+c_x = 590
+c_y = 508
+
+f_x = 1067
+f_y = 1067
 
 def RolAv(list, window = 2):
 
@@ -71,15 +82,16 @@ def train_renderV2(model, train_dataloader, test_dataloader,
             for i in range(0,numbOfImage):
                 #create and store silhouette
                 model.t = parameter[i, 3:6]
-                model.t[0] = 0
-                model.t[1] = 0
-                model.t[2] = 1
+                # model.t[0] = 0
+                # model.t[1] = 0
+                # model.t[2] = 0.08
+
 
                 print(model.t)
                 R = parameter[i, 0:3]
-                R[0] = 0
-                R[1] = 0
-                R[2] = 0
+                # R[0] = 0
+                # R[1] = 0
+                # R[2] = 0
 
 
                 print(R)
@@ -88,12 +100,41 @@ def train_renderV2(model, train_dataloader, test_dataloader,
                 # t_mat, R_mat = BuildTransformationMatrix(parameter[i,3], parameter[i,4], parameter[i,5], parameter[i,0], parameter[i,1], parameter[i,2])
                 # print(R_mat)
 
-                current_sil = model.renderer(model.vertices, model.faces,K=model.renderer.K,  R=model.R, t=model.t, mode='silhouettes').squeeze()
+                current_sil = model.renderer(model.vertices, model.faces,  R=model.R, t=model.t, mode='silhouettes').squeeze()
                 # R_test = torch.from_numpy(np.array([np.radians(0), np.radians(0), np.radians(0)]))
                 #
                 # R_test = R2Rmat(R_test)
                 # t_test = torch.from_numpy(np.array([0, 0, 0.08]))
                 # current_sil = model.renderer(model.vertices, model.faces, R=R_test.double(), t=t_test.double(), mode='silhouettes').squeeze()
+
+                # vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/shaftshortOnly.obj", load_texture=True,
+                #                                               normalization=False)  # , texture_size=4)
+                # vertices_1 = vertices_1[None, :, :]  # add dimension
+                # faces_1 = faces_1[None, :, :]  # add dimension
+                # textures_1 = textures_1[None, :, :]  # add dimension
+                # nb_vertices = vertices_1.shape[0]
+                #
+                # cam = camera_setttings(R=model.R, t=model.t, PnPtm=0, PnPtmFlag=False, vert=nb_vertices, resolutionx=1280,
+                #                        resolutiony=1024, cx=c_x, cy=c_y, fx=f_x,
+                #                        fy=f_y)  # degree angle will be converted  and stored in radian
+                #
+                # renderer = nr.Renderer(image_size=1280, camera_mode='projection', dist_coeffs=None, anti_aliasing=True,
+                #                        fill_back=True, perspective=False,
+                #                        K=cam.K_vertices, R=cam.R_vertices, t=cam.t_vertices, near=0,
+                #                        background_color=[1, 1, 1],
+                #                        # background is filled now with  value 0-1 instead of 0-255
+                #                        # changed from 0-255 to 0-1
+                #                        far=1, orig_size=1280,
+                #                        light_intensity_ambient=1, light_intensity_directional=0.5,
+                #                        light_direction=[0, 1, 0],
+                #                        light_color_ambient=[1, 1, 1], light_color_directional=[1, 1, 1])
+                #
+                # current_sil = renderer(vertices_1, faces_1, textures_1,
+                #                   mode='silhouettes',
+                #                   K=torch.cuda.FloatTensor(cam.K_vertices),
+                #                   R=torch.cuda.FloatTensor(cam.R_vertices),
+                #                   t=torch.cuda.FloatTensor(cam.t_vertices))  # [batch_size, RGB, image_size, image_size]
+
                 current_sil =  current_sil[0:1024, 0:1280]
                 # print(current_sil.size())
                 current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
