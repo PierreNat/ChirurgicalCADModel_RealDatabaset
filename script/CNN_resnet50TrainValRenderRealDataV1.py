@@ -142,7 +142,6 @@ parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
-
 model = Myresnet50(filename_obj=args.filename_obj)
 
 model.to(device)

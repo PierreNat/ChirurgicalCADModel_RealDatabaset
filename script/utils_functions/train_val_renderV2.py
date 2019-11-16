@@ -71,14 +71,29 @@ def train_renderV2(model, train_dataloader, test_dataloader,
             for i in range(0,numbOfImage):
                 #create and store silhouette
                 model.t = parameter[i, 3:6]
+                model.t[0] = 0
+                model.t[1] = 0
+                model.t[2] = 1
+
                 print(model.t)
                 R = parameter[i, 0:3]
+                R[0] = 0
+                R[1] = 0
+                R[2] = 0
+
+
                 print(R)
                 model.R = R2Rmat(R)  # angle from resnet are in radian, function controlled
-                # print(model.R)
+                print(model.R)
                 # t_mat, R_mat = BuildTransformationMatrix(parameter[i,3], parameter[i,4], parameter[i,5], parameter[i,0], parameter[i,1], parameter[i,2])
                 # print(R_mat)
-                current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t, mode='silhouettes').squeeze()
+
+                current_sil = model.renderer(model.vertices, model.faces,K=model.renderer.K,  R=model.R, t=model.t, mode='silhouettes').squeeze()
+                # R_test = torch.from_numpy(np.array([np.radians(0), np.radians(0), np.radians(0)]))
+                #
+                # R_test = R2Rmat(R_test)
+                # t_test = torch.from_numpy(np.array([0, 0, 0.08]))
+                # current_sil = model.renderer(model.vertices, model.faces, R=R_test.double(), t=t_test.double(), mode='silhouettes').squeeze()
                 current_sil =  current_sil[0:1024, 0:1280]
                 # print(current_sil.size())
                 current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
