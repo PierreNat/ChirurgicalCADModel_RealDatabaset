@@ -11,6 +11,7 @@ from utils_functions.R2Rmat import R2Rmat
 from utils_functions.camera_settings import BuildTransformationMatrix
 from numpy.random import uniform
 import matplotlib2tikz
+# plt.switch_backend('agg')
 
 
 ##### PARAMETERS GO HERE ###########
@@ -183,6 +184,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
     plt.ylabel('loss')
     plt.xlabel('step')
     plt.ylim(0, 2)
+    plt.savefig('results/training_epochs_results_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
 
         # torch.save(model.state_dict(),
@@ -194,69 +196,75 @@ def train_renderV2(model, train_dataloader, test_dataloader,
         #                                                                                               fileExtension))
         # test phase phase
     #     print('test phase epoch epoch {}/{}'.format(epoch, n_epochs))
-    #     model.eval()
-    #
-    #     t = tqdm(iter(test_dataloader), leave=True, total=len(test_dataloader))
-    #     for image, silhouette, parameter in t:
-    #
-    #         Test_Step_loss = []
-    #         numbOfImage = image.size()[0]
-    #         print(numbOfImage)
-    #
-    #         image = image.to(device)
-    #         parameter = parameter.to(device)
-    #         params = model(image)  # should be size [batchsize, 6]
-    #         # print(np.shape(params))
-    #
-    #         for i in range(0,numbOfImage):
-    #             #create and store silhouette
-    #             model.t = params[i, 3:6]
-    #             R = params[i, 0:3]
-    #             model.R = R2Rmat(R)  # angle from resnet are in radian
-    #
-    #             current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t, mode='silhouettes').squeeze()
-    #             current_sil =  current_sil[0:1024, 0:1280]
-    #             current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
-    #
-    #             if count%10 == 0:
-    #                 # fig = plt.figure()
-    #                 # fig.add_subplot(2, 1, 1)
-    #                 # plt.imshow(sil2plot, cmap='gray')
-    #                 #
-    #                 # fig.add_subplot(2, 1, 2)
-    #                 # plt.imshow(silhouette[i], cmap='gray')
-    #                 print('renderer value {}'.format(params[i]))
-    #                 print('ground truth value {}'.format(parameter[i]))
-    #                 # plt.show()
-    #
-    #             # # renderer
-    #             # if (i == 0):
-    #             #     loss  =  nn.BCELoss()(current_sil, current_GT_sil).to(device)
-    #             # else:
-    #             #     loss = loss + nn.BCELoss()(current_sil, current_GT_sil).to(device) #sum of all loss of each step
-    #
-    #             # regression
-    #
-    #             if (i == 0):
-    #                 # loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
-    #                 loss = nn.MSELoss()(params[i], parameter[i]).to(device)
-    #             else:
-    #                 # loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
-    #                 loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
-    #
-    #         count = count + 1
-    #
-    #
-    #         Test_Step_loss.append(loss.detach().cpu().numpy()) #all step loss of the epoch
-    #
-    #         if (epoch == n_epochs - 1):  # if we are at the last epoch, save param to plot result
-    #
-    #             LastEpochTestCPparam.extend(params.detach().cpu().numpy())
-    #             LastEpochTestGTparam.extend(parameter.detach().cpu().numpy())
-    #
-    #         Test_losses.append(loss.detach().cpu().numpy())
-    #         current_step_Test_loss.append(loss.detach().cpu().numpy())
-    #         testcount = testcount + 1
+    model.eval()
+
+    count = 0
+
+    t = tqdm(iter(test_dataloader), leave=True, total=len(test_dataloader))
+    for image, silhouette, parameter in t:
+
+        Test_Step_loss = []
+        numbOfImage = image.size()[0]
+        print(numbOfImage)
+
+        image = image.to(device)
+        parameter = parameter.to(device)
+        params = model(image)  # should be size [batchsize, 6]
+        # print(np.shape(params))
+
+        for i in range(0,numbOfImage):
+            #create and store silhouette
+            model.t = params[i, 3:6]
+            R = params[i, 0:3]
+            model.R = R2Rmat(R)  # angle from resnet are in radian
+
+            current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t, mode='silhouettes').squeeze()
+            current_sil =  current_sil[0:1024, 0:1280]
+            sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
+            current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
+
+            if count%5 == 0:
+                fig = plt.figure()
+                fig.add_subplot(2, 1, 1)
+                plt.imshow(sil2plot, cmap='gray')
+
+                fig.add_subplot(2, 1, 2)
+                plt.imshow(silhouette[i], cmap='gray')
+                plt.savefig('results/image_{}.png'.format(count), bbox_inches='tight',
+                            pad_inches=0.05)
+                plt.show()
+                print('renderer value {}'.format(params[i]))
+                print('ground truth value {}'.format(parameter[i]))
+
+
+            # # renderer
+            # if (i == 0):
+            #     loss  =  nn.BCELoss()(current_sil, current_GT_sil).to(device)
+            # else:
+            #     loss = loss + nn.BCELoss()(current_sil, current_GT_sil).to(device) #sum of all loss of each step
+
+            # regression
+
+            if (i == 0):
+                # loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
+                loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+            else:
+                # loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
+                loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+
+        count = count + 1
+
+
+        Test_Step_loss.append(loss.detach().cpu().numpy()) #all step loss of the epoch
+
+        if (epoch == n_epochs - 1):  # if we are at the last epoch, save param to plot result
+
+            LastEpochTestCPparam.extend(params.detach().cpu().numpy())
+            LastEpochTestGTparam.extend(parameter.detach().cpu().numpy())
+
+        Test_losses.append(loss.detach().cpu().numpy())
+        current_step_Test_loss.append(loss.detach().cpu().numpy())
+        testcount = testcount + 1
     #
     #     epochTestloss = np.mean(current_step_Test_loss) #mean of all step loss makes the epoch test loss
     #     current_step_Test_loss = []

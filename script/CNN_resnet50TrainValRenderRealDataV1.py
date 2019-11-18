@@ -26,7 +26,7 @@ file_name_extension = '693_images2'  # choose the corresponding database to use
 
 batch_size = 2
 
-n_epochs = 3
+n_epochs = 1
 
 
 

@@ -239,7 +239,7 @@ class CommandWindow:
                 self.currentFrameId = 0  # contain the frame number to pick in the set
                 self.span = self.AllDataPoint[0]['Span']  # jump between frames to see the tool moving
                 self.number_frame = 0  # diplayed frames count, image count
-                self.TotNumbOfImage = len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
+                self.TotNumbOfImage = 19226 #len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
                 print('loaded dictionary contains {} positions'.format(self.TotNumbOfImage))
                 self.print_Status()
 
@@ -289,7 +289,7 @@ class CommandWindow:
         if self.app_created :
             self.updatePose = True
             if (self.number_frame < self.TotNumbOfImage-1): #if we still have picture to display
-                if (self.currentFrameId + self.span <= 18000): #if the next picture is with the total image frame
+                if (self.currentFrameId + self.span <= 19226-1): #if the next picture is with the total image frame
                     self.currentFrameId = self.currentFrameId+self.span
                     self.number_frame = self.number_frame + 1
                 else:
@@ -858,7 +858,7 @@ class CommandWindow:
 
         self.image = image[0:1024,0:1280,:]
 
-
+        #modifification done in the rasterize.py file for the  default far and near value  DEFAULT_FAR = 1 , DEFAULT_EPS = 1e-4
         sils_1 = renderer(vertices_1, faces_1, textures_1,
                           mode='silhouettes',
                           K=torch.cuda.FloatTensor(cam.K_vertices),
@@ -944,7 +944,7 @@ class CommandWindow:
         BWshaft_database = np.reshape(BWshaft_database, (self.NumberOfImageWith6Points,  height, width,))  # binary mask monochannel
         params_database = np.reshape(params_database, (self.NumberOfImageWith6Points, 6))  # array of 6 params, angle are stored in radian
 
-        file_name_extension = '{}_images2'.format(self.NumberOfImageWith6Points)
+        file_name_extension = '{}_images3'.format(self.NumberOfImageWith6Points)
 
         np.save('Npydatabase/endoscIm_{}.npy'.format(file_name_extension), backgroundImage_database)
         np.save('Npydatabase/RGBShaft_{}.npy'.format(file_name_extension), RGBshaft_database)
