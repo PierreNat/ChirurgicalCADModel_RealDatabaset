@@ -26,7 +26,7 @@ file_name_extension = '693_images2'  # choose the corresponding database to use
 
 batch_size = 2
 
-n_epochs = 1
+n_epochs = 3
 
 
 
@@ -51,7 +51,7 @@ params = np.load(parameters_file)
 
 #  ------------------------------------------------------------------
 
-ratio = 0.03  # 70%training 30%validation
+ratio = 0.05  # 70%training 30%validation
 split = int(len(Background)*ratio)
 testlen = 100
 
@@ -61,14 +61,15 @@ train_param = params[split:]
 number_train_im = np.shape(train_im)[0]
 
 
-val_im = Background[:split]  # remaining ratio for validation
-val_sil = sils[:split]
-val_param = params[:split]
-
-test_im = Background[split:split+testlen]
-test_sil = sils[split:split+testlen]
-test_param = params[split:split+testlen]
+test_im = Background[:split]  # remaining ratio for validation
+test_sil = sils[:split]
+test_param  = params[:split]
 number_testn_im = np.shape(test_im)[0]
+
+val_im  = Background[split:split+testlen]
+val_sil  = sils[split:split+testlen]
+val_param = params[split:split+testlen]
+
 
 
 #  ------------------------------------------------------------------
@@ -76,12 +77,12 @@ number_testn_im = np.shape(test_im)[0]
 normalize = Normalize(mean=[0.5], std=[0.5])
 transforms = Compose([ToTensor(),  normalize])
 train_dataset = CubeDataset(train_im, train_sil, train_param, transforms)
-val_dataset = CubeDataset(val_im, val_sil, val_param, transforms)
 test_dataset = CubeDataset(test_im, test_sil, test_param, transforms)
+val_dataset = CubeDataset(val_im, val_sil, val_param, transforms)
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=2)
+val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
 
 
 # for image, sil, param in train_dataloader:
@@ -148,7 +149,7 @@ model.to(device)
 
 model.train(True)
 bool_first = True
-lr = 0.001
+lr = 0.0001
 
 criterion = nn.BCELoss()  #nn.BCELoss()   #nn.CrossEntropyLoss()  define the loss (MSE, Crossentropy, Binarycrossentropy)
 #
