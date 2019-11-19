@@ -26,7 +26,7 @@ file_name_extension = '693_images2'  # choose the corresponding database to use
 
 batch_size = 2
 
-n_epochs = 1
+n_epochs = 10
 
 
 
@@ -47,7 +47,7 @@ obj_name = 'shaftshortOnly'
 Background = np.load(Background_file)
 sils = np.load(BWShaft_file)
 params = np.load(parameters_file)
-# print(np.min(params[:,5]))
+# print(np.min(params[:,4]))
 
 #  ------------------------------------------------------------------
 

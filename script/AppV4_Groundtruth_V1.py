@@ -101,7 +101,7 @@ class CommandWindow:
 
         #set default value
         self.currentFrameId = 0 #contain the frame number to pick in the set
-        self.span = 10 # jump between frames to see the tool moving
+        self.span = 1 # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
         self.TotNumbOfImage = 19226 # each x frame will be picked, ideally 1000 for the ground truth database
         self.drawOK = True #will be disable if we create ground truth databse

@@ -84,6 +84,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
             for i in range(0,numbOfImage):
                 #create and store silhouette
                 model.t = params[i, 3:6]
+
                 # model.t[0] = 0
                 # model.t[1] = 0
                 # model.t[2] = 0.08
@@ -91,6 +92,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
                 # print(model.t)
                 R = params[i, 0:3]
+
                 # R[0] = 0
                 # R[1] = 0
                 # R[2] = 0
@@ -107,22 +109,25 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
                 sil2plot = np.squeeze((current_sil.detach().cpu().numpy()* 255)).astype(np.uint8)
 
-                if count%50 == 0:
-                    # fig = plt.figure()
-                    # fig.add_subplot(2, 1, 1)
-                    # plt.imshow(sil2plot, cmap='gray')
-                    #
-                    # fig.add_subplot(2, 1, 2)
-                    # plt.imshow(silhouette[i], cmap='gray')
-                    # plt.show()
-
+                if count%10 == 0:
                     print('renderer value {}'.format(params[i]))
                     print('ground truth value {}'.format(parameter[i]))
+                    # if count % 600 == 0:
+                    #     fig = plt.figure()
+                    #     fig.add_subplot(2, 1, 1)
+                    #     plt.imshow(sil2plot, cmap='gray')
+                    #
+                    #     fig.add_subplot(2, 1, 2)
+                    #     plt.imshow(silhouette[i], cmap='gray')
+                    #     plt.show()
+
+
 
 
                 #regression test to see if the training is done correctly
                 optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
                 optimizer.zero_grad()
+
                 if (i == 0):
                     # loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
                     loss = nn.MSELoss()(params[i], parameter[i]).to(device)
@@ -130,9 +135,16 @@ def train_renderV2(model, train_dataloader, test_dataloader,
                     # loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
                     loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
 
-                # if (model.t[2] > 0 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.04 and torch.abs(model.t[1]) < 0.04):
+                # if (i == 0):
+                #     loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                # else:
+                #     loss = loss + nn.BCELoss()(current_sil, current_GT_sil).to(device)
+
+
+                # if (model.t[2] > 0 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.03 and torch.abs(model.t[1]) < 0.03):
+                # if (model.t[2] > 0.0317 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.06 and torch.abs(model.t[1]) < 0.06):
                 # # if (epoch > 0):
-                #     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                #     optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
                 #     optimizer.zero_grad()
                 #     if (i == 0):
                 #         loss  =  nn.BCELoss()(current_sil, current_GT_sil).to(device)
@@ -141,7 +153,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
                 #     print('render')
                 #     renderCount += 1
                 # else:
-                #     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+                #     optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
                 #     optimizer.zero_grad()
                 #     if (i == 0):
                 #         # loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
@@ -169,9 +181,9 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
         renderbar.append(renderCount)
         regressionbar.append(regressionCount)
-        renderCount = 0
-        regressionCount = 0
-
+        # renderCount = 0
+        # regressionCount = 0
+        print(renderCount,regressionCount)
         count = 0
 
         # allstepvalloss.append(Step_Val_losses)
@@ -200,7 +212,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
     count = 0
 
-    t = tqdm(iter(test_dataloader), leave=True, total=len(test_dataloader))
+    t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
     for image, silhouette, parameter in t:
 
         Test_Step_loss = []
@@ -224,15 +236,15 @@ def train_renderV2(model, train_dataloader, test_dataloader,
             current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
 
             if count%5 == 0:
-                fig = plt.figure()
-                fig.add_subplot(2, 1, 1)
-                plt.imshow(sil2plot, cmap='gray')
-
-                fig.add_subplot(2, 1, 2)
-                plt.imshow(silhouette[i], cmap='gray')
-                plt.savefig('results/image_{}.png'.format(count), bbox_inches='tight',
-                            pad_inches=0.05)
-                plt.show()
+                # fig = plt.figure()
+                # fig.add_subplot(2, 1, 1)
+                # plt.imshow(sil2plot, cmap='gray')
+                #
+                # fig.add_subplot(2, 1, 2)
+                # plt.imshow(silhouette[i], cmap='gray')
+                # plt.savefig('results/image_{}.png'.format(count), bbox_inches='tight',
+                #             pad_inches=0.05)
+                # plt.show()
                 print('renderer value {}'.format(params[i]))
                 print('ground truth value {}'.format(parameter[i]))
 

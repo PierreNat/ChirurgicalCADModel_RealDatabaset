@@ -124,12 +124,12 @@ def main():
             print(x,y,z, alpha,beta,gamma)
 
         else:
-            alpha =-149 #uniform(0, 180)
-            beta = -23#uniform(0, 180)
-            gamma =  116 #uniform(0, 180)
-            x = -0.0043#uniform(-1.5, 1.5)
-            y =0.00915 #uniform(-1.5, 1.5)
-            z = 0.08625#uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
+            alpha =np.degrees(0.3069) #uniform(0, 180)
+            beta = np.degrees(0.4569) #uniform(0, 180)
+            gamma =  np.degrees(-0.3448)  #uniform(0, 180)
+            x =-6.1244e-05#uniform(-1.5, 1.5)
+            y =-0.07 #uniform(-1.5, 1.5)
+            z =  8.5381e-02#uniform(5, 7) #1000t was done with value between 7 and 10, Rot and trans between 5 10
             print(x, y, z, alpha, beta, gamma)
 
 
