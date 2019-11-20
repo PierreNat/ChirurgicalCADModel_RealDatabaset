@@ -70,6 +70,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
         ## Training phase
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
 
         t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
         for image, silhouette, parameter in t:
@@ -77,6 +78,8 @@ def train_renderV2(model, train_dataloader, test_dataloader,
             parameter = parameter.to(device)
             # print(parameter )
             params = model(image)  # should be size [batchsize, 6]
+            optimizer.zero_grad()
+
             # print(params)
             numbOfImage = image.size()[0]
             # loss = nn.MSELoss()(params, parameter).to(device)
@@ -124,15 +127,13 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
 
 
-                #regression test to see if the training is done correctly
-                optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
-                optimizer.zero_grad()
+                # #regression test to see if the training is done correctly
+                # optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
+                # optimizer.zero_grad()
 
                 if (i == 0):
-                    # loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
-                    loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+                    loss =nn.MSELoss()(params[i], parameter[i]).to(device)
                 else:
-                    # loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
                     loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
 
                 # if (i == 0):
@@ -166,6 +167,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
             loss.backward()
             optimizer.step()
+
             print(loss)
             Step_Val_losses.append(loss.detach().cpu().numpy())  # contain all step value for all epoch
             current_step_loss.append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch

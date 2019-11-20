@@ -23,6 +23,8 @@ import matplotlib.pyplot as plt
 
 ##### PARAMETERS GO HERE ###########
 
+span = 1
+TotNumbOfImage =19226
 
 shaft_diameter = 8.25*1e-3
 plt.close("all")
@@ -33,6 +35,8 @@ c_y = 508
 
 f_x = 1067
 f_y = 1067
+
+
 
 camera_calibration = np.zeros((4,4))
 camera_calibration[0,0] = f_x
@@ -71,9 +75,12 @@ class CommandWindow:
         # self.createDict()
 
     def goToImageNumber(self):
-        self.currentFrameId = np.int(self.entryfield.get())
-        print('image to reach is {}'.format(self.currentFrameId))
-        self.next_frame()
+        frame2reach = np.int(self.entryfield.get()) #image to reach in the database, correspond of the position of the immage and NOT the image name (ID)
+        self.currentFrameId = self.AllDataPoint[0]['FrameId']
+        self.number_frame = frame2reach
+        print('image to reach is the {}th image with id {}'.format(self.number_frame, self.currentFrameId))
+        self.print_Status()
+        self.new_window()
 
 
     def interface_creation(self):
@@ -101,9 +108,9 @@ class CommandWindow:
 
         #set default value
         self.currentFrameId = 0 #contain the frame number to pick in the set
-        self.span = 1 # jump between frames to see the tool moving
+        self.span = span # jump between frames to see the tool moving
         self.number_frame = 0 # diplayed frames count, image count
-        self.TotNumbOfImage = 19226 # each x frame will be picked, ideally 1000 for the ground truth database
+        self.TotNumbOfImage = TotNumbOfImage # each x frame will be picked, ideally 1000 for the ground truth database
         self.drawOK = True #will be disable if we create ground truth databse
         self.im2reach = 0
 
@@ -222,7 +229,7 @@ class CommandWindow:
 
     def print_Status(self):
         self.v = StringVar()
-        self.v.set("image {}/{}".format(self.number_frame+1, self.TotNumbOfImage))
+        self.v.set("image {} , id={}/{}, span {}".format(self.number_frame+1 , self.currentFrameId, self.TotNumbOfImage, self.span))
         self.LabelImageProcess = Label(self.frame, textvariable=self.v)
         self.LabelImageProcess.grid(row=0, column=4)
 
@@ -239,7 +246,7 @@ class CommandWindow:
                 self.currentFrameId = 0  # contain the frame number to pick in the set
                 self.span = self.AllDataPoint[0]['Span']  # jump between frames to see the tool moving
                 self.number_frame = 0  # diplayed frames count, image count
-                self.TotNumbOfImage = 19226 #len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
+                self.TotNumbOfImage = len(data)  # each x frame will be picked, ideally 1000 for the ground truth database
                 print('loaded dictionary contains {} positions'.format(self.TotNumbOfImage))
                 self.print_Status()
 
@@ -286,7 +293,7 @@ class CommandWindow:
         # plot color point
 
 
-        if self.app_created :
+        if self.app_created:
             self.updatePose = True
             if (self.number_frame < self.TotNumbOfImage-1): #if we still have picture to display
                 if (self.currentFrameId + self.span <= 19226-1): #if the next picture is with the total image frame

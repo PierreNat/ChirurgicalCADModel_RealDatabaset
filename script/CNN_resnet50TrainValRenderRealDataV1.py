@@ -22,11 +22,11 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.cuda.empty_cache()
 print(device)
 
-file_name_extension = '693_images2'  # choose the corresponding database to use
+file_name_extension = '444_images3'  # choose the corresponding database to use
 
 batch_size = 2
 
-n_epochs = 10
+n_epochs = 5
 
 
 
@@ -104,8 +104,8 @@ val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, n
 #     plt.show()
 #
 #     break  # break here just to show 1 batch of data
-
-
+#
+#
 # for image, sil, param in test_dataloader:
 #
 #     nim = image.size()[0]
