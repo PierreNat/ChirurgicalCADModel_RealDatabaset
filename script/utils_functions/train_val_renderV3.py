@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 from utils_functions.camera_settings import camera_setttings
 import neural_renderer as nr
 from utils_functions.R2Rmat import R2Rmat
+import os
+import imageio
+import glob
+import argparse
+from skimage.io import imread, imsave
 from utils_functions.camera_settings import BuildTransformationMatrix
 from numpy.random import uniform
 import matplotlib2tikz
@@ -21,6 +26,24 @@ c_y = 508
 
 f_x = 1067
 f_y = 1067
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+sil_dir = os.path.join(current_dir, 'SilOutput')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-or', '--filename_output', type=str,
+                    default=os.path.join(sil_dir, 'ResultSilhouette_{}.gif'.format('test1')))
+parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
+parser.add_argument('-g', '--gpu', type=int, default=0)
+args = parser.parse_args()
+
+
+def make_gif(filename):
+    with imageio.get_writer(filename, mode='I') as writer:
+        for filename in sorted(glob.glob('/tmp/_tmp_*.png')):
+            writer.append_data(imread(filename))
+            os.remove(filename)
+    writer.close()
 
 def RolAv(list, window = 2):
 
@@ -106,10 +129,8 @@ def train_renderV3(model, train_dataloader, test_dataloader,
                     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
                     optimizer.zero_grad()
                     if (i == 0):
-                        # loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
                         loss = nn.MSELoss()(params[i], parameter[i]).to(device)
                     else:
-                        # loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
                         loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
                     print('regression')
                     regressionCount += 1
@@ -118,16 +139,20 @@ def train_renderV3(model, train_dataloader, test_dataloader,
             loss.backward()
             optimizer.step()
 
-            print(loss)
+
             current_step_loss.append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
             count = count + 1
 
         epochValloss = np.mean(current_step_loss)
+        print('loss of epoch {} is {}'.format(epoch, epochValloss))
         current_step_loss = [] #reset value
         Epoch_Val_losses.append(epochValloss)  # most significant value to store
+
         # print(epochValloss)
 
-        print(Epoch_Val_losses)
+        print('render: {}, regression: {}'.format(renderCount,regressionCount))
+        regressionCount = 0
+        renderCount = 0
 
         count = 0
         testcount = 0
@@ -170,7 +195,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
 
                 fig.add_subplot(2, 1, 2)
                 plt.imshow(silhouette[i], cmap='gray')
-                plt.savefig('results/image_{}.png'.format(testcount), bbox_inches='tight',
+                plt.savefig('results/imageRender_{}.png'.format(testcount), bbox_inches='tight',
                             pad_inches=0.05)
                 plt.show()
 
@@ -184,23 +209,24 @@ def train_renderV3(model, train_dataloader, test_dataloader,
         epoch_count = epoch_count+1
 
 
-    # plt.plot(Epoch_Test_losses)
-    # plt.ylabel('loss')
-    # plt.xlabel('step')
-    # plt.ylim(0, 2)
+
+    fig, (ax1, ax2) = plt.subplots(2, 1)
+    # ax1 = plt.subplot(2, 1, 1)
+    ax1.plot(Epoch_Val_losses)
+    ax1.set_ylabel('training render BCE loss')
+    ax1.set_xlabel('epoch')
+    ax1.set_xlim([0, n_epochs])
+    ax1.set_ylim([0, 1])
+    ax1.set_yscale('log')
 
 
-    a = plt.subplot(2, 1, 1)
-    plt.plot(Epoch_Val_losses)
-    plt.ylabel('training Render BCE loss')
-    plt.xlabel('epoch')
-    plt.ylim(0, 1)
-
-    a = plt.subplot(2, 1, 2)
-    plt.plot(Epoch_Test_losses)
-    plt.ylabel('test Render MSE loss')
-    plt.xlabel('epoch')
-    plt.ylim(0, 0.1)
+    # ax2 = plt.subplot(2, 1, 2)
+    ax2.plot(Epoch_Test_losses)
+    ax2.set_ylabel('test render MSE loss')
+    ax2.set_xlabel('epoch')
+    ax2.set_xlim([0, n_epochs])
+    ax2.set_ylim([0, 0.1])
+    ax2.set_yscale('log')
 
 
     plt.savefig('results/training_epochs_rend_results_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)

@@ -65,7 +65,7 @@ paramsVal = np.load(parameters_Valfile )
 ratio = 0.05  # 70%training 30%validation
 split = int(len(Background)*ratio)
 testlen = 100
-vallen = 100
+vallen = 200
 
 train_im = Background[split:]  # 90% training
 train_sil = sils[split:]
@@ -158,7 +158,9 @@ args = parser.parse_args()
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 model = Myresnet50(filename_obj=args.filename_obj)
-model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_60epochs_Noise0.0_test_RenderRegrSave')
+model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave')
+# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_60epochs_Noise0.0_test_RenderRegrSave')
+# 151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave
 model.to(device)
 
 model.train(True)
