@@ -24,10 +24,11 @@ torch.cuda.empty_cache()
 print(device)
 
 file_name_extension = '444_images3'  # choose the corresponding database to use
+file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 
 batch_size = 2
 
-n_epochs = 60
+n_epochs = 1
 
 
 
@@ -35,6 +36,11 @@ Background_file = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension)
 RGBshaft_file = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension)
 BWShaft_file = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension)
 parameters_file = 'Npydatabase/params_{}.npy'.format(file_name_extension)
+
+Background_Valfile = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension_validation)
+RGBshaft_Valfile = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension_validation)
+BWShaft_Valfile = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension_validation)
+parameters_Valfile = 'Npydatabase/params_{}.npy'.format(file_name_extension_validation)
 
 fileExtension = 'test' #string to ad at the end of the file
 
@@ -48,6 +54,10 @@ obj_name = 'shaftshortOnly'
 Background = np.load(Background_file)
 sils = np.load(BWShaft_file)
 params = np.load(parameters_file)
+
+BackgroundVal = np.load(Background_Valfile )
+silsVal = np.load(BWShaft_Valfile )
+paramsVal = np.load(parameters_Valfile )
 # print(np.min(params[:,4]))
 
 #  ------------------------------------------------------------------
@@ -55,6 +65,7 @@ params = np.load(parameters_file)
 ratio = 0.05  # 70%training 30%validation
 split = int(len(Background)*ratio)
 testlen = 100
+vallen = 100
 
 train_im = Background[split:]  # 90% training
 train_sil = sils[split:]
@@ -69,9 +80,9 @@ test_param  = params[:split]
 number_test_im = np.shape(test_im)[0]
 print('we have {} images for the test '.format(number_test_im))
 
-val_im  = Background[split:split+testlen]
-val_sil  = sils[split:split+testlen]
-val_param = params[split:split+testlen]
+val_im  = BackgroundVal[:vallen]
+val_sil  = silsVal[:vallen]
+val_param = paramsVal[:vallen]
 
 
 
@@ -85,7 +96,7 @@ val_dataset = CubeDataset(val_im, val_sil, val_param, transforms)
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=2)
-val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
 
 # for image, sil, param in train_dataloader:
@@ -147,7 +158,7 @@ args = parser.parse_args()
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 model = Myresnet50(filename_obj=args.filename_obj)
-
+model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_60epochs_Noise0.0_test_RenderRegrSave')
 model.to(device)
 
 model.train(True)
@@ -158,14 +169,15 @@ criterion = nn.BCELoss()  #nn.BCELoss()   #nn.CrossEntropyLoss()  define the los
 #
 #  ------------------------------------------------------------------
 #call renderer
+
 # train_renderV3(model, train_dataloader, test_dataloader,
 #                                         n_epochs, criterion,
 #                                         date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
 
-#call regression
+# #call regression
 train_regV3(model, train_dataloader, test_dataloader,
                                         n_epochs, criterion,
-                                        date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
+                                        date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader)
 
 #  ------------------------------------------------------------------
 

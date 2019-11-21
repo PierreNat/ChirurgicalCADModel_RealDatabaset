@@ -40,7 +40,7 @@ def RolAv(list, window = 2):
 
 def train_regV3(model, train_dataloader, test_dataloader,
                  n_epochs, loss_function,
-                 date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im):
+                 date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader):
     # monitor loss functions as the training progresses
 
     loop = n_epochs
@@ -150,7 +150,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
                 plt.imshow(silhouette[i], cmap='gray')
                 plt.savefig('results/image_{}.png'.format(testcount), bbox_inches='tight',
                             pad_inches=0.05)
-                plt.show()
+                # plt.show()
 
             current_step_Test_loss.append(loss.detach().cpu().numpy())
             testcount = testcount + 1
@@ -166,18 +166,22 @@ def train_regV3(model, train_dataloader, test_dataloader,
     # plt.xlabel('step')
     # plt.ylim(0, 2)
 
+    fig, (ax1, ax2) = plt.subplots(2, 1)
+    # ax1 = plt.subplot(2, 1, 1)
+    ax1.plot(Epoch_Val_losses)
+    ax1.set_ylabel('training loss')
+    ax1.set_xlabel('epoch')
+    ax1.set_xlim([0, n_epochs])
+    ax1.set_ylim([0, 0.4])
+    # ax1.ylim(0, 0.4)
 
-    a = plt.subplot(2, 1, 1)
-    plt.plot(Epoch_Val_losses)
-    plt.ylabel('training loss')
-    plt.xlabel('epoch')
-    plt.ylim(0, 1)
-
-    a = plt.subplot(2, 1, 2)
-    plt.plot(Epoch_Test_losses)
-    plt.ylabel('test loss')
-    plt.xlabel('epoch')
-    plt.ylim(0, 0.1)
+    # ax2 = plt.subplot(2, 1, 2)
+    ax2.plot(Epoch_Test_losses)
+    ax2.set_ylabel('test loss')
+    ax2.set_xlabel('epoch')
+    ax1.set_xlim([0, n_epochs])
+    ax2.set_ylim([0, 0.08])
+    # ax2.ylim(0, 0.08)
 
 
     plt.savefig('results/training_epochs_results_reg_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)

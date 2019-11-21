@@ -71,26 +71,48 @@ def train_renderV3(model, train_dataloader, test_dataloader,
         ## Training phase
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+
 
         t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
         for image, silhouette, parameter in t:
             image = image.to(device)
             parameter = parameter.to(device)
             params = model(image)  # should be size [batchsize, 6]
-            optimizer.zero_grad()
+
 
             # print(params)
             numbOfImage = image.size()[0]
-            # loss = nn.MSELoss()(params, parameter).to(device)
-
 
             for i in range(0,numbOfImage):
-                #create and store silhouette
-                if (i == 0):
-                    loss =nn.MSELoss()(params[i], parameter[i]).to(device)
+
+                model.t = params[i, 3:6]
+                R = params[i, 0:3]
+                model.R = R2Rmat(R)
+                current_sil = model.renderer(model.vertices, model.faces,  R=model.R, t=model.t, mode='silhouettes').squeeze()
+                current_sil =  current_sil[0:1024, 0:1280]
+                current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
+
+                if (model.t[2] > 0.0317 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.06 and torch.abs(model.t[1]) < 0.06):
+
+                    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+                    optimizer.zero_grad()
+                    if (i == 0):
+                        loss  =  nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                    else:
+                        loss = loss + nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                    print('render')
+                    renderCount += 1
                 else:
-                    loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+                    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+                    optimizer.zero_grad()
+                    if (i == 0):
+                        # loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
+                        loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+                    else:
+                        # loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
+                        loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+                    print('regression')
+                    regressionCount += 1
 
 
             loss.backward()
@@ -152,6 +174,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
                             pad_inches=0.05)
                 plt.show()
 
+            #MSE loss
             current_step_Test_loss.append(loss.detach().cpu().numpy())
             testcount = testcount + 1
 
@@ -169,13 +192,13 @@ def train_renderV3(model, train_dataloader, test_dataloader,
 
     a = plt.subplot(2, 1, 1)
     plt.plot(Epoch_Val_losses)
-    plt.ylabel('training loss')
+    plt.ylabel('training Render BCE loss')
     plt.xlabel('epoch')
     plt.ylim(0, 1)
 
     a = plt.subplot(2, 1, 2)
     plt.plot(Epoch_Test_losses)
-    plt.ylabel('test loss')
+    plt.ylabel('test Render MSE loss')
     plt.xlabel('epoch')
     plt.ylim(0, 0.1)
 
