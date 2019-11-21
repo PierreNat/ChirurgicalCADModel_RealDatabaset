@@ -214,7 +214,7 @@ def train_renderV2(model, train_dataloader, test_dataloader,
 
     count = 0
 
-    t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
+    t = tqdm(iter(test_dataloader), leave=True, total=len(test_dataloader))
     for image, silhouette, parameter in t:
 
         Test_Step_loss = []
@@ -238,15 +238,15 @@ def train_renderV2(model, train_dataloader, test_dataloader,
             current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
 
             if count%5 == 0:
-                # fig = plt.figure()
-                # fig.add_subplot(2, 1, 1)
-                # plt.imshow(sil2plot, cmap='gray')
-                #
-                # fig.add_subplot(2, 1, 2)
-                # plt.imshow(silhouette[i], cmap='gray')
-                # plt.savefig('results/image_{}.png'.format(count), bbox_inches='tight',
-                #             pad_inches=0.05)
-                # plt.show()
+                fig = plt.figure()
+                fig.add_subplot(2, 1, 1)
+                plt.imshow(sil2plot, cmap='gray')
+
+                fig.add_subplot(2, 1, 2)
+                plt.imshow(silhouette[i], cmap='gray')
+                plt.savefig('results/image_{}.png'.format(count), bbox_inches='tight',
+                            pad_inches=0.05)
+                plt.show()
                 print('renderer value {}'.format(params[i]))
                 print('ground truth value {}'.format(parameter[i]))
 

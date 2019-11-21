@@ -13,9 +13,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor, Compose, Normalize, Lambda
 from utils_functions.MyResnet import Myresnet50
-from utils_functions.train_val_renderV2 import train_renderV2
+from utils_functions.train_val_regV3 import train_regV3
+from utils_functions.train_val_renderV3 import train_renderV3
 from utils_functions.cubeDataset import CubeDataset
-from scipy.spatial.transform import Rotation as R
+
 
 # device = torch.device('cpu')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -26,7 +27,7 @@ file_name_extension = '444_images3'  # choose the corresponding database to use
 
 batch_size = 2
 
-n_epochs = 5
+n_epochs = 60
 
 
 
@@ -59,12 +60,14 @@ train_im = Background[split:]  # 90% training
 train_sil = sils[split:]
 train_param = params[split:]
 number_train_im = np.shape(train_im)[0]
+print('we have {} images for the training'.format(number_train_im))
 
 
 test_im = Background[:split]  # remaining ratio for validation
 test_sil = sils[:split]
 test_param  = params[:split]
-number_testn_im = np.shape(test_im)[0]
+number_test_im = np.shape(test_im)[0]
+print('we have {} images for the test '.format(number_test_im))
 
 val_im  = Background[split:split+testlen]
 val_sil  = sils[split:split+testlen]
@@ -154,8 +157,13 @@ lr = 0.0001
 criterion = nn.BCELoss()  #nn.BCELoss()   #nn.CrossEntropyLoss()  define the loss (MSE, Crossentropy, Binarycrossentropy)
 #
 #  ------------------------------------------------------------------
+#call renderer
+# train_renderV3(model, train_dataloader, test_dataloader,
+#                                         n_epochs, criterion,
+#                                         date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
 
-train_renderV2(model, train_dataloader, test_dataloader,
+#call regression
+train_regV3(model, train_dataloader, test_dataloader,
                                         n_epochs, criterion,
                                         date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
 
