@@ -37,6 +37,17 @@ parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
 
+def sigmoid(x, a, b, c, d):
+    """ General sigmoid function
+    a adjusts amplitude
+    b adjusts y offset
+    c adjusts x offset
+    d adjusts slope """
+    y = ((a-b) / (1 + np.exp(x-(c/2))**d)) + b
+    return y
+
+
+
 
 def make_gif(filename):
     with imageio.get_writer(filename, mode='I') as writer:
@@ -87,6 +98,14 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     renderbar = []
     regressionbar = []
     lr= 0.00001
+    epochsValLoss = open(
+        "./results/epochsValLoss_{}_{}_RenderRegr_{}.txt".format(date4File,str(n_epochs), fileExtension), "w+")
+
+    x = np.arange(50)
+    y = sigmoid(x, 1, 0, 20, 0.5)
+
+    plt.plot(x, y)
+    plt.show()
 
 
     for epoch in range(n_epochs):
@@ -95,6 +114,9 @@ def train_renderV3(model, train_dataloader, test_dataloader,
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
 
+        alpha = y[epoch]
+
+        print('alpha is {}'.format(alpha))
 
         t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
         for image, silhouette, parameter in t:
@@ -105,8 +127,12 @@ def train_renderV3(model, train_dataloader, test_dataloader,
 
             # print(params)
             numbOfImage = image.size()[0]
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+            optimizer.zero_grad()
 
             for i in range(0,numbOfImage):
+
+
 
                 model.t = params[i, 3:6]
                 R = params[i, 0:3]
@@ -115,30 +141,40 @@ def train_renderV3(model, train_dataloader, test_dataloader,
                 current_sil =  current_sil[0:1024, 0:1280]
                 current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
 
-                if (model.t[2] > 0.0317 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.06 and torch.abs(model.t[1]) < 0.06):
-
-                    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-                    optimizer.zero_grad()
-                    if (i == 0):
-                        loss  =  nn.BCELoss()(current_sil, current_GT_sil).to(device)
-                    else:
-                        loss = loss + nn.BCELoss()(current_sil, current_GT_sil).to(device)
-                    print('render')
-                    renderCount += 1
+                if (i == 0):
+                    loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*alpha + (nn.MSELoss()(params[i], parameter[i]).to(device))*(1-alpha)
                 else:
-                    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-                    optimizer.zero_grad()
-                    if (i == 0):
-                        loss = nn.MSELoss()(params[i], parameter[i]).to(device)
-                    else:
-                        loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
-                    print('regression')
-                    regressionCount += 1
+                    loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * alpha + (nn.MSELoss()(params[i], parameter[i]).to(device)) * (1 - alpha)
 
+                # if (model.t[2] > 0.0317 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.06 and torch.abs(model.t[1]) < 0.06):
+                #
+                #     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+                #     optimizer.zero_grad()
+                #     if (i == 0):
+                #         loss  =  nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                #     else:
+                #         loss = loss + nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                #     print('render')
+                #     renderCount += 1
+                # else:
+                #     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+                #     optimizer.zero_grad()
+                #     if (i == 0):
+                #         loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
+                #         # loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+                #     else:
+                #         loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
+                #         # loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+                #     print('regression')
+                #     regressionCount += 1
 
+            loss = loss/numbOfImage
             loss.backward()
             optimizer.step()
 
+            # epochsValLoss.write(
+            #     'step: {}/{} current step loss: {:.4f},   \r\n'
+            #         .format(count, len(loop), loss))
 
             current_step_loss.append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
             count = count + 1
@@ -216,8 +252,8 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     ax1.set_ylabel('training render BCE loss')
     ax1.set_xlabel('epoch')
     ax1.set_xlim([0, n_epochs])
-    ax1.set_ylim([0, 1])
-    ax1.set_yscale('log')
+    ax1.set_ylim([0, 4])
+    # ax1.set_yscale('log')
 
 
     # ax2 = plt.subplot(2, 1, 2)
@@ -226,7 +262,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     ax2.set_xlabel('epoch')
     ax2.set_xlim([0, n_epochs])
     ax2.set_ylim([0, 0.1])
-    ax2.set_yscale('log')
+    # ax2.set_yscale('log')
 
 
     plt.savefig('results/training_epochs_rend_results_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)

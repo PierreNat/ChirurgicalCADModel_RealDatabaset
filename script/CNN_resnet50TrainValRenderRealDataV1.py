@@ -28,7 +28,7 @@ file_name_extension_validation = '693_images2'  # choose the corresponding datab
 
 batch_size = 2
 
-n_epochs = 1
+n_epochs = 10
 
 
 
@@ -42,7 +42,7 @@ RGBshaft_Valfile = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension_vali
 BWShaft_Valfile = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension_validation)
 parameters_Valfile = 'Npydatabase/params_{}.npy'.format(file_name_extension_validation)
 
-fileExtension = 'test' #string to ad at the end of the file
+fileExtension = 'testalpha' #string to ad at the end of the file
 
 cubeSetName = 'Shaft_{}'.format(file_name_extension) #used to describe the document name
 
@@ -148,6 +148,11 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 data_dir = os.path.join(current_dir, '3D_objects')
 
 
+
+
+
+
+
 noise = 0.0
 parser = argparse.ArgumentParser()
 parser.add_argument('-io', '--filename_obj', type=str, default=os.path.join(data_dir, '{}.obj'.format(obj_name)))
@@ -158,9 +163,13 @@ args = parser.parse_args()
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 model = Myresnet50(filename_obj=args.filename_obj)
-model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave')
+# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav')
+# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave')
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_60epochs_Noise0.0_test_RenderRegrSave')
 # 151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave
+
+
+# 211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav
 model.to(device)
 
 model.train(True)
@@ -172,14 +181,14 @@ criterion = nn.BCELoss()  #nn.BCELoss()   #nn.CrossEntropyLoss()  define the los
 #  ------------------------------------------------------------------
 #call renderer
 
-# train_renderV3(model, train_dataloader, test_dataloader,
-#                                         n_epochs, criterion,
-#                                         date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
+train_renderV3(model, train_dataloader, test_dataloader,
+                                        n_epochs, criterion,
+                                        date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
 
 # #call regression
-train_regV3(model, train_dataloader, test_dataloader,
-                                        n_epochs, criterion,
-                                        date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader)
+# train_regV3(model, train_dataloader, test_dataloader,
+#                                         n_epochs, criterion,
+#                                         date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader)
 
 #  ------------------------------------------------------------------
 
