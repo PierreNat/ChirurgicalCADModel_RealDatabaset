@@ -32,7 +32,7 @@ sil_dir = os.path.join(current_dir, 'SilOutput')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-or', '--filename_output', type=str,
-                    default=os.path.join(sil_dir, 'RenderResultSilhouette_{}.gif'.format('test1')))
+                    default=os.path.join(sil_dir, 'RegShiftResultSilhouette_{}.gif'.format('test1')))
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
@@ -230,7 +230,8 @@ def train_regV3(model, train_dataloader, test_dataloader,
 
         Test_Step_loss = []
         numbOfImage = image.size()[0]
-        # image = torch.flip(image,[0, 3])
+        # image = torch.flip(image,[0, 3]) #flip vertical
+        image = torch.roll(image, 1024, 3) #shift down from 100 px
         image = image.to(device)
         parameter = parameter.to(device)
         params = model(image)  # should be size [batchsize, 6]
@@ -279,7 +280,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
         backgroundIm = Image.fromarray(np.uint8(image2show*255))
 
         # backgroundIm.show()
-
+        #
 
         alpha = 0.2
         out = Image.blend(backgroundIm,toolIm,alpha)

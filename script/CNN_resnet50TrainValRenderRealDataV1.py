@@ -27,8 +27,8 @@ file_name_extension = '444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 
 batch_size = 2
-
-n_epochs = 10
+vallen = 200
+n_epochs = 100
 
 
 
@@ -65,7 +65,7 @@ paramsVal = np.load(parameters_Valfile )
 ratio = 0.05  # 70%training 30%validation
 split = int(len(Background)*ratio)
 testlen = 100
-vallen = 200
+
 
 train_im = Background[split:]  # 90% training
 train_sil = sils[split:]
@@ -163,11 +163,12 @@ args = parser.parse_args()
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 model = Myresnet50(filename_obj=args.filename_obj)
+# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr')
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav')
-# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave')
+model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_60epochs_Noise0.0_test_RenderRegrSave')
 # 151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave
-
+# 211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr
 
 # 211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav
 model.to(device)
@@ -181,14 +182,14 @@ criterion = nn.BCELoss()  #nn.BCELoss()   #nn.CrossEntropyLoss()  define the los
 #  ------------------------------------------------------------------
 #call renderer
 
-train_renderV3(model, train_dataloader, test_dataloader,
-                                        n_epochs, criterion,
-                                        date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
-
-# #call regression
-# train_regV3(model, train_dataloader, test_dataloader,
+# train_renderV3(model, train_dataloader, test_dataloader,
 #                                         n_epochs, criterion,
-#                                         date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader)
+#                                         date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
+
+#call regression
+train_regV3(model, train_dataloader, test_dataloader,
+                                        n_epochs, criterion,
+                                        date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader)
 
 #  ------------------------------------------------------------------
 

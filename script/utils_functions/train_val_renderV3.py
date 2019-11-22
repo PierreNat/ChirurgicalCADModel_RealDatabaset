@@ -101,8 +101,8 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     epochsValLoss = open(
         "./results/epochsValLoss_{}_{}_RenderRegr_{}.txt".format(date4File,str(n_epochs), fileExtension), "w+")
 
-    x = np.arange(50)
-    y = sigmoid(x, 1, 0, 20, 0.5)
+    x = np.arange(n_epochs)
+    y = sigmoid(x, 1, 0, n_epochs/2, 0.5)
 
     plt.plot(x, y)
     plt.show()
@@ -114,7 +114,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
 
-        alpha = y[epoch]
+        alpha = y[epoch] #proportion of the regression part decrease with negative sigmoid
 
         print('alpha is {}'.format(alpha))
 
@@ -142,9 +142,9 @@ def train_renderV3(model, train_dataloader, test_dataloader,
                 current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
 
                 if (i == 0):
-                    loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*alpha + (nn.MSELoss()(params[i], parameter[i]).to(device))*(1-alpha)
+                    loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
                 else:
-                    loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * alpha + (nn.MSELoss()(params[i], parameter[i]).to(device)) * (1 - alpha)
+                    loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
 
                 # if (model.t[2] > 0.0317 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.06 and torch.abs(model.t[1]) < 0.06):
                 #
@@ -172,14 +172,11 @@ def train_renderV3(model, train_dataloader, test_dataloader,
             loss.backward()
             optimizer.step()
 
-            # epochsValLoss.write(
-            #     'step: {}/{} current step loss: {:.4f},   \r\n'
-            #         .format(count, len(loop), loss))
-
             current_step_loss.append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
             count = count + 1
 
         epochValloss = np.mean(current_step_loss)
+        epochsValLoss.write('step: {}/{} current step loss: {:.4f},   \r\n'.format(epoch, n_epochs, epochValloss))
         print('loss of epoch {} is {}'.format(epoch, epochValloss))
         current_step_loss = [] #reset value
         Epoch_Val_losses.append(epochValloss)  # most significant value to store
@@ -267,3 +264,5 @@ def train_renderV3(model, train_dataloader, test_dataloader,
 
     plt.savefig('results/training_epochs_rend_results_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
+
+    epochsValLoss.close()

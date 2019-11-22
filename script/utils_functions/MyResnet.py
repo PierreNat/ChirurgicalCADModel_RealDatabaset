@@ -155,5 +155,6 @@ class ModelResNet50(ResNet):
         x = self.seq1(x)
         x = self.seq2(x)
         params = self.fc(x.view(x.size(0), -1))
+
         # print('computed parameters are {}'.format(params))
         return params
