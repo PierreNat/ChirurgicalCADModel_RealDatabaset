@@ -32,7 +32,7 @@ sil_dir = os.path.join(current_dir, 'SilOutput')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-or', '--filename_output', type=str,
-                    default=os.path.join(sil_dir, 'ResultSilhouette_{}.gif'.format('test1')))
+                    default=os.path.join(sil_dir, 'ResultNoShitSilhouette_{}.gif'.format('0')))
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
@@ -240,14 +240,14 @@ def train_regV3(model, train_dataloader, test_dataloader,
     Epoch_Val_losses= []
     from PIL import ImageTk, Image, ImageDraw
     epochsValLoss = open(
-        "./results/valParamNoShift.txt", "w+")
+        "./results/valNoParamShift.txt", "w+")
 
     t = tqdm(iter(val_dataloader), leave=True, total=len(val_dataloader))
     for image, silhouette, parameter in t:
 
         Test_Step_loss = []
         numbOfImage = image.size()[0]
-        # image = torch.flip(image,[0, 3]) #flip vertical
+        # image1 = torch.flip(image,[0, 3]) #flip vertical
         # image = torch.roll(image, 100, 3) #shift down from 100 px
         # image1 = shiftPixel(image, 100, 'y')
         image1 = image
@@ -261,7 +261,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
         # print('estimated parameter {}'.format(params[i]))
         # print('Ground Truth {}'.format(parameter[i]))
 
-        epochsValLoss.write('step:{} params:{} \r\n'.format(processcount, parameter.detach().cpu().numpy()))
+        epochsValLoss.write('step:{} params:{} \r\n'.format(processcount, params.detach().cpu().numpy()))
         loss = nn.MSELoss()(params[i], parameter[i]).to(device)
 
 

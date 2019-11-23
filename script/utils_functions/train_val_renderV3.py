@@ -100,9 +100,19 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     lr= 0.00001
     epochsValLoss = open(
         "./results/epochsValLoss_{}_{}_RenderRegr_{}.txt".format(date4File,str(n_epochs), fileExtension), "w+")
+    TestParamLoss = open(
+        "./results/TestParamLoss_{}_{}_RenderRegr_{}.txt".format(date4File,str(n_epochs), fileExtension), "w+")
 
     x = np.arange(n_epochs)
     y = sigmoid(x, 1, 0, n_epochs/2, 0.2)
+
+    steps_losses = []  # contains the loss after each steps
+    steps_alpha_loss = []
+    steps_beta_loss = []
+    steps_gamma_loss = []
+    steps_x_loss = []
+    steps_y_loss = []
+    steps_z_loss = []
 
     plt.plot(x, y)
     plt.show()
@@ -202,6 +212,9 @@ def train_renderV3(model, train_dataloader, test_dataloader,
             params = model(image)  # should be size [batchsize, 6]
             # print(np.shape(params))
 
+
+
+
             for i in range(0, numbOfImage):
                 print('image tested: {}'.format(testcount))
                 print('estated {}'.format(params[i]))
@@ -210,6 +223,26 @@ def train_renderV3(model, train_dataloader, test_dataloader,
                     loss = nn.MSELoss()(params[i], parameter[i]).to(device)
                 else:
                     loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+
+                # one value each for the step, compute mse loss for all parameters separately
+                alpha_loss = nn.MSELoss()(params[:, 0], parameter[:, 0])
+                beta_loss = nn.MSELoss()(params[:, 1], parameter[:, 1])
+                gamma_loss = nn.MSELoss()(params[:, 2], parameter[:, 2])
+                x_loss = nn.MSELoss()(params[:, 3], parameter[:, 3])
+                y_loss = nn.MSELoss()(params[:, 4], parameter[:, 4])
+                z_loss = nn.MSELoss()(params[:, 5], parameter[:, 5])
+
+                steps_losses.append(loss.item())  # only one loss value is add each step
+                steps_alpha_loss.append(alpha_loss.item())
+                steps_beta_loss.append(beta_loss.item())
+                steps_gamma_loss.append(gamma_loss.item())
+                steps_x_loss.append(x_loss.item())
+                steps_y_loss.append(y_loss.item())
+                steps_z_loss.append(z_loss.item())
+
+                TestParamLoss.write(
+                'test image: {} current step loss: {:.4f}, angle loss: {:.4f} {:.4f} {:.4f} translation loss: {:.4f} {:.4f} {:.4f}\r\n'
+                .format(testcount, len(loop), loss, alpha_loss, beta_loss, gamma_loss, x_loss, y_loss, z_loss))
 
             if epoch_count == n_epochs:
                 model.t = params[i, 3:6]
@@ -264,5 +297,33 @@ def train_renderV3(model, train_dataloader, test_dataloader,
 
     plt.savefig('results/training_epochs_rend_results_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
+    plt.close()
+
+    fig, (a,b,g,x,y,z) = plt.subplots(6, 1)
+    a.plot(alpha_loss)
+    a.set_ylabel('test alpha loss')
+
+    b.plot(beta_loss)
+    b.set_ylabel('test beta loss')
+
+    g.plot(gamma_loss)
+    g.set_ylabel('test gamma loss')
+
+    x.plot(x_loss)
+    x.set_ylabel('test x loss')
+
+    y.plot(y_loss)
+    y.set_ylabel('test y loss')
+
+    z.plot(x_loss)
+    z.set_ylabel('test z loss')
+    z.set_xlabel('epoch')
+
+
+
+    plt.savefig('results/test_epochs_rend_Rt_Loss_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)
+    plt.show()
+    plt.close()
+
 
     epochsValLoss.close()
