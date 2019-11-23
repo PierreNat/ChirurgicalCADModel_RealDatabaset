@@ -29,6 +29,10 @@ vallen = 100
 n_epochs = 10
 lr = 0.0001
 validation = False
+date4File = '15111' #mmddyy
+obj_name = 'shaftshortOnly'
+comment = 'test'
+traintype = 'regression' #'regression' or 'render'
 
 file_name_extension = '444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
@@ -45,11 +49,6 @@ RGBshaft_Valfile = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension_vali
 BWShaft_Valfile = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension_validation)
 parameters_Valfile = 'Npydatabase/params_{}.npy'.format(file_name_extension_validation)
 
-
-date4File = '15111' #mmddyy
-obj_name = 'shaftshortOnly'
-comment = 'test'
-traintype = 'render'
 fileExtension = '{}{}_{}epochs_{}'.format(date4File,traintype, n_epochs,comment) #string to ad at the end of the file
 
 Background = np.load(Background_file)
@@ -172,12 +171,10 @@ model.train(True)
 bool_first = True
 
 
-
-#
 #  ------------------------------------------------------------------
 #call training
 
-training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation)
+training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im)
 
 #call regression
 # train_regV3(model, train_dataloader, test_dataloader,
@@ -186,7 +183,7 @@ training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fil
 
 #  ------------------------------------------------------------------
 
-torch.save(model.state_dict(), 'models/{}_FinalModel_train_{}_{}batchs_{}epochs_Noise{}_{}_RenderRegr.pth'.format(date4File, ShaftSetName, str(batch_size), str(n_epochs), noise*100,fileExtension))
-print('parameters saved')
+# torch.save(model.state_dict(), 'models/{}_FinalModel_train_{}_{}batchs_{}epochs.pth'.format(date4File, traintype, str(batch_size), str(n_epochs)))
+# print('parameters saved')
 
 #  ------------------------------------------------------------------

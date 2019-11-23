@@ -3,20 +3,15 @@ import numpy as np
 from tqdm import tqdm
 import torch
 import torch.nn as nn
-import  pandas as pd
 import matplotlib.pyplot as plt
-from utils_functions.camera_settings import camera_setttings
-import neural_renderer as nr
 from utils_functions.R2Rmat import R2Rmat
 import os
 import imageio
 import glob
 import argparse
 from skimage.io import imread, imsave
-from utils_functions.camera_settings import BuildTransformationMatrix
-from numpy.random import uniform
 import matplotlib2tikz
-# plt.switch_backend('agg')
+plt.switch_backend('agg')
 
 
 ##### PARAMETERS GO HERE ###########
@@ -36,6 +31,21 @@ parser.add_argument('-or', '--filename_output', type=str,
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
+
+
+def shiftPixel(image=None, shift=0, axis= 'y'):
+
+    if axis == 'x':
+
+        image = torch.roll(image, shift, 3)
+        image[0, :, :, 0:shift] = 0
+    if axis == 'y':
+
+        image = torch.roll(image, shift, 2)
+        image[0, :, 0:shift,: ] = 0
+
+    return image
+
 
 def mkdir_p(mypath):
     '''Creates a directory. equivalent to using mkdir -p on the command line'''
@@ -82,7 +92,7 @@ def RolAv(list, window = 2):
 
     return moving_aves
 
-def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation):
+def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im):
     # monitor loss functions as the training progresses
 
 
@@ -92,13 +102,14 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
     count = 0
     epoch_count = 1
-    renderCount = 0
-    regressionCount = 0
     lr= 0.001
+    print('training {}'.format(traintype))
     print('lr used is: {}'.format(lr))
 
     output_result_dir = 'results/{}/{}_lr{}'.format(traintype,fileExtension,lr)
     mkdir_p(output_result_dir)
+
+
     
     epochsTrainLoss = open(
         "{}/epochsTrainLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
@@ -124,7 +135,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
     for epoch in range(n_epochs):
 
-        ## Training phase
+        ## training phase --------------------------------------------------------------------------------------------------------
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
 
@@ -138,15 +149,12 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             parameter = parameter.to(device)
             params = model(image)  # should be size [batchsize, 6]
 
-
-            # print(params)
-            numbOfImage = image.size()[0]
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
             optimizer.zero_grad()
 
+            numbOfImage = image.size()[0]
+
             for i in range(0,numbOfImage):
-
-
 
                 model.t = params[i, 3:6]
                 R = params[i, 0:3]
@@ -155,34 +163,23 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                 current_sil =  current_sil[0:1024, 0:1280]
                 current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
 
-                if (i == 0):
-                    loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
-                else:
-                    loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
+                if(traintype == 'render'):
+                    if (i == 0):
+                        loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
+                    else:
+                        loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
 
-                # if (model.t[2] > 0.0317 and model.t[2] < 0.1 and torch.abs(model.t[0]) < 0.06 and torch.abs(model.t[1]) < 0.06):
-                #
-                #     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-                #     optimizer.zero_grad()
-                #     if (i == 0):
-                #         loss  =  nn.BCELoss()(current_sil, current_GT_sil).to(device)
-                #     else:
-                #         loss = loss + nn.BCELoss()(current_sil, current_GT_sil).to(device)
-                #     print('render')
-                #     renderCount += 1
-                # else:
-                #     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-                #     optimizer.zero_grad()
-                #     if (i == 0):
-                #         loss = nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
-                #         # loss = nn.MSELoss()(params[i], parameter[i]).to(device)
-                #     else:
-                #         loss = loss + nn.MSELoss()(params[i, 3:6], parameter[i, 3:6]).to(device)
-                #         # loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
-                #     print('regression')
-                #     regressionCount += 1
 
-            loss = loss/numbOfImage
+                if(traintype == 'regression'):
+                    if (i == 0):
+                        loss =nn.MSELoss()(params[i], parameter[i]).to(device)
+                    else:
+                        loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+
+
+            if (traintype == 'render'):
+                loss = loss / numbOfImage
+
             loss.backward()
             optimizer.step()
 
@@ -195,9 +192,9 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         current_step_Train_loss  = [] #reset value
         Epoch_Train_losses.append(epochTrainloss)  # most significant value to store
 
+        ## test phase --------------------------------------------------------------------------------------------------------
         count = 0
         testcount = 0
-
 
         model.eval()
 
@@ -211,10 +208,12 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         steps_y_loss = []
         steps_z_loss = []
 
+        for i in range(number_test_im):
+            output_test_image_dir = '{}/images/testIm{}'.format(output_result_dir, i)
+            mkdir_p(output_test_image_dir)
+
         t = tqdm(iter(test_dataloader), leave=True, total=len(test_dataloader))
         for image, silhouette, parameter in t:
-
-
 
             Test_Step_loss = []
             numbOfImage = image.size()[0]
@@ -251,31 +250,30 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                 steps_z_loss.append(z_loss.item())
 
 
+            model.t = params[i, 3:6]
+            R = params[i, 0:3]
+            model.R = R2Rmat(R)  # angle from resnet are in radian
 
-            if epoch_count == n_epochs:
-                model.t = params[i, 3:6]
-                R = params[i, 0:3]
-                model.R = R2Rmat(R)  # angle from resnet are in radian
+            current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
+                                         mode='silhouettes').squeeze()
+            current_sil = current_sil[0:1024, 0:1280]
+            sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
+            current_GT_sil = (silhouette[i] / 255).type(torch.FloatTensor).to(device)
 
-                current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
-                                             mode='silhouettes').squeeze()
-                current_sil = current_sil[0:1024, 0:1280]
-                sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
-                current_GT_sil = (silhouette[i] / 255).type(torch.FloatTensor).to(device)
+            fig = plt.figure()
+            fig.add_subplot(2, 1, 1)
+            plt.imshow(sil2plot, cmap='gray')
 
-                fig = plt.figure()
-                fig.add_subplot(2, 1, 1)
-                plt.imshow(sil2plot, cmap='gray')
-
-                fig.add_subplot(2, 1, 2)
-                plt.imshow(silhouette[i], cmap='gray')
-                plt.savefig('results/image{}_{}.png'.format(traintype, testcount), bbox_inches='tight',
-                            pad_inches=0.05)
-                plt.show()
+            fig.add_subplot(2, 1, 2)
+            plt.imshow(silhouette[i], cmap='gray')
+            plt.savefig('{}/images/testIm{}/im{}epoch{}.png'.format(output_result_dir, testcount, testcount, epoch), bbox_inches='tight',
+                        pad_inches=0.05)
+            plt.show()
 
             #MSE loss
             current_step_Test_loss.append(loss.detach().cpu().numpy())
             testcount = testcount + 1
+     #loop here  for each epoch
 
         epoch_test_loss.append(np.mean(steps_losses))
         epoch_test_alpha_loss.append(np.mean(steps_alpha_loss))
@@ -356,5 +354,89 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     plt.close()
 
 
+    # save the model
+    output_model_dir = '{}/model'.format(output_result_dir)
+    mkdir_p(output_model_dir)
+
+    torch.save(model.state_dict(),'{}/FinalModel_train_{}.pth'.format(output_model_dir,fileExtension))
+    print('parameters saved')
+
     epochsTrainLoss.close()
     TestParamLoss .close()
+
+
+    # if validation:
+    #     # validation --------------------------------------------------------------------------------------------------------
+    #
+    #     print('validation phase')
+    #     Valcount = 0
+    #     processcount = 0
+    #     current_step_Val_loss = []
+    #     Epoch_Val_losses = []
+    #     from PIL import ImageTk, Image, ImageDraw
+    #     epochsValLoss = open("./results/valNoParamShift.txt", "w+")
+    #
+    #     t = tqdm(iter(val_dataloader), leave=True, total=len(val_dataloader))
+    #     for image, silhouette, parameter in t:
+    #         Test_Step_loss = []
+    #         numbOfImage = image.size()[0]
+    #         # image1 = torch.flip(image,[0, 3]) #flip vertical
+    #         # image = torch.roll(image, 100, 3) #shift down from 100 px
+    #         # image1 = shiftPixel(image, 100, 'y')
+    #         image1 = image
+    #         image1 = image1.to(device)  # torch.Size([1, 3, 1024, 1280])
+    #         parameter = parameter.to(device)
+    #         params = model(image1)  # should be size [batchsize, 6]
+    #         # print(np.shape(params))
+    #         i = 0
+    #
+    #         # print('image estimated: {}'.format(testcount))
+    #         # print('estimated parameter {}'.format(params[i]))
+    #         # print('Ground Truth {}'.format(parameter[i]))
+    #
+    #         epochsValLoss.write('step:{} params:{} \r\n'.format(processcount, params.detach().cpu().numpy()))
+    #         loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+    #
+    #         model.t = params[i, 3:6]
+    #         R = params[i, 0:3]
+    #         model.R = R2Rmat(R)  # angle from resnet are in radian
+    #
+    #         current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
+    #                                      mode='silhouettes').squeeze()
+    #         current_sil = current_sil[0:1024, 0:1280]
+    #
+    #         sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
+    #
+    #         image2show = np.squeeze((image1[i].detach().cpu().numpy()))
+    #         image2show = (image2show * 0.5 + 0.5).transpose(1, 2, 0)
+    #         # image2show = np.flip(image2show,1)
+    #
+    #         # fig = plt.figure()
+    #         # fig.add_subplot(2, 1, 1)
+    #         # plt.imshow(sil2plot, cmap='gray')
+    #         #
+    #         # fig.add_subplot(2, 1, 2)
+    #         # plt.imshow(image2show)
+    #         # plt.show()
+    #
+    #         sil3d = sil2plot[:, :, np.newaxis]
+    #         renderim = np.concatenate((sil3d, sil3d, sil3d), axis=2)
+    #         toolIm = Image.fromarray(np.uint8(renderim))
+    #
+    #         # print(type(image2show))
+    #         backgroundIm = Image.fromarray(np.uint8(image2show * 255))
+    #
+    #         # backgroundIm.show()
+    #         #
+    #
+    #         alpha = 0.2
+    #         out = Image.blend(backgroundIm, toolIm, alpha)
+    #         # #make gif
+    #         imsave('/tmp/_tmp_%04d.png' % processcount, np.array(out))
+    #         processcount = processcount + 1
+    #         # print(processcount)
+    #
+    #     print('making the gif')
+    #     make_gif(args.filename_output)
+    #     current_step_Val_loss.append(loss.detach().cpu().numpy())
+    #     epochsValLoss.close()
