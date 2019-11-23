@@ -27,7 +27,7 @@ file_name_extension = '444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 
 batch_size = 2
-vallen = 200
+vallen = 100
 n_epochs = 100
 
 
@@ -98,7 +98,7 @@ train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=2)
 val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
-
+#
 # for image, sil, param in train_dataloader:
 #
 # #plot silhouette

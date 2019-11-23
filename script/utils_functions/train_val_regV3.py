@@ -32,7 +32,7 @@ sil_dir = os.path.join(current_dir, 'SilOutput')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-or', '--filename_output', type=str,
-                    default=os.path.join(sil_dir, 'RegShiftResultSilhouette_{}.gif'.format('test1')))
+                    default=os.path.join(sil_dir, 'ResultSilhouette_{}.gif'.format('test1')))
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
@@ -44,6 +44,21 @@ def make_gif(filename):
             writer.append_data(imread(filename))
             os.remove(filename)
     writer.close()
+
+def shiftPixel(image=None, shift=0, axis= 'y'):
+
+    if axis == 'x':
+
+        image = torch.roll(image, shift, 3)
+        image[0, :, :, 0:shift] = 0
+    if axis == 'y':
+
+        image = torch.roll(image, shift, 2)
+        image[0, :, 0:shift,: ] = 0
+
+    return image
+
+
 
 def RolAv(list, window = 2):
 
@@ -224,6 +239,8 @@ def train_regV3(model, train_dataloader, test_dataloader,
     current_step_Val_loss =[]
     Epoch_Val_losses= []
     from PIL import ImageTk, Image, ImageDraw
+    epochsValLoss = open(
+        "./results/valParamNoShift.txt", "w+")
 
     t = tqdm(iter(val_dataloader), leave=True, total=len(val_dataloader))
     for image, silhouette, parameter in t:
@@ -231,10 +248,12 @@ def train_regV3(model, train_dataloader, test_dataloader,
         Test_Step_loss = []
         numbOfImage = image.size()[0]
         # image = torch.flip(image,[0, 3]) #flip vertical
-        image = torch.roll(image, 1024, 3) #shift down from 100 px
-        image = image.to(device)
+        # image = torch.roll(image, 100, 3) #shift down from 100 px
+        # image1 = shiftPixel(image, 100, 'y')
+        image1 = image
+        image1 = image1.to(device) #torch.Size([1, 3, 1024, 1280])
         parameter = parameter.to(device)
-        params = model(image)  # should be size [batchsize, 6]
+        params = model(image1)  # should be size [batchsize, 6]
         # print(np.shape(params))
         i=0
 
@@ -242,6 +261,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
         # print('estimated parameter {}'.format(params[i]))
         # print('Ground Truth {}'.format(parameter[i]))
 
+        epochsValLoss.write('step:{} params:{} \r\n'.format(processcount, parameter.detach().cpu().numpy()))
         loss = nn.MSELoss()(params[i], parameter[i]).to(device)
 
 
@@ -258,7 +278,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
 
         sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
 
-        image2show =  np.squeeze((image[i].detach().cpu().numpy()))
+        image2show =  np.squeeze((image1[i].detach().cpu().numpy()))
         image2show = (image2show * 0.5 + 0.5).transpose(1, 2, 0)
         # image2show = np.flip(image2show,1)
 
@@ -292,6 +312,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
     print('making the gif')
     make_gif(args.filename_output)
     current_step_Val_loss.append(loss.detach().cpu().numpy())
+    epochsValLoss.close()
     # Valcount = Valcount + 1
     #
     # epochValloss = np.mean(current_step_Val_loss)

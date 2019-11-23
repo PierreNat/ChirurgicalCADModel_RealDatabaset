@@ -102,7 +102,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
         "./results/epochsValLoss_{}_{}_RenderRegr_{}.txt".format(date4File,str(n_epochs), fileExtension), "w+")
 
     x = np.arange(n_epochs)
-    y = sigmoid(x, 1, 0, n_epochs/2, 0.5)
+    y = sigmoid(x, 1, 0, n_epochs/2, 0.2)
 
     plt.plot(x, y)
     plt.show()
