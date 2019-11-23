@@ -94,23 +94,23 @@ def RolAv(list, window = 2):
     return moving_aves
 
 def FKBuild(parameters, AngleNoise, Translation_noise):
-    print(parameters.size(), parameters.size()[0])
-    print(parameters)
-    print(parameters[0][3])
+    # print(parameters.size(), parameters.size()[0])
+    # print(parameters)
+    # print(parameters[0][3])
     Noisyparameters = parameters
 
     for i in range(parameters.size()[0]): # the size is the number of item in the batch
         for j in range(parameters.size()[1]): #go trough all extrinsic parameter parameters[i][0 to  5]
             if j <= 2: #angle modification
-                print('modif angle')
+                # print('modif angle')
 
                 Noisyparameters[i][j] = parameters[i][j] + AngleNoise
             else:
-                print('modif translation')
+                # print('modif translation')
                 Noisyparameters[i][j] = parameters[i][j] + Translation_noise
 
     Noisyparameters = parameters
-    print(Noisyparameters)
+    # print(Noisyparameters)
     return Noisyparameters
 
 
@@ -163,7 +163,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
 
-        alpha = y[epoch] #proportion of the regression part decrease with negative sigmoid
+        alpha = 0# y[epoch] #proportion of the regression part decrease with negative sigmoid
 
         print('alpha is {}'.format(alpha))
 
