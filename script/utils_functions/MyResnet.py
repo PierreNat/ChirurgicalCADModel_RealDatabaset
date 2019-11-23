@@ -74,7 +74,7 @@ class ModelResNet50(ResNet):
 
         self.fc
 
-        self.fc1 = nn.Linear(2*6, 8)
+        self.fc1 = nn.Linear(2*6, 6)
         self.fc2 = nn.Linear(8, 6)
 
 
@@ -156,22 +156,27 @@ class ModelResNet50(ResNet):
 
         self.renderer = renderer
 
-    def forward(self, x, fkParam = 0):
+    def forward(self, x, fkParam = 0, fk=False):
         # print('x has size {}'.format(x.size())) #x has size torch.Size([2, 3, 1024, 1280])
-        # print('fk params are {}'.format(fkParam)) #x has size torch.Size([2, 6])
+        # print('fk params are {}'.format(fkParam.size())) #x has size torch.Size([2, 6])
         x = self.seq1(x)
         x = self.seq2(x)
         # print(x.size()) # size is torch.Size([2, 2048, 1, 1])
         x = x.view(x.size(0), -1) #torch.Size([2, 2048])
         #  print(x.size())
         params = self.fc(x)
-        # print(params.size())
 
-        third_tensor = torch.cat((params, fkParam), 1) #torch.Size([2, 12])
-        # print('concat has size {}'.format(third_tensor.size()))
-        x = F.relu(self.fc1(third_tensor))
-        NewEstimate = F.relu(self.fc2(x))
-        # print('NewEst has size {}'.format(NewEstimate.size()))
-        # print('computed parameters are {}'.format(params))
-        # return params
-        return NewEstimate
+        if fk:
+            third_tensor = torch.cat((params, fkParam), 1) #torch.Size([2, 12])
+            # print('concat has size {}'.format(third_tensor.size()))
+            x = F.relu(self.fc1(third_tensor))
+            NewEstimate = x
+            # print('NewEst has size {}'.format(NewEstimate.size()))
+            # print('computed parameters are {}'.format(params))
+            # return params
+            return NewEstimate
+
+        # print(params.size())
+        else:
+            print('no fk')
+            return params

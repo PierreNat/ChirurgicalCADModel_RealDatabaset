@@ -27,6 +27,7 @@ batch_size = 2
 vallen = 100
 n_epochs = 10
 lr = 0.0001
+useofFK = True
 validation = False
 date4File = '15111' #mmddyy
 obj_name = 'shaftshortOnly'
@@ -173,7 +174,7 @@ bool_first = True
 #  ------------------------------------------------------------------
 #call training
 
-training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im)
+training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK )
 
 #call regression
 # train_regV3(model, train_dataloader, test_dataloader,

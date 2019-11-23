@@ -114,7 +114,7 @@ def FKBuild(parameters, AngleNoise, Translation_noise):
     return Noisyparameters
 
 
-def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im):
+def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK ):
     # monitor loss functions as the training progresses
 
 
@@ -163,7 +163,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
 
-        alpha = 0# y[epoch] #proportion of the regression part decrease with negative sigmoid
+        alpha = -1#y[epoch] #proportion of the regression part decrease with negative sigmoid
 
         print('alpha is {}'.format(alpha))
 
@@ -174,7 +174,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             FKparameters = FKBuild(parameter,np.radians(15),0.02) #add noise to the ground truth parameter, degree and cm
             FKparameters = FKparameters.to(device)
             parameter = parameter.to(device)
-            params = model(image, FKparameters)  # should be size [batchsize, 6]
+            params = model(image, FKparameters, useofFK)  # should be size [batchsize, 6]
 
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
             optimizer.zero_grad()
@@ -191,10 +191,18 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                 current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
 
                 if(traintype == 'render'):
-                    if (i == 0):
-                        loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
-                    else:
-                        loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
+
+                    if alpha >= 0:
+                        if (i == 0):
+                            loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
+                        else:
+                            loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
+
+                    else: #use of noise
+                        if (i == 0):
+                            loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                        else:
+                            loss += nn.BCELoss()(current_sil, current_GT_sil).to(device)
 
 
                 if(traintype == 'regression'):
@@ -206,7 +214,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
 
             loss = loss / numbOfImage
-
+            print('step {} loss is {}'.format(count,loss))
             loss.backward()
             optimizer.step()
 
