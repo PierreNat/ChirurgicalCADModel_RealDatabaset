@@ -93,6 +93,27 @@ def RolAv(list, window = 2):
 
     return moving_aves
 
+def FKBuild(parameters, AngleNoise, Translation_noise):
+    print(parameters.size(), parameters.size()[0])
+    print(parameters)
+    print(parameters[0][3])
+    Noisyparameters = parameters
+
+    for i in range(parameters.size()[0]): # the size is the number of item in the batch
+        for j in range(parameters.size()[1]): #go trough all extrinsic parameter parameters[i][0 to  5]
+            if j <= 2: #angle modification
+                print('modif angle')
+
+                Noisyparameters[i][j] = parameters[i][j] + AngleNoise
+            else:
+                print('modif translation')
+                Noisyparameters[i][j] = parameters[i][j] + Translation_noise
+
+    Noisyparameters = parameters
+    print(Noisyparameters)
+    return Noisyparameters
+
+
 def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im):
     # monitor loss functions as the training progresses
 
@@ -147,10 +168,13 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         print('alpha is {}'.format(alpha))
 
         t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
-        for image, silhouette, parameter in t:
+        for image, silhouette, parameter in train_dataloader:
             image = image.to(device)
+
+            FKparameters = FKBuild(parameter,np.radians(15),0.02) #add noise to the ground truth parameter, degree and cm
+            FKparameters = FKparameters.to(device)
             parameter = parameter.to(device)
-            params = model(image)  # should be size [batchsize, 6]
+            params = model(image, FKparameters)  # should be size [batchsize, 6]
 
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
             optimizer.zero_grad()
