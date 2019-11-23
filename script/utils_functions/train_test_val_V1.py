@@ -59,9 +59,6 @@ def sigmoid(x, a, b, c, d):
     y = ((a-b) / (1 + np.exp(x-(c/2))**d)) + b
     return y
 
-
-
-
 def make_gif(filename):
     with imageio.get_writer(filename, mode='I') as writer:
         for filename in sorted(glob.glob('/tmp/_tmp_*.png')):
@@ -85,11 +82,8 @@ def RolAv(list, window = 2):
 
     return moving_aves
 
-def train_renderV3(model, train_dataloader, test_dataloader,
-                 n_epochs, loss_function,
-                 date4File, cubeSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im):
+def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation):
     # monitor loss functions as the training progresses
-
 
 
     current_step_Train_loss  = []
@@ -103,13 +97,13 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     lr= 0.001
     print('lr used is: {}'.format(lr))
 
-    output_result_dir = 'results/render/{}_lr{}'.format(fileExtension,lr)
+    output_result_dir = 'results/{}/{}_lr{}'.format(traintype,fileExtension,lr)
     mkdir_p(output_result_dir)
     
     epochsTrainLoss = open(
-        "{}/epochsTrainLoss_RenderRegr_{}.txt".format(output_result_dir, fileExtension), "w+")
+        "{}/epochsTrainLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
     TestParamLoss = open(
-        "{}/TestParamLoss_RenderRegr_{}.txt".format(output_result_dir, fileExtension), "w+")
+        "{}/TestParamLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
 
     x = np.arange(n_epochs)
     y = sigmoid(x, 1, 0, n_epochs/2, 0.2)
@@ -275,7 +269,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
 
                 fig.add_subplot(2, 1, 2)
                 plt.imshow(silhouette[i], cmap='gray')
-                plt.savefig('results/imageRender_{}.png'.format(testcount), bbox_inches='tight',
+                plt.savefig('results/image{}_{}.png'.format(traintype, testcount), bbox_inches='tight',
                             pad_inches=0.05)
                 plt.show()
 
@@ -310,7 +304,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     fig, (ax1, ax2) = plt.subplots(2, 1)
     # ax1 = plt.subplot(2, 1, 1)
     ax1.plot(Epoch_Train_losses)
-    ax1.set_ylabel('training render BCE loss')
+    ax1.set_ylabel('training {} BCE loss'.format(traintype))
     ax1.set_xlabel('epoch')
     ax1.set_xlim([0, n_epochs])
     ax1.set_ylim([0, 4])
@@ -319,14 +313,14 @@ def train_renderV3(model, train_dataloader, test_dataloader,
 
     # ax2 = plt.subplot(2, 1, 2)
     ax2.plot(Epoch_Test_losses)
-    ax2.set_ylabel('test render MSE loss')
+    ax2.set_ylabel('test {} MSE loss'.format(traintype))
     ax2.set_xlabel('epoch')
     ax2.set_xlim([0, n_epochs])
     ax2.set_ylim([0, 0.1])
     # ax2.set_yscale('log')
 
 
-    plt.savefig('{}/training_epochs_rend_results_{}.png'.format(output_result_dir,fileExtension), bbox_inches='tight', pad_inches=0.05)
+    plt.savefig('{}/training_epochs_{}_results_{}.png'.format(output_result_dir,traintype,fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
     plt.close()
 
@@ -357,7 +351,7 @@ def train_renderV3(model, train_dataloader, test_dataloader,
     z.set_xlabel('epoch')
 
 
-    plt.savefig('{}/test_epochs_rend_Rt_Loss_{}.png'.format(output_result_dir,fileExtension), bbox_inches='tight', pad_inches=0.05)
+    plt.savefig('{}/test_epochs_{}_Rt_Loss_{}.png'.format(output_result_dir,traintype,fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
     plt.close()
 
