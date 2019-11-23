@@ -79,9 +79,9 @@ test_param  = params[:split]
 number_test_im = np.shape(test_im)[0]
 print('we have {} images for the test '.format(number_test_im))
 
-val_im  = BackgroundVal[:vallen]
-val_sil  = silsVal[:vallen]
-val_param = paramsVal[:vallen]
+val_im  = BackgroundVal[100:200]
+val_sil  = silsVal[100:200]
+val_param = paramsVal[100:200]
 
 
 
@@ -164,8 +164,8 @@ args = parser.parse_args()
 model = Myresnet50(filename_obj=args.filename_obj)
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr')
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav')
-# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result
-# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_60epochs_Noise0.0_test_RenderRegrSave')
+model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result
+# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='FinalModel_train_15111regression_100epochs_test')
 # 151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave
 # 211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr
 
@@ -181,18 +181,15 @@ criterion = nn.BCELoss()  #nn.BCELoss()   #nn.CrossEntropyLoss()  define the los
 #  ------------------------------------------------------------------
 #call renderer
 
-train_renderV3(model, train_dataloader, test_dataloader,
-                                        n_epochs, criterion,
-                                        date4File, ShaftSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
+# train_renderV3(model, train_dataloader, test_dataloader,
+#                                         n_epochs, criterion,
+#                                         date4File, ShaftSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im)
 
 #call regression
-# train_regV3(model, train_dataloader, test_dataloader,
-#                                         n_epochs, criterion,
-#                                         date4File, ShaftSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader)
+train_regV3(model, train_dataloader, test_dataloader,
+                                        n_epochs, criterion,
+                                        date4File, ShaftSetName, batch_size, fileExtension, device, obj_name, noise, number_train_im, val_dataloader)
 
 #  ------------------------------------------------------------------
-
-torch.save(model.state_dict(), 'models/{}_FinalModel_train_{}_{}batchs_{}epochs_Noise{}_{}_RenderRegr.pth'.format(date4File, ShaftSetName, str(batch_size), str(n_epochs), noise*100,fileExtension))
-print('parameters saved')
 
 #  ------------------------------------------------------------------

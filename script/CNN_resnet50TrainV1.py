@@ -13,7 +13,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor, Compose, Normalize, Lambda
 from utils_functions.MyResnet import Myresnet50
-from utils_functions.train_val_regV3 import train_regV3
 from utils_functions.train_test_val_V1 import training
 from utils_functions.cubeDataset import CubeDataset
 
@@ -32,7 +31,7 @@ validation = False
 date4File = '15111' #mmddyy
 obj_name = 'shaftshortOnly'
 comment = 'test'
-traintype = 'regression' #'regression' or 'render'
+traintype = 'render' #'regression' or 'render'
 
 file_name_extension = '444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
@@ -95,7 +94,7 @@ test_dataset = CubeDataset(test_im, test_sil, test_param, transforms)
 val_dataset = CubeDataset(val_im, val_sil, val_param, transforms)
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=2)
+test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
 #

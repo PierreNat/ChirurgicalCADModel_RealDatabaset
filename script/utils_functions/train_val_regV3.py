@@ -32,7 +32,7 @@ sil_dir = os.path.join(current_dir, 'SilOutput')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-or', '--filename_output', type=str,
-                    default=os.path.join(sil_dir, 'ResultNoShitSilhouette_{}.gif'.format('0')))
+                    default=os.path.join(sil_dir, 'ResultshiftxSilhouette_{}.gif'.format('oldmod')))
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
@@ -105,142 +105,142 @@ def train_regV3(model, train_dataloader, test_dataloader,
 
 # training -------------------------------------------------------------------------------------------------------
 
-    for epoch in range(n_epochs):
-
-        ## Training phase
-        model.train()
-        print('train phase epoch {}/{}'.format(epoch, n_epochs))
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-
-        t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
-        for image, silhouette, parameter in t:
-            image = image.to(device)
-            parameter = parameter.to(device)
-            params = model(image)  # should be size [batchsize, 6]
-            optimizer.zero_grad()
-
-            # print(params)
-            numbOfImage = image.size()[0]
-            # loss = nn.MSELoss()(params, parameter).to(device)
-
-
-            for i in range(0,numbOfImage):
-                #create and store silhouette
-                if (i == 0):
-                    loss =nn.MSELoss()(params[i], parameter[i]).to(device)
-                else:
-                    loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
-
-
-            loss.backward()
-            optimizer.step()
-
-            print(loss)
-            current_step_loss.append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
-            count = count + 1
-
-        epochValloss = np.mean(current_step_loss)
-        current_step_loss = [] #reset value
-        Epoch_Val_losses.append(epochValloss)  # most significant value to store
-        # print(epochValloss)
-
-        print(Epoch_Val_losses)
-
-
-        #test --------------------------------------------------------------------------------------------------------
-
-        count = 0
-        testcount = 0
-        model.eval()
-
-        t = tqdm(iter(test_dataloader), leave=True, total=len(test_dataloader))
-        for image, silhouette, parameter in t:
-
-            Test_Step_loss = []
-            numbOfImage = image.size()[0]
-
-            image = image.to(device)
-            parameter = parameter.to(device)
-            params = model(image)  # should be size [batchsize, 6]
-            # print(np.shape(params))
-
-            for i in range(0, numbOfImage):
-                print('image tested: {}'.format(testcount))
-                print('estated {}'.format(params[i]))
-                print('Ground Truth {}'.format(parameter[i]))
-                if (i == 0):
-                    loss = nn.MSELoss()(params[i], parameter[i]).to(device)
-                else:
-                    loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
-
-            if epoch_count == n_epochs:
-                model.t = params[i, 3:6]
-                R = params[i, 0:3]
-                model.R = R2Rmat(R)  # angle from resnet are in radian
-
-                current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
-                                             mode='silhouettes').squeeze()
-                current_sil = current_sil[0:1024, 0:1280]
-                sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
-                current_GT_sil = (silhouette[i] / 255).type(torch.FloatTensor).to(device)
-
-                fig = plt.figure()
-                fig.add_subplot(2, 1, 1)
-                plt.imshow(sil2plot, cmap='gray')
-
-                fig.add_subplot(2, 1, 2)
-                plt.imshow(silhouette[i], cmap='gray')
-                plt.savefig('results/image_{}.png'.format(testcount), bbox_inches='tight',
-                            pad_inches=0.05)
-                # plt.show()
-
-            current_step_Test_loss.append(loss.detach().cpu().numpy())
-            testcount = testcount + 1
-
-        epochTestloss = np.mean(current_step_Test_loss)
-        current_step_Test_loss = [] #reset the loss value
-        Epoch_Test_losses.append(epochTestloss)  # most significant value to store
-        epoch_count = epoch_count+1
-
-
-    # plt.plot(Epoch_Test_losses)
-    # plt.ylabel('loss')
-    # plt.xlabel('step')
-    # plt.ylim(0, 2)
-
-    fig, (ax1, ax2) = plt.subplots(2, 1)
-    # ax1 = plt.subplot(2, 1, 1)
-    ax1.plot(Epoch_Val_losses)
-    ax1.set_ylabel('training loss')
-    ax1.set_xlabel('epoch')
-    ax1.set_xlim([0, n_epochs])
-    ax1.set_ylim([0, 0.4])
-    ax1.set_yscale('log')
-    # ax1.ylim(0, 0.4)
-
-    # ax2 = plt.subplot(2, 1, 2)
-    ax2.plot(Epoch_Test_losses)
-    ax2.set_ylabel('test loss')
-    ax2.set_xlabel('epoch')
-    ax2.set_xlim([0, n_epochs])
-    ax2.set_ylim([0, 0.1])
-    ax2.set_yscale('log')
-    # ax2.ylim(0, 0.08)
-
-
-    plt.savefig('results/training_epochs_results_reg_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)
-    # plt.show()
+    # for epoch in range(n_epochs):
+    #
+    #     ## Training phase
+    #     model.train()
+    #     print('train phase epoch {}/{}'.format(epoch, n_epochs))
+    #     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    #
+    #     t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
+    #     for image, silhouette, parameter in t:
+    #         image = image.to(device)
+    #         parameter = parameter.to(device)
+    #         params = model(image)  # should be size [batchsize, 6]
+    #         optimizer.zero_grad()
+    #
+    #         # print(params)
+    #         numbOfImage = image.size()[0]
+    #         # loss = nn.MSELoss()(params, parameter).to(device)
+    #
+    #
+    #         for i in range(0,numbOfImage):
+    #             #create and store silhouette
+    #             if (i == 0):
+    #                 loss =nn.MSELoss()(params[i], parameter[i]).to(device)
+    #             else:
+    #                 loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+    #
+    #
+    #         loss.backward()
+    #         optimizer.step()
+    #
+    #         print(loss)
+    #         current_step_loss.append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
+    #         count = count + 1
+    #
+    #     epochValloss = np.mean(current_step_loss)
+    #     current_step_loss = [] #reset value
+    #     Epoch_Val_losses.append(epochValloss)  # most significant value to store
+    #     # print(epochValloss)
+    #
+    #     print(Epoch_Val_losses)
+    #
+    #
+    #     #test --------------------------------------------------------------------------------------------------------
+    #
+    #     count = 0
+    #     testcount = 0
+    #     model.eval()
+    #
+    #     t = tqdm(iter(test_dataloader), leave=True, total=len(test_dataloader))
+    #     for image, silhouette, parameter in t:
+    #
+    #         Test_Step_loss = []
+    #         numbOfImage = image.size()[0]
+    #
+    #         image = image.to(device)
+    #         parameter = parameter.to(device)
+    #         params = model(image)  # should be size [batchsize, 6]
+    #         # print(np.shape(params))
+    #
+    #         for i in range(0, numbOfImage):
+    #             print('image tested: {}'.format(testcount))
+    #             print('estated {}'.format(params[i]))
+    #             print('Ground Truth {}'.format(parameter[i]))
+    #             if (i == 0):
+    #                 loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+    #             else:
+    #                 loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+    #
+    #         if epoch_count == n_epochs:
+    #             model.t = params[i, 3:6]
+    #             R = params[i, 0:3]
+    #             model.R = R2Rmat(R)  # angle from resnet are in radian
+    #
+    #             current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
+    #                                          mode='silhouettes').squeeze()
+    #             current_sil = current_sil[0:1024, 0:1280]
+    #             sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
+    #             current_GT_sil = (silhouette[i] / 255).type(torch.FloatTensor).to(device)
+    #
+    #             fig = plt.figure()
+    #             fig.add_subplot(2, 1, 1)
+    #             plt.imshow(sil2plot, cmap='gray')
+    #
+    #             fig.add_subplot(2, 1, 2)
+    #             plt.imshow(silhouette[i], cmap='gray')
+    #             plt.savefig('results/image_{}.png'.format(testcount), bbox_inches='tight',
+    #                         pad_inches=0.05)
+    #             # plt.show()
+    #
+    #         current_step_Test_loss.append(loss.detach().cpu().numpy())
+    #         testcount = testcount + 1
+    #
+    #     epochTestloss = np.mean(current_step_Test_loss)
+    #     current_step_Test_loss = [] #reset the loss value
+    #     Epoch_Test_losses.append(epochTestloss)  # most significant value to store
+    #     epoch_count = epoch_count+1
+    #
+    #
+    # # plt.plot(Epoch_Test_losses)
+    # # plt.ylabel('loss')
+    # # plt.xlabel('step')
+    # # plt.ylim(0, 2)
+    #
+    # fig, (ax1, ax2) = plt.subplots(2, 1)
+    # # ax1 = plt.subplot(2, 1, 1)
+    # ax1.plot(Epoch_Val_losses)
+    # ax1.set_ylabel('training loss')
+    # ax1.set_xlabel('epoch')
+    # ax1.set_xlim([0, n_epochs])
+    # ax1.set_ylim([0, 0.4])
+    # ax1.set_yscale('log')
+    # # ax1.ylim(0, 0.4)
+    #
+    # # ax2 = plt.subplot(2, 1, 2)
+    # ax2.plot(Epoch_Test_losses)
+    # ax2.set_ylabel('test loss')
+    # ax2.set_xlabel('epoch')
+    # ax2.set_xlim([0, n_epochs])
+    # ax2.set_ylim([0, 0.1])
+    # ax2.set_yscale('log')
+    # # ax2.ylim(0, 0.08)
+    #
+    #
+    # plt.savefig('results/training_epochs_results_reg_{}.png'.format(fileExtension), bbox_inches='tight', pad_inches=0.05)
+    # # plt.show()
 
     # validation --------------------------------------------------------------------------------------------------------
 
     print('validation phase')
     Valcount = 0
     processcount = 0
-    current_step_Val_loss =[]
+    step_Val_loss =[]
     Epoch_Val_losses= []
     from PIL import ImageTk, Image, ImageDraw
     epochsValLoss = open(
-        "./results/valNoParamShift.txt", "w+")
+        "./results/valbothParamShift.txt", "w+")
 
     t = tqdm(iter(val_dataloader), leave=True, total=len(val_dataloader))
     for image, silhouette, parameter in t:
@@ -250,7 +250,11 @@ def train_regV3(model, train_dataloader, test_dataloader,
         # image1 = torch.flip(image,[0, 3]) #flip vertical
         # image = torch.roll(image, 100, 3) #shift down from 100 px
         # image1 = shiftPixel(image, 100, 'y')
-        image1 = image
+        image1 =   shiftPixel(image , 100, 'x')
+        # image1 = torch.flip(image1, [0, 3])
+        # image1 = image
+        Origimagesave = image1
+        # Origimagesave = image.to(device)
         image1 = image1.to(device) #torch.Size([1, 3, 1024, 1280])
         parameter = parameter.to(device)
         params = model(image1)  # should be size [batchsize, 6]
@@ -278,7 +282,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
 
         sil2plot = np.squeeze((current_sil.detach().cpu().numpy() * 255)).astype(np.uint8)
 
-        image2show =  np.squeeze((image1[i].detach().cpu().numpy()))
+        image2show =  np.squeeze((Origimagesave[i].detach().cpu().numpy()))
         image2show = (image2show * 0.5 + 0.5).transpose(1, 2, 0)
         # image2show = np.flip(image2show,1)
 
@@ -307,13 +311,16 @@ def train_regV3(model, train_dataloader, test_dataloader,
         # #make gif
         imsave('/tmp/_tmp_%04d.png' % processcount, np.array(out))
         processcount = processcount + 1
+        step_Val_loss.append(loss.detach().cpu().numpy())
         # print(processcount)
 
-    print('making the gif')
+    # print('making the gif')
     make_gif(args.filename_output)
-    current_step_Val_loss.append(loss.detach().cpu().numpy())
+    
+    print(step_Val_loss)
+    print(np.mean(step_Val_loss))
     epochsValLoss.close()
     # Valcount = Valcount + 1
     #
-    # epochValloss = np.mean(current_step_Val_loss)
+    # epochValloss = np.mean(step_Val_loss)
     # Epoch_Val_losses.append(epochValloss)  # most significant value to store

@@ -132,6 +132,8 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     epoch_test_y_loss = []
     epoch_test_z_loss = []
 
+    Epoch_Test_losses = []
+
 
     for epoch in range(n_epochs):
 
@@ -177,8 +179,8 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                         loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
 
 
-            if (traintype == 'render'):
-                loss = loss / numbOfImage
+
+            loss = loss / numbOfImage
 
             loss.backward()
             optimizer.step()
@@ -199,7 +201,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         model.eval()
 
         current_step_Test_loss = []
-        Epoch_Test_losses = []
+
         steps_losses = []  # reset the list after each epoch
         steps_alpha_loss = []
         steps_beta_loss = []
@@ -301,21 +303,18 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
 
     fig, (ax1, ax2) = plt.subplots(2, 1)
-    # ax1 = plt.subplot(2, 1, 1)
-    ax1.plot(Epoch_Train_losses)
-    ax1.set_ylabel('training {} BCE loss'.format(traintype))
-    ax1.set_xlabel('epoch')
+    ax1.semilogy(Epoch_Train_losses)
+    ax1.set_ylabel('train {} loss'.format(traintype))
     ax1.set_xlim([0, n_epochs])
-    ax1.set_ylim([0, 4])
+    # ax1.set_ylim([0, 4])
     # ax1.set_yscale('log')
 
 
-    # ax2 = plt.subplot(2, 1, 2)
-    ax2.plot(Epoch_Test_losses)
-    ax2.set_ylabel('test {} MSE loss'.format(traintype))
+    ax2.semilogy(Epoch_Test_losses)
+    ax2.set_ylabel('test {} loss'.format(traintype))
     ax2.set_xlabel('epoch')
     ax2.set_xlim([0, n_epochs])
-    ax2.set_ylim([0, 0.1])
+    # ax2.set_ylim([0, 0.1])
     # ax2.set_yscale('log')
 
 
@@ -323,34 +322,41 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     plt.show()
     plt.close()
 
-    fig, (a,b,g,x,y,z) = plt.subplots(6, 1)
-    a.plot(epoch_test_alpha_loss)
+    fig, (a,b,g) = plt.subplots(3, 1)
+    a.semilogy(epoch_test_alpha_loss)
     a.set_xlim([0, n_epochs])
-    a.set_ylabel('test alpha loss')
+    a.set_ylabel('a')
 
-    b.plot(epoch_test_beta_loss)
+    b.semilogy(epoch_test_beta_loss)
     b.set_xlim([0, n_epochs])
-    b.set_ylabel('test beta loss')
+    b.set_ylabel('b')
 
-    g.plot(epoch_test_gamma_loss)
+    g.semilogy(epoch_test_gamma_loss)
     g.set_xlim([0, n_epochs])
-    g.set_ylabel('test gamma loss')
+    g.set_ylabel('g')
+    g.set_xlabel('MSE loss evolution through epochs')
 
-    x.plot(epoch_test_x_loss)
+    plt.savefig('{}/test_epochs_{}_R_Loss_{}.png'.format(output_result_dir,traintype,fileExtension), bbox_inches='tight', pad_inches=0.05)
+    plt.show()
+    plt.close()
+
+    fig, (x,y,z) = plt.subplots(3, 1)
+
+    x.semilogy(epoch_test_x_loss)
     x.set_xlim([0, n_epochs])
-    x.set_ylabel('test x loss')
+    x.set_ylabel('x')
 
-    y.plot(epoch_test_y_loss)
+    y.semilogy(epoch_test_y_loss)
     y.set_xlim([0, n_epochs])
-    y.set_ylabel('test y loss')
+    y.set_ylabel('y')
 
-    z.plot(epoch_test_z_loss)
+    z.semilogy(epoch_test_z_loss)
     z.set_xlim([0, n_epochs])
-    z.set_ylabel('test z loss')
-    z.set_xlabel('epoch')
+    z.set_ylabel('z')
+    z.set_xlabel('MSE loss evolution through epochs')
 
 
-    plt.savefig('{}/test_epochs_{}_Rt_Loss_{}.png'.format(output_result_dir,traintype,fileExtension), bbox_inches='tight', pad_inches=0.05)
+    plt.savefig('{}/test_epochs_{}_t_Loss_{}.png'.format(output_result_dir,traintype,fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
     plt.close()
 
