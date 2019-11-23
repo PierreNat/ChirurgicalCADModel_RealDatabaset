@@ -102,7 +102,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
     count = 0
     epoch_count = 1
-    lr= 0.001
+    lr= lr
     print('training {}'.format(traintype))
     print('lr used is: {}'.format(lr))
 
@@ -269,6 +269,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             plt.savefig('{}/images/testIm{}/im{}epoch{}.png'.format(output_result_dir, testcount, testcount, epoch), bbox_inches='tight',
                         pad_inches=0.05)
             plt.show()
+            plt.close()
 
             #MSE loss
             current_step_Test_loss.append(loss.detach().cpu().numpy())
