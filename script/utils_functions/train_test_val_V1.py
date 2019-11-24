@@ -163,18 +163,28 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         model.train()
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
 
-        alpha = -1#y[epoch] #proportion of the regression part decrease with negative sigmoid
+        if useofFK:
+            alpha = -1#y[epoch] #proportion of the regression part decrease with negative sigmoid
+        else:
+            alpha = y[epoch]
+
 
         print('alpha is {}'.format(alpha))
 
         t = tqdm(iter(train_dataloader), leave=True, total=len(train_dataloader))
-        for image, silhouette, parameter in train_dataloader:
+        for image, silhouette, parameter in t:
             image = image.to(device)
 
-            FKparameters = FKBuild(parameter,np.radians(15),0.02) #add noise to the ground truth parameter, degree and cm
-            FKparameters = FKparameters.to(device)
+            if useofFK:
+                FKparameters = FKBuild(parameter,np.radians(2),0.001) #add noise to the ground truth parameter, degree and cm
+                FKparameters = FKparameters.to(device)
+                params = model(image, FKparameters, useofFK)  # should be size [batchsize, 6]
+
+            else:
+                params = model(image)
+
             parameter = parameter.to(device)
-            params = model(image, FKparameters, useofFK)  # should be size [batchsize, 6]
+
 
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
             optimizer.zero_grad()
@@ -192,17 +202,18 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
                 if(traintype == 'render'):
 
-                    if alpha >= 0:
-                        if (i == 0):
-                            loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
-                        else:
-                            loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
+                    if useofFK: #use of the mlp
 
-                    else: #use of noise
                         if (i == 0):
                             loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
                         else:
                             loss += nn.BCELoss()(current_sil, current_GT_sil).to(device)
+
+                    else: #use sigmoid curve
+                        if (i == 0):
+                            loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
+                        else:
+                            loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
 
 
                 if(traintype == 'regression'):
@@ -255,7 +266,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
             image = image.to(device)
             parameter = parameter.to(device)
-            params = model(image)  # should be size [batchsize, 6]
+            params = model(image, 0, False)  # should be size [batchsize, 6]
             # print(np.shape(params))
 
 

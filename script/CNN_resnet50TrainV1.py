@@ -26,10 +26,10 @@ print(device)
 batch_size = 2
 vallen = 100
 n_epochs = 10
-lr = 0.0001
+lr = 0.00001
 useofFK = True
 validation = False
-date4File = '15111' #mmddyy
+date4File = '241119' #mmddyy
 obj_name = 'shaftshortOnly'
 comment = 'test'
 traintype = 'render' #'regression' or 'render'

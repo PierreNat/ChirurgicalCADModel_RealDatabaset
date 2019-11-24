@@ -162,9 +162,9 @@ args = parser.parse_args()
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 model = Myresnet50(filename_obj=args.filename_obj)
-# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr')
+model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='FinalModel_train_15111render_121epochs_testlossdivision')
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav')
-model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result
+# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='FinalModel_train_15111regression_100epochs_test')
 # 151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave
 # 211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr

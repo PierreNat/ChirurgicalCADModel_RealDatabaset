@@ -74,8 +74,8 @@ class ModelResNet50(ResNet):
 
         self.fc
 
-        self.fc1 = nn.Linear(2*6, 6)
-        self.fc2 = nn.Linear(8, 6)
+        # self.fc1 = nn.Linear(2*6, 6)
+        # self.fc2 = nn.Linear(8, 6)
 
 
 # render part
@@ -165,15 +165,17 @@ class ModelResNet50(ResNet):
         x = x.view(x.size(0), -1) #torch.Size([2, 2048])
         #  print(x.size())
         params = self.fc(x)
+        # print('params {}'.format(params))
 
         if fk:
             third_tensor = torch.cat((params, fkParam), 1) #torch.Size([2, 12])
             # print('concat has size {}'.format(third_tensor.size()))
-            x = F.relu(self.fc1(third_tensor))
-            NewEstimate = x
+            third_tensor  = self.fc1(third_tensor)
+            NewEstimate = third_tensor
             # print('NewEst has size {}'.format(NewEstimate.size()))
             # print('computed parameters are {}'.format(params))
             # return params
+            # print('new estimage {}'.format(NewEstimate))
             return NewEstimate
 
         # print(params.size())

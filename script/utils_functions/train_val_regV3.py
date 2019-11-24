@@ -32,7 +32,7 @@ sil_dir = os.path.join(current_dir, 'SilOutput')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-or', '--filename_output', type=str,
-                    default=os.path.join(sil_dir, 'ResultshiftxSilhouette_{}.gif'.format('oldmod')))
+                    default=os.path.join(sil_dir, 'ResultrenderSilhouette_{}.gif'.format('0')))
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
@@ -250,9 +250,9 @@ def train_regV3(model, train_dataloader, test_dataloader,
         # image1 = torch.flip(image,[0, 3]) #flip vertical
         # image = torch.roll(image, 100, 3) #shift down from 100 px
         # image1 = shiftPixel(image, 100, 'y')
-        image1 =   shiftPixel(image , 100, 'x')
+        # image1 =   shiftPixel(image , 100, 'x')
         # image1 = torch.flip(image1, [0, 3])
-        # image1 = image
+        image1 = image
         Origimagesave = image1
         # Origimagesave = image.to(device)
         image1 = image1.to(device) #torch.Size([1, 3, 1024, 1280])
@@ -314,7 +314,7 @@ def train_regV3(model, train_dataloader, test_dataloader,
         step_Val_loss.append(loss.detach().cpu().numpy())
         # print(processcount)
 
-    # print('making the gif')
+    print('making the gif')
     make_gif(args.filename_output)
     
     print(step_Val_loss)
