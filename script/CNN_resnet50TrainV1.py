@@ -13,6 +13,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor, Compose, Normalize, Lambda
 from utils_functions.MyResnet import Myresnet50
+from utils_functions.MyResnet_t import Myresnet50_t
 from utils_functions.train_test_val_V1 import training
 from utils_functions.cubeDataset import CubeDataset
 
@@ -30,9 +31,12 @@ lr = 0.0001
 useofFK = False
 validation = False
 date4File = '251119' #mmddyy
-obj_name = 'shaftshortOnly'
-comment = 'newdatabase'
+obj_name = 'LongShaft2'#'shaftshortOnly'
+comment = 'newshafttest'
 traintype = 'regression' #'regression' or 'render'
+ResnetOutput = 't' #Rt
+
+print('training with {} epochs, use of fK: {}, object: {}, training type: {}, resnetOutput: {}'.format(n_epochs, useofFK, obj_name, traintype, ResnetOutput))
 
 file_name_extension = '807_images3'#'444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
@@ -155,6 +159,12 @@ parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
 
+if ResnetOutput == 't': #resnet predict only translation parameter
+    model = Myresnet50_t(filename_obj=args.filename_obj)
+
+if ResnetOutput == 'Rt': #resnet predict rotation and translation
+    model = Myresnet50(filename_obj=args.filename_obj)
+
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 model = Myresnet50(filename_obj=args.filename_obj)
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr')
@@ -174,7 +184,7 @@ bool_first = True
 #  ------------------------------------------------------------------
 #call training
 
-training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK )
+training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput)
 
 #call regression
 # train_regV3(model, train_dataloader, test_dataloader,

@@ -47,7 +47,7 @@ def main():
     params_database = []
     im_nr = 1
 
-    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/LongShaft.obj", load_texture=True, normalization=False) #, texture_size=4)
+    vertices_1, faces_1, textures_1 = nr.load_obj("3D_objects/LongShaft2.obj", load_texture=True, normalization=False) #, texture_size=4)
     print(vertices_1.shape)
     print(faces_1.shape)
     vertices_1 = vertices_1[None, :, :]  # add dimension

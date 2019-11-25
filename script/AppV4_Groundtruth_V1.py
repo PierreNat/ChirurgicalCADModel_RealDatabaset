@@ -937,11 +937,11 @@ class CommandWindow:
                 params_database.extend(self.Rt)
 
                 # make gif
-                imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
+                # imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
                 processcount = processcount + 1
 
 
-        make_gif(args.filename_output)
+        # make_gif(args.filename_output)
         height, width, depth = np.shape(self.image) #1280x1024x3
         print('{}/{} have 6 points '.format(self.NumberOfImageWith6Points,self.TotNumbOfImage))
 

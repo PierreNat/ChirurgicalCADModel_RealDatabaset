@@ -114,7 +114,7 @@ def FKBuild(parameters, AngleNoise, Translation_noise):
     return Noisyparameters
 
 
-def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK ):
+def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput):
     # monitor loss functions as the training progresses
 
 

@@ -45,7 +45,7 @@ parameters_Valfile = 'Npydatabase/params_{}.npy'.format(file_name_extension_vali
 
 
 date4File = '15111' #mmddyy
-obj_name = 'LongShaft' #'shaftshortOnly'
+obj_name = 'LongShaft2' #'shaftshortOnly'
 comment = 'test'
 type= 'render'
 fileExtension = '{}{}_{}epochs_{}'.format(date4File,type, n_epochs,comment) #string to ad at the end of the file
