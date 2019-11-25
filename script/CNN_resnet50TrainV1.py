@@ -26,22 +26,29 @@ print(device)
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
 vallen = 100
-n_epochs = 50
+n_epochs = 2
 lr = 0.0001
 useofFK = False
 validation = False
 date4File = '251119' #mmddyy
 obj_name = 'LongShaft2'#'shaftshortOnly'
 comment = 'newshafttest'
-traintype = 'regression' #'regression' or 'render'
+traintype = 'render' #'regression' or 'render'
 ResnetOutput = 't' #Rt
 
-print('training with {} epochs, use of fK: {}, object: {}, training type: {}, resnetOutput: {}'.format(n_epochs, useofFK, obj_name, traintype, ResnetOutput))
 
-file_name_extension = '807_images3'#'444_images3'  # choose the corresponding database to use
+
+file_name_extension = '444_images3' #'444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 ShaftSetName = 'Shaft_{}'.format(file_name_extension) #used to describe the document name
 
+print('training with {} epochs, use of fK: {}, object: {}, training type: {}, resnetOutput: {},  training dataset used: {}, comment: {}'.format(n_epochs,
+                                                                                                                                             useofFK,
+                                                                                                                                             obj_name,
+                                                                                                                                             traintype,
+                                                                                                                                             ResnetOutput,
+                                                                                                                                             file_name_extension,
+                                                                                                                                                comment,))
 
 Background_file = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension)
 RGBshaft_file = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension)
@@ -160,13 +167,15 @@ parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
 
 if ResnetOutput == 't': #resnet predict only translation parameter
+    print('model used is t')
     model = Myresnet50_t(filename_obj=args.filename_obj)
 
 if ResnetOutput == 'Rt': #resnet predict rotation and translation
+    print('model used is Rt')
     model = Myresnet50(filename_obj=args.filename_obj)
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
-model = Myresnet50(filename_obj=args.filename_obj)
+# model = Myresnet50(filename_obj=args.filename_obj)
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr')
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav')
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result

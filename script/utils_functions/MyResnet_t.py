@@ -79,7 +79,6 @@ class ModelResNet50(ResNet):
 
 
 # render part
-
         vertices, faces, textures = nr.load_obj(filename_obj, load_texture=True, normalization=False)
         vertices = vertices[None, :, :]  # [num_vertices, XYZ] -> [batch_size=1, num_vertices, XYZ]
         faces = faces[None, :, :]  # [num_faces, 3] -> [batch_size=1, num_faces, 3

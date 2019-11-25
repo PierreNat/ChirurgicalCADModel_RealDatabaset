@@ -128,7 +128,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     print('training {}'.format(traintype))
     print('lr used is: {}'.format(lr))
 
-    output_result_dir = 'results/{}/{}_lr{}'.format(traintype,fileExtension,lr)
+    output_result_dir = 'results/{}{}/{}_lr{}'.format(traintype, ResnetOutput,fileExtension,lr)
     mkdir_p(output_result_dir)
 
 
@@ -181,7 +181,13 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                 params = model(image, FKparameters, useofFK)  # should be size [batchsize, 6]
 
             else:
-                params = model(image)
+                if ResnetOutput == 'Rt':
+                    params = model(image)
+                if ResnetOutput == 't':
+                    t_params = model(image) #should be
+                    # print(t_params.size())
+
+
 
             parameter = parameter.to(device)
 
@@ -192,36 +198,70 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             numbOfImage = image.size()[0]
 
             for i in range(0,numbOfImage):
+                if ResnetOutput == 'Rt':
+                    print('Renset output 6 values')
+                    model.t = params[i, 3:6]
+                    R = params[i, 0:3]
+                    model.R = R2Rmat(R)
+                    current_sil = model.renderer(model.vertices, model.faces,  R=model.R, t=model.t, mode='silhouettes').squeeze()
+                    current_sil =  current_sil[0:1024, 0:1280]
+                    current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
 
-                model.t = params[i, 3:6]
-                R = params[i, 0:3]
-                model.R = R2Rmat(R)
-                current_sil = model.renderer(model.vertices, model.faces,  R=model.R, t=model.t, mode='silhouettes').squeeze()
-                current_sil =  current_sil[0:1024, 0:1280]
-                current_GT_sil = (silhouette[i]/255).type(torch.FloatTensor).to(device)
+                    if(traintype == 'render'):
 
-                if(traintype == 'render'):
+                        if useofFK: #use of the mlp
 
-                    if useofFK: #use of the mlp
+                            if (i == 0):
+                                loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                            else:
+                                loss += nn.BCELoss()(current_sil, current_GT_sil).to(device)
 
+                        else: #use sigmoid curve
+                            if (i == 0):
+                                loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
+                            else:
+                                loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
+
+
+                    if(traintype == 'regression'):
                         if (i == 0):
-                            loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                            loss =nn.MSELoss()(params[i], parameter[i]).to(device)
                         else:
-                            loss += nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                            loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+                        print(loss)
 
-                    else: #use sigmoid curve
+                if ResnetOutput == 't':
+                    print('Resnet output 3 values')
+                    model.t = t_params[i]
+                    print(model.t)
+                    R = parameter[i, 0:3] #give the ground truth parameter for the rotation values
+                    model.R = R2Rmat(R)
+                    current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
+                                                 mode='silhouettes').squeeze()
+                    current_sil = current_sil[0:1024, 0:1280]
+                    current_GT_sil = (silhouette[i] / 255).type(torch.FloatTensor).to(device)
+
+                    if (traintype == 'render'):
+
+                        if useofFK:  # use of the mlp
+
+                            if (i == 0):
+                                loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
+                            else:
+                                loss += nn.BCELoss()(current_sil, current_GT_sil).to(device)
+
+                        else:  # use sigmoid curve
+                            if (i == 0):
+                                loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
+                            else:
+                                loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
+
+                    if (traintype == 'regression'):
                         if (i == 0):
-                            loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
+                            loss = nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
                         else:
-                            loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
-
-
-                if(traintype == 'regression'):
-                    if (i == 0):
-                        loss =nn.MSELoss()(params[i], parameter[i]).to(device)
-                    else:
-                        loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
-                    print(loss)
+                            loss = loss + nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
+                        print(loss)
 
 
 
@@ -266,41 +306,85 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             Test_Step_loss = []
             numbOfImage = image.size()[0]
 
+
+
             image = image.to(device)
+
+
+
             parameter = parameter.to(device)
-            params = model(image, 0, False)  # should be size [batchsize, 6]
+
+            if ResnetOutput == 'Rt':
+                params = model(image)
+            if ResnetOutput == 't':
+                t_params = model(image)  # should be
+                # print(t_params.size())
+
+            # params = model(image, 0, False)  # should be size [batchsize, 6]
             # print(np.shape(params))
 
 
             for i in range(0, numbOfImage):
-                print('image tested: {}'.format(testcount))
-                print('estated {}'.format(params[i]))
-                print('Ground Truth {}'.format(parameter[i]))
-                if (i == 0):
-                    loss = nn.MSELoss()(params[i], parameter[i]).to(device)
-                else:
-                    loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
-
-                # one value each for the step, compute mse loss for all parameters separately
-                alpha_loss = nn.MSELoss()(params[:, 0], parameter[:, 0]).detach().cpu().numpy()
-                beta_loss = nn.MSELoss()(params[:, 1], parameter[:, 1]).detach().cpu().numpy()
-                gamma_loss = nn.MSELoss()(params[:, 2], parameter[:, 2]).detach().cpu().numpy()
-                x_loss = nn.MSELoss()(params[:, 3], parameter[:, 3]).detach().cpu().numpy()
-                y_loss = nn.MSELoss()(params[:, 4], parameter[:, 4]).detach().cpu().numpy()
-                z_loss = nn.MSELoss()(params[:, 5], parameter[:, 5]).detach().cpu().numpy()
-
-                steps_losses.append(loss.item())  # only one loss value is add each step
-                steps_alpha_loss.append(alpha_loss.item())
-                steps_beta_loss.append(beta_loss.item())
-                steps_gamma_loss.append(gamma_loss.item())
-                steps_x_loss.append(x_loss.item())
-                steps_y_loss.append(y_loss.item())
-                steps_z_loss.append(z_loss.item())
 
 
-            model.t = params[i, 3:6]
-            R = params[i, 0:3]
-            model.R = R2Rmat(R)  # angle from resnet are in radian
+                if ResnetOutput == 'Rt':
+                    print('image tested: {}'.format(testcount))
+                    print('estimated {}'.format(params[i]))
+                    print('Ground Truth {}'.format(parameter[i]))
+                    if (i == 0):
+                        loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+                    else:
+                        loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+
+                    # one value each for the step, compute mse loss for all parameters separately
+                    alpha_loss = nn.MSELoss()(params[:, 0], parameter[:, 0]).detach().cpu().numpy()
+                    beta_loss = nn.MSELoss()(params[:, 1], parameter[:, 1]).detach().cpu().numpy()
+                    gamma_loss = nn.MSELoss()(params[:, 2], parameter[:, 2]).detach().cpu().numpy()
+                    x_loss = nn.MSELoss()(params[:, 3], parameter[:, 3]).detach().cpu().numpy()
+                    y_loss = nn.MSELoss()(params[:, 4], parameter[:, 4]).detach().cpu().numpy()
+                    z_loss = nn.MSELoss()(params[:, 5], parameter[:, 5]).detach().cpu().numpy()
+
+                    steps_losses.append(loss.item())  # only one loss value is add each step
+                    steps_alpha_loss.append(alpha_loss.item())
+                    steps_beta_loss.append(beta_loss.item())
+                    steps_gamma_loss.append(gamma_loss.item())
+                    steps_x_loss.append(x_loss.item())
+                    steps_y_loss.append(y_loss.item())
+                    steps_z_loss.append(z_loss.item())
+
+                    model.t = params[i, 3:6]
+                    R = params[i, 0:3]
+                    model.R = R2Rmat(R)  # angle from resnet are in radian
+
+                if ResnetOutput == 't':
+                    print('image tested: {}'.format(testcount))
+                    print('estimated {}'.format(t_params[i]))
+                    print('Ground Truth {}'.format(parameter[i, 3:6]))
+                    if (i == 0):
+                        loss = nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
+                    else:
+                        loss = loss + nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
+
+                    # one value each for the step, compute mse loss for all parameters separately
+                    alpha_loss = 0
+                    beta_loss = 0
+                    gamma_loss = 0
+                    x_loss = nn.MSELoss()(t_params[:, 0], parameter[:, 3]).detach().cpu().numpy()
+                    y_loss = nn.MSELoss()(t_params[:, 1], parameter[:, 4]).detach().cpu().numpy()
+                    z_loss = nn.MSELoss()(t_params[:, 2], parameter[:, 5]).detach().cpu().numpy()
+
+                    steps_losses.append(loss.item())  # only one loss value is add each step
+                    steps_alpha_loss.append(0)
+                    steps_beta_loss.append(0)
+                    steps_gamma_loss.append(0)
+                    steps_x_loss.append(x_loss.item())
+                    steps_y_loss.append(y_loss.item())
+                    steps_z_loss.append(z_loss.item())
+
+                    model.t = t_params[i]
+                    R = parameter[i, 0:3] #give the ground truth parameter for the rotation values
+                    model.R = R2Rmat(R)
+
 
             current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
                                          mode='silhouettes').squeeze()
