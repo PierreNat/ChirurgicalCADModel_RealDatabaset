@@ -139,7 +139,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         "{}/TestParamLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
 
     x = np.arange(n_epochs)
-    y = sigmoid(x, 1, 0, n_epochs/2, 0.2)
+    y = sigmoid(x, 1, 0, n_epochs/1.2, 0.1)
     plt.plot(x, y)
     plt.savefig('{}/ReverseSigmoid_{}.png'.format(output_result_dir, fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
@@ -221,10 +221,12 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                         loss =nn.MSELoss()(params[i], parameter[i]).to(device)
                     else:
                         loss = loss + nn.MSELoss()(params[i], parameter[i]).to(device)
+                    print(loss)
 
 
 
             loss = loss / numbOfImage
+            print('number of image is {}'.format(numbOfImage))
             print('step {} loss is {}'.format(count,loss))
             loss.backward()
             optimizer.step()
@@ -232,7 +234,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             current_step_Train_loss .append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
             count = count + 1
 
-        epochTrainloss = np.mean(current_step_Train_loss )
+        epochTrainloss = np.mean(current_step_Train_loss)
         epochsTrainLoss.write('step: {}/{} current step loss: {:.4f}\r\n'.format(epoch, n_epochs, epochTrainloss))
         print('loss of epoch {} is {}'.format(epoch, epochTrainloss))
         current_step_Train_loss  = [] #reset value

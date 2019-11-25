@@ -45,7 +45,7 @@ parameters_Valfile = 'Npydatabase/params_{}.npy'.format(file_name_extension_vali
 
 
 date4File = '15111' #mmddyy
-obj_name = 'shaftshortOnly'
+obj_name = 'LongShaft' #'shaftshortOnly'
 comment = 'test'
 type= 'render'
 fileExtension = '{}{}_{}epochs_{}'.format(date4File,type, n_epochs,comment) #string to ad at the end of the file
@@ -162,9 +162,9 @@ args = parser.parse_args()
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 model = Myresnet50(filename_obj=args.filename_obj)
-model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='FinalModel_train_15111render_121epochs_testlossdivision')
+# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='FinalModel_train_15111render_121epochs_testlossdivision')
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_101epochs_Noise0.0_100epochtest2_RenderRegrSav')
-# model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result
+model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave') #good reg result
 # model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName='FinalModel_train_15111regression_100epochs_test')
 # 151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Noise0.0_test_RenderRegrSave
 # 211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr

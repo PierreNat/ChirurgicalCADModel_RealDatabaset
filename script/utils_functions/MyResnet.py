@@ -180,5 +180,5 @@ class ModelResNet50(ResNet):
 
         # print(params.size())
         else:
-            print('no fk')
+            # print('no fk')
             return params

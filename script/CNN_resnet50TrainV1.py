@@ -25,16 +25,16 @@ print(device)
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
 vallen = 100
-n_epochs = 10
-lr = 0.00001
-useofFK = True
+n_epochs = 50
+lr = 0.0001
+useofFK = False
 validation = False
-date4File = '241119' #mmddyy
+date4File = '251119' #mmddyy
 obj_name = 'shaftshortOnly'
-comment = 'test'
-traintype = 'render' #'regression' or 'render'
+comment = 'newdatabase'
+traintype = 'regression' #'regression' or 'render'
 
-file_name_extension = '444_images3'  # choose the corresponding database to use
+file_name_extension = '807_images3'#'444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 ShaftSetName = 'Shaft_{}'.format(file_name_extension) #used to describe the document name
 

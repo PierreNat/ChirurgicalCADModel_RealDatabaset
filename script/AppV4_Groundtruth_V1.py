@@ -27,7 +27,7 @@ span = 1
 TotNumbOfImage =19226
 
 shaft_diameter = 8.25*1e-3
-plt.close("all")
+# plt.close("all")
 # pathfile = 'framestest'
 pathfile = 'framesLeft'
 c_x = 590
@@ -50,7 +50,7 @@ sil_dir = os.path.join(current_dir, 'SilOutput')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-or', '--filename_output', type=str,
-                    default=os.path.join(sil_dir, 'ResultSilhouette_{}.gif'.format('test1')))
+                    default=os.path.join(sil_dir, 'ResultSilhouette_{}.gif'.format('wtf')))
 parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
@@ -936,12 +936,12 @@ class CommandWindow:
                 BWshaft_database.extend(self.sil)
                 params_database.extend(self.Rt)
 
-                #make gif
-                # imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
-                # processcount = processcount + 1
+                # make gif
+                imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
+                processcount = processcount + 1
 
 
-        # make_gif(args.filename_output)
+        make_gif(args.filename_output)
         height, width, depth = np.shape(self.image) #1280x1024x3
         print('{}/{} have 6 points '.format(self.NumberOfImageWith6Points,self.TotNumbOfImage))
 
