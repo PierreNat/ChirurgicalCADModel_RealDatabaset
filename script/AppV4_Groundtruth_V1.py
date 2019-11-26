@@ -924,21 +924,27 @@ class CommandWindow:
         # loop = tqdm.tqdm(range(0,20))
         for i in loop:
             if self.AllDataPoint[i]['Redx1'] != 0 and self.AllDataPoint[i]['Redx2'] != 0 and self.AllDataPoint[i]['Greenx1'] != 0 and self.AllDataPoint[i]['Greenx2'] != 0 and self.AllDataPoint[i]['Bluex1'] != 0 and self.AllDataPoint[i]['Bluex2'] != 0:
-                self.NumberOfImageWith6Points = self.NumberOfImageWith6Points +1
+
                 self.currentFrameId = self.AllDataPoint[i]['FrameId']
                 self.number_frame = i
                 self.drawOK = False #dont draw on the child windows cause it does not exist
                 self.ComputePointAngle()
 
+                if self.Rt[5] != float("inf"):
+                    print(self.Rt)
 
-                backgroundImage_database.extend(self.backgroundIm)
-                RGBshaft_database.extend(self.image)
-                BWshaft_database.extend(self.sil)
-                params_database.extend(self.Rt)
+                    backgroundImage_database.extend(self.backgroundIm)
+                    RGBshaft_database.extend(self.image)
+                    BWshaft_database.extend(self.sil)
+                    params_database.extend(self.Rt)
 
-                # make gif
-                # imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
-                processcount = processcount + 1
+                    # make gif
+                    # imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
+                    processcount = processcount + 1
+                    self.NumberOfImageWith6Points = self.NumberOfImageWith6Points + 1
+                else:
+                    print('Faiiiiiiiiiiiiiil image {}'.format(i))
+                    print(self.Rt)
 
 
         # make_gif(args.filename_output)

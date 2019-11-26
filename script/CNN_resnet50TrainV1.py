@@ -27,28 +27,36 @@ print(device)
 batch_size = 2
 vallen = 100
 n_epochs = 2
-lr = 0.0001
+lr = 0.00001
 useofFK = False
 validation = False
+useOwnPretrainedModel = False
+if useOwnPretrainedModel:
+    modelName='211119_100epochtest2_FinalModel_train_Shaft_444_images3_2batchs_20epochs_Noise0.0_100epochtest2_RenderRegr'
+else:
+    modelName = '/'
+
 date4File = '251119' #mmddyy
 obj_name = 'LongShaft2'#'shaftshortOnly'
-comment = 'newshafttest'
+comment = 'test'
 traintype = 'render' #'regression' or 'render'
-ResnetOutput = 't' #Rt
+ResnetOutput = 't' #Rt #define if the resnet gives 3 (only translation) or 6 outputs (Rotation and translation)
 
 
 
-file_name_extension = '444_images3' #'444_images3'  # choose the corresponding database to use
+file_name_extension = '444_images3' #'806_images3'#'444_images3' #'444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 ShaftSetName = 'Shaft_{}'.format(file_name_extension) #used to describe the document name
-
-print('training with {} epochs, use of fK: {}, object: {}, training type: {}, resnetOutput: {},  training dataset used: {}, comment: {}'.format(n_epochs,
+SettingString = 'training with {} epochs, use of fK: {}, use of own model: {}, model: {} \r\n object: {}, training type: {}, \r\n resnetOutput: {},  training dataset used: {}, comment: {}'.format(n_epochs,
                                                                                                                                              useofFK,
-                                                                                                                                             obj_name,
+                                                                                                                                              useOwnPretrainedModel,
+                                                                                                                                              modelName,
+                                                                                                                                              obj_name,
                                                                                                                                              traintype,
                                                                                                                                              ResnetOutput,
                                                                                                                                              file_name_extension,
-                                                                                                                                                comment,))
+                                                                                                                                                comment,)
+print(SettingString)
 
 Background_file = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension)
 RGBshaft_file = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension)
@@ -166,13 +174,25 @@ parser.add_argument('-mr', '--make_reference_image', type=int, default=0)
 parser.add_argument('-g', '--gpu', type=int, default=0)
 args = parser.parse_args()
 
-if ResnetOutput == 't': #resnet predict only translation parameter
-    print('model used is t')
-    model = Myresnet50_t(filename_obj=args.filename_obj)
+# shall we continue training an existing model or start from scratch?
+if useOwnPretrainedModel:
+    if ResnetOutput == 't':  # resnet predict only translation parameter
+        print('own model used is t')
+        model = Myresnet50_t(filename_obj=args.filename_obj, cifar = False, modelName=modelName)
 
-if ResnetOutput == 'Rt': #resnet predict rotation and translation
-    print('model used is Rt')
-    model = Myresnet50(filename_obj=args.filename_obj)
+    if ResnetOutput == 'Rt':  # resnet predict rotation and translation
+        print('own model used is Rt')
+        model = Myresnet50(filename_obj=args.filename_obj, cifar = False, modelName=modelName)
+else:
+    if ResnetOutput == 't': #resnet predict only translation parameter
+        print('train model used is t')
+        model = Myresnet50_t(filename_obj=args.filename_obj)
+
+    if ResnetOutput == 'Rt': #resnet predict rotation and translation
+        print('train model used is Rt')
+        model = Myresnet50(filename_obj=args.filename_obj)
+
+
 
 #camera setting and renderer are part of the model, (model.renderer to reach the renderer function)
 # model = Myresnet50(filename_obj=args.filename_obj)
@@ -193,7 +213,7 @@ bool_first = True
 #  ------------------------------------------------------------------
 #call training
 
-training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput)
+training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput, SettingString )
 
 #call regression
 # train_regV3(model, train_dataloader, test_dataloader,

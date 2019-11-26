@@ -114,7 +114,7 @@ def FKBuild(parameters, AngleNoise, Translation_noise):
     return Noisyparameters
 
 
-def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput):
+def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput, SettingString ):
     # monitor loss functions as the training progresses
 
 
@@ -137,6 +137,11 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         "{}/epochsTrainLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
     TestParamLoss = open(
         "{}/TestParamLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
+    ExperimentSettings = open(
+        "{}/expSettings_{}.txt".format(output_result_dir, fileExtension), "w+")
+
+    ExperimentSettings.write(SettingString)
+    ExperimentSettings.close()
 
     x = np.arange(n_epochs)
     y = sigmoid(x, 1, 0, n_epochs/1.2, 0.1)
@@ -182,9 +187,9 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
             else:
                 if ResnetOutput == 'Rt':
-                    params = model(image)
+                    params = model(image) #call the 6 parameters model
                 if ResnetOutput == 't':
-                    t_params = model(image) #should be
+                    t_params = model(image) #call the 3 parameters model
                     # print(t_params.size())
 
 
@@ -210,7 +215,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                     if(traintype == 'render'):
 
                         if useofFK: #use of the mlp
-
+                            print('render with FK for Rt')
                             if (i == 0):
                                 loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
                             else:
@@ -218,12 +223,14 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
                         else: #use sigmoid curve
                             if (i == 0):
+                                print('render with sigmoid for Rt')
                                 loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device))*(1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device))*(alpha)
                             else:
                                 loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(params[i], parameter[i]).to(device)) *(alpha)
 
 
                     if(traintype == 'regression'):
+                        print('regression for Rt')
                         if (i == 0):
                             loss =nn.MSELoss()(params[i], parameter[i]).to(device)
                         else:
@@ -242,26 +249,34 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                     current_GT_sil = (silhouette[i] / 255).type(torch.FloatTensor).to(device)
 
                     if (traintype == 'render'):
+                        print('t_param is {}'.format(t_params[i]))
+                        print('Gt_param is {}'.format(parameter[i, 3:6]))
 
                         if useofFK:  # use of the mlp
-
+                            print('render with FK for t')
                             if (i == 0):
                                 loss = nn.BCELoss()(current_sil, current_GT_sil).to(device)
                             else:
                                 loss += nn.BCELoss()(current_sil, current_GT_sil).to(device)
 
                         else:  # use sigmoid curve
+                            print('render with sigmoid for t')
+                            test = (nn.BCELoss()(current_GT_sil, current_GT_sil).to(device))
+                            print('bce of 2 same picture is {}'.format(test))
                             if (i == 0):
                                 loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
                             else:
                                 loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
 
                     if (traintype == 'regression'):
+                        print('regression for t')
                         if (i == 0):
+                            print('t_param is {}'.format(t_params[i]))
+                            print('Gt_param is {}'.format(parameter[i, 3:6]))
                             loss = nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
                         else:
                             loss = loss + nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
-                        print(loss)
+
 
 
 
@@ -326,8 +341,9 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
             for i in range(0, numbOfImage):
 
-
                 if ResnetOutput == 'Rt':
+                    print('test for Rt')
+
                     print('image tested: {}'.format(testcount))
                     print('estimated {}'.format(params[i]))
                     print('Ground Truth {}'.format(parameter[i]))
@@ -357,6 +373,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                     model.R = R2Rmat(R)  # angle from resnet are in radian
 
                 if ResnetOutput == 't':
+                    print('test for t')
                     print('image tested: {}'.format(testcount))
                     print('estimated {}'.format(t_params[i]))
                     print('Ground Truth {}'.format(parameter[i, 3:6]))
@@ -384,8 +401,8 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                     model.t = t_params[i]
                     R = parameter[i, 0:3] #give the ground truth parameter for the rotation values
                     model.R = R2Rmat(R)
-
-
+            print('Rt test GTparameter are {}'.format(parameter))
+            print('Rt test parameter are {}{}'.format(R, model.t))
             current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
                                          mode='silhouettes').squeeze()
             current_sil = current_sil[0:1024, 0:1280]

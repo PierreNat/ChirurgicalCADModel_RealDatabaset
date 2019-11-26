@@ -31,9 +31,10 @@ def Myresnet50_t(filename_obj=None, pretrained=True, cifar = True, modelName='No
     """
     model = ModelResNet50( filename_obj=filename_obj)
     if pretrained:
-        print('using own pre-trained model')
+
 
         if cifar == True:
+            print('using cifar database')
             pretrained_state = model_zoo.load_url(model_urls['resnet50'])
             model_state = model.state_dict()
             pretrained_state = {k: v for k, v in pretrained_state.items() if
@@ -43,6 +44,7 @@ def Myresnet50_t(filename_obj=None, pretrained=True, cifar = True, modelName='No
             model.eval()
 
         else:
+            print('using own pre-trained model: '.format(modelName))
             model.load_state_dict(torch.load('models/{}.pth'.format(modelName)))
             model.eval()
         print('download finished')
