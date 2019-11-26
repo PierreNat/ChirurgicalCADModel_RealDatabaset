@@ -31,6 +31,7 @@ print("Today's date:", today)
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
 vallen = 100
+start = 0
 n_epochs = 100
 lr = 0.0001
 useofFK = False #use of the noisy ground truth as mlp layer during the training
@@ -41,7 +42,7 @@ modelName='151119_test_FinalModel_train_Shaft_444_images3_2batchs_100epochs_Nois
 
 
 date4File = today #mmddyy
-obj_name = 'LongShaft2'#'shaftshortOnly'
+obj_name = 'shaftshortOnly'#'LongShaft2'#'shaftshortOnly'
 comment = 'validation with existing model'
 traintype = ' ' #'regression' or 'render'
 ResnetOutput = 'Rt' #Rt #define if the resnet gives 3 (only translation) or 6 outputs (Rotation and translation)
@@ -79,9 +80,9 @@ paramsVal = np.load(parameters_Valfile )
 #  ------------------------------------------------------------------
 
 
-val_im  = BackgroundVal[:vallen]
-val_sil  = silsVal[:vallen]
-val_param = paramsVal[:vallen]
+val_im  = BackgroundVal[start:start+vallen] #100:200
+val_sil  = silsVal[start:start+vallen]
+val_param = paramsVal[start:start+vallen]
 
 
 

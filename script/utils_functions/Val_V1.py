@@ -89,7 +89,7 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
     mkdir_p(output_result_dir)
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    sil_dir = os.path.join(output_result_dir, 'SilOutput')
+    sil_dir = os.path.join(output_result_dir)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-or', '--filename_output', type=str,
@@ -107,7 +107,7 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
     Epoch_Val_losses= []
     model.eval()
     from PIL import ImageTk, Image, ImageDraw
-    epochsValLoss = open("./{}/valbothParamShift.txt".format(output_result_dir), "w+")
+    paramList = open("./{}/paramList.txt".format(output_result_dir), "w+")
 
     t = tqdm(iter(val_dataloader), leave=True, total=len(val_dataloader))
     for image, silhouette, parameter in t:
@@ -133,7 +133,7 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
             model.t = t_params[i]
             R = parameter[i, 0:3]  # give the ground truth parameter for the rotation values
             model.R = R2Rmat(R)
-            epochsValLoss.write('step:{} params:{} \r\n'.format(processcount, t_params.detach().cpu().numpy()))
+            paramList.write('step:{} params:{} \r\n'.format(processcount, t_params.detach().cpu().numpy()))
             loss = nn.MSELoss()(params[i], parameter[i]).to(device)
 
 
@@ -143,18 +143,12 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
             model.t = params[i, 3:6]
             R = params[i, 0:3]
             model.R = R2Rmat(R)  # angle from resnet are in radian
-            epochsValLoss.write('step:{} params:{} \r\n'.format(processcount, params.detach().cpu().numpy()))
+            paramList.write('step:{} params:{} \r\n'.format(processcount, params.detach().cpu().numpy()))
             loss = nn.MSELoss()(params[i], parameter[i]).to(device)
 
 
-        # print(np.shape(params))
+
         i=0
-
-        # print('image estimated: {}'.format(testcount))
-        # print('estimated parameter {}'.format(params[i]))
-        # print('Ground Truth {}'.format(parameter[i]))
-
-
         current_sil = model.renderer(model.vertices, model.faces, R=model.R, t=model.t,
                                      mode='silhouettes').squeeze()
         current_sil = current_sil[0:1024, 0:1280]
@@ -199,7 +193,7 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
     
     print(step_Val_loss)
     print(np.mean(step_Val_loss))
-    epochsValLoss.close()
+    paramList.close()
     # Valcount = Valcount + 1
     #
     # epochValloss = np.mean(step_Val_loss)
