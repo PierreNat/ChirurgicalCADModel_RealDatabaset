@@ -114,7 +114,7 @@ def FKBuild(parameters, AngleNoise, Translation_noise):
     return Noisyparameters
 
 
-def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput, SettingString ):
+def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs, fileExtension, device, traintype, lr, validation, number_test_im, useofFK, ResnetOutput, SettingString, useOwnPretrainedModel):
     # monitor loss functions as the training progresses
 
 
@@ -144,7 +144,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     ExperimentSettings.close()
 
     x = np.arange(n_epochs)
-    y = sigmoid(x, 1, 0, n_epochs/1.2, 0.1)
+    y = sigmoid(x, 1, 0, n_epochs/2, 0.6)
     plt.plot(x, y)
     plt.savefig('{}/ReverseSigmoid_{}.png'.format(output_result_dir, fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
@@ -169,9 +169,12 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         print('train phase epoch {}/{}'.format(epoch, n_epochs))
 
         if useofFK:
-            alpha = -1#y[epoch] #proportion of the regression part decrease with negative sigmoid
+            alpha = -1#y[epoch] #combination of the ground truth with the computed values
         else:
-            alpha = y[epoch]
+            if useOwnPretrainedModel:
+                alpha =0 #if we continue to train a existing model, we want to train it for pure renderer
+            else:
+              alpha = y[epoch]
 
 
         print('alpha is {}'.format(alpha))
@@ -261,8 +264,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
                         else:  # use sigmoid curve
                             print('render with sigmoid for t')
-                            test = (nn.BCELoss()(current_GT_sil, current_GT_sil).to(device))
-                            print('bce of 2 same picture is {}'.format(test))
+
                             if (i == 0):
                                 loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
                             else:
