@@ -11,7 +11,7 @@ import glob
 import argparse
 from skimage.io import imread, imsave
 import matplotlib2tikz
-plt.switch_backend('agg')
+# plt.switch_backend('agg')
 
 
 
@@ -119,7 +119,10 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
 
     current_step_Train_loss  = []
+    current_step_Train_MSEloss = []
+
     Epoch_Train_losses = []
+    Epoch_Train_MSElosses = []
 
 
     count = 0
@@ -135,6 +138,8 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     
     epochsTrainLoss = open(
         "{}/epochsTrainLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
+    epochsTrainMSELoss = open(
+        "{}/epochsTrainMSELoss_{}.txt".format(output_result_dir, fileExtension), "w+")
     TestParamLoss = open(
         "{}/TestParamLoss_{}.txt".format(output_result_dir, fileExtension), "w+")
     ExperimentSettings = open(
@@ -144,8 +149,11 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     ExperimentSettings.close()
 
     x = np.arange(n_epochs)
-    y = sigmoid(x, 1, 0, n_epochs/2, 0.6)
+    div = 2
+    slope = 0.4
+    y = sigmoid(x, 1, 0, n_epochs/div, slope)
     plt.plot(x, y)
+    plt.title('div:{} slope:{}'.format(div,slope))
     plt.savefig('{}/ReverseSigmoid_{}.png'.format(output_result_dir, fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
 
@@ -197,13 +205,14 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
 
 
-            parameter = parameter.to(device)
+            parameter = parameter.to(device) #ground truth parameter
 
 
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
             optimizer.zero_grad()
 
             numbOfImage = image.size()[0]
+            mseLoss = 0  #store the mse loss
 
             for i in range(0,numbOfImage):
                 if ResnetOutput == 'Rt':
@@ -242,6 +251,8 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
                 if ResnetOutput == 't':
                     print('Resnet output 3 values')
+                    # t_params[i][0]= parameter[i, 4] #overrride x and y
+                    # t_params[i][1] = parameter[i, 5]
                     model.t = t_params[i]
                     print(model.t)
                     R = parameter[i, 0:3] #give the ground truth parameter for the rotation values
@@ -267,8 +278,10 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
                             if (i == 0):
                                 loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
+                                mseLoss = loss = nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
                             else:
                                 loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
+                                mseLoss = loss = loss + nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
 
                     if (traintype == 'regression'):
                         print('regression for t')
@@ -280,22 +293,32 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                             loss = loss + nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
 
 
-
-
             loss = loss / numbOfImage
+            mseLoss = mseLoss / numbOfImage
             print('number of image is {}'.format(numbOfImage))
             print('step {} loss is {}'.format(count,loss))
             loss.backward()
             optimizer.step()
 
-            current_step_Train_loss .append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
+            current_step_Train_loss.append(loss.detach().cpu().numpy())  # contain only this epoch loss, will be reset after each epoch
+            current_step_Train_MSEloss.append(mseLoss.detach().cpu().numpy())
             count = count + 1
 
         epochTrainloss = np.mean(current_step_Train_loss)
+        epochTrainMSELoss = np.mean(current_step_Train_MSEloss)
         epochsTrainLoss.write('step: {}/{} current step loss: {:.4f}\r\n'.format(epoch, n_epochs, epochTrainloss))
+        epochsTrainMSELoss.write('step: {}/{} current step MSE loss: {:.4f}\r\n'.format(epoch, n_epochs, epochTrainMSELoss))
         print('loss of epoch {} is {}'.format(epoch, epochTrainloss))
+        print('MSE loss of epoch {} is {}'.format(epoch, epochTrainMSELoss ))
+
+        # save the model
+        output_model_dir = '{}/modelTemp'.format(output_result_dir)
+        mkdir_p(output_model_dir)
+        torch.save(model.state_dict(), '{}/TempModel_train_{}{}.pth'.format(output_model_dir, fileExtension,count))
         current_step_Train_loss  = [] #reset value
+        current_step_Train_MSEloss =[]
         Epoch_Train_losses.append(epochTrainloss)  # most significant value to store
+        Epoch_Train_MSElosses.append(epochTrainMSELoss)
 
         ## test phase --------------------------------------------------------------------------------------------------------
         count = 0
@@ -440,7 +463,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                 .format(epoch, np.mean(steps_losses),
                         np.mean(steps_alpha_loss),
                         np.mean(steps_beta_loss),
-                        np.mean(steps_x_loss),
+                        np.mean(steps_gamma_loss),
                         np.mean(steps_x_loss),
                         np.mean(steps_z_loss),
                         np.mean(steps_y_loss)))

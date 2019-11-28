@@ -30,19 +30,19 @@ print("Today's date:", today)
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
 vallen = 100
-n_epochs = 100
-lr = 0.0001
+n_epochs = 90
+lr = 0.000001
 useofFK = False #use of the noisy ground truth as mlp layer during the training
 validation = False #not implemented
 useOwnPretrainedModel = True #continue to train a existing trained network
 if useOwnPretrainedModel:
-    modelName='FinalModel_train_251119render_100epochs_newshafttest'
+    modelName='FinalModel_train_261119render_40epochs_continue existing model2'
 else:
     modelName = '/'
 
 date4File = today #mmddyy
 obj_name = 'LongShaft2'#'shaftshortOnly'
-comment = 'continue existing model'
+comment = 'try Rt small lr'
 traintype = 'render' #'regression' or 'render'
 ResnetOutput = 't' #Rt #define if the resnet gives 3 (only translation) or 6 outputs (Rotation and translation)
 
@@ -121,26 +121,26 @@ train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
-#
-# for image, sil, param in train_dataloader:
-#
-# #plot silhouette
-#     print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
-#     im = 0
-#     print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
-#
-#     image2show = image[im]  # indexing random  one image
-#     print(image2show.size()) #torch.Size([3, 512, 512])
-#     plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
-#     plt.show()
-#
-#     image2show = sil[im]  # indexing random  one image
-#     print(image2show.size())  # torch.Size([3, 512, 512])
-#     image2show = image2show.numpy()
-#     plt.imshow(image2show, cmap='gray')
-#     plt.show()
-#
-#     break  # break here just to show 1 batch of data
+
+for image, sil, param in train_dataloader:
+
+#plot silhouette
+    print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
+    im = 0
+    print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
+
+    image2show = image[im]  # indexing random  one image
+    print(image2show.size()) #torch.Size([3, 512, 512])
+    plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
+    plt.show()
+
+    image2show = sil[im]  # indexing random  one image
+    print(image2show.size())  # torch.Size([3, 512, 512])
+    image2show = image2show.numpy()
+    plt.imshow(image2show, cmap='gray')
+    plt.show()
+
+    break  # break here just to show 1 batch of data
 #
 #
 # for image, sil, param in test_dataloader:

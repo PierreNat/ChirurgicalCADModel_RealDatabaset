@@ -134,7 +134,7 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
             R = parameter[i, 0:3]  # give the ground truth parameter for the rotation values
             model.R = R2Rmat(R)
             paramList.write('step:{} params:{} \r\n'.format(processcount, t_params.detach().cpu().numpy()))
-            loss = nn.MSELoss()(params[i], parameter[i]).to(device)
+            loss = nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
 
 
         if ResnetOutput == 'Rt':  # resnet predict rotation and translation
@@ -161,13 +161,13 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
         # image2show = np.flip(image2show,1)
 
 
-        fig = plt.figure()
-        fig.add_subplot(2, 1, 1)
-        plt.imshow(sil2plot, cmap='gray')
-
-        fig.add_subplot(2, 1, 2)
-        plt.imshow(image2show)
-        plt.show()
+        # fig = plt.figure()
+        # fig.add_subplot(2, 1, 1)
+        # plt.imshow(sil2plot, cmap='gray')
+        #
+        # fig.add_subplot(2, 1, 2)
+        # plt.imshow(image2show)
+        # plt.show()
 
         #creation of the blender image
         sil3d =  sil2plot[:, :, np.newaxis]
