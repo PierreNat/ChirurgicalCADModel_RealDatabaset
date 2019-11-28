@@ -933,15 +933,35 @@ class CommandWindow:
                 if self.Rt[5] != float("inf"):
                     print(self.Rt)
 
-                    backgroundImage_database.extend(self.backgroundIm)
-                    RGBshaft_database.extend(self.image)
-                    BWshaft_database.extend(self.sil)
-                    params_database.extend(self.Rt)
+                    if(processcount !=13 and
+                            processcount != 28 and
+                            processcount != 41 and
+                            processcount != 48 and
+                            processcount != 58 and
+                            processcount !=86 and
+                            processcount != 107 and
+                            processcount != 181and
+                            processcount != 196 and
+                            processcount != 205 and
+                            processcount != 229 and
+                            processcount != 242 and
+                            processcount != 243 and
+                            processcount !=260 and
+                            processcount !=297 and
+                            processcount !=302 and
+                            processcount !=324 and
+                            processcount !=340and
+                            processcount !=345):
+                        backgroundImage_database.extend(self.backgroundIm)
+                        RGBshaft_database.extend(self.image)
+                        BWshaft_database.extend(self.sil)
+                        params_database.extend(self.Rt)
+                        self.NumberOfImageWith6Points = self.NumberOfImageWith6Points + 1
 
                     # make gif
                     # imsave('/tmp/_tmp_%04d.png' % processcount, self.out)
                     processcount = processcount + 1
-                    self.NumberOfImageWith6Points = self.NumberOfImageWith6Points + 1
+
                 else:
                     print('Faiiiiiiiiiiiiiil image {}'.format(i))
                     print(self.Rt)

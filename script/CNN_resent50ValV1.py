@@ -30,7 +30,7 @@ print("Today's date:", today)
 
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
-vallen = 100 #number of frame in the gif result
+vallen = 400 #number of frame in the gif result
 start = 0 #start at the xth image of the validation dataset
 n_epochs = 100
 lr = 0.0001
@@ -38,12 +38,12 @@ useofFK = False #use of the noisy ground truth as mlp layer during the training
 validation = True #not implemented
 useOwnPretrainedModel = True #continue to train a existing trained network
 
-modelName='FinalModel_train_2711-11h33regression_150epochs_try regression'
+modelName='TempModel_train_2811-8h52render_10epochs_20 cont6'
 
 
 date4File = today #mmddyy
 obj_name = 'LongShaft2'#'LongShaft2'#'shaftshortOnly'
-comment = 'validation 150 epoch regression t'
+comment = 'validation render t'
 traintype = ' ' #'regression' or 'render'
 ResnetOutput = 't' #Rt #define if the resnet gives 3 (only translation) or 6 outputs (Rotation and translation)
 

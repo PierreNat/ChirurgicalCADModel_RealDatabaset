@@ -30,7 +30,7 @@ print("Today's date:", today)
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
 vallen = 100
-n_epochs = 90
+n_epochs = 2
 lr = 0.000001
 useofFK = False #use of the noisy ground truth as mlp layer during the training
 validation = False #not implemented
@@ -67,6 +67,9 @@ RGBshaft_file = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension)
 BWShaft_file = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension)
 parameters_file = 'Npydatabase/params_{}.npy'.format(file_name_extension)
 
+
+
+
 Background_Valfile = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension_validation)
 RGBshaft_Valfile = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension_validation)
 BWShaft_Valfile = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension_validation)
@@ -78,23 +81,67 @@ Background = np.load(Background_file)
 sils = np.load(BWShaft_file)
 params = np.load(parameters_file)
 
-BackgroundVal = np.load(Background_Valfile )
+BackgroundVal = np.load(Background_Valfile)
 silsVal = np.load(BWShaft_Valfile )
 paramsVal = np.load(parameters_Valfile )
 # print(np.min(params[:,4]))
+
+#  ------------------------------------------------------------------
+perfectBackground = np.empty([0,1024,1280,3])
+perfectSils = np.empty([0,1024,1280])
+perfectParams = np.empty([0,6])
+perfectCount = 0
+for processcount in range(0,444):
+    if (processcount != 13 and
+            processcount != 28 and
+            processcount != 41 and
+            processcount != 48 and
+            processcount != 58 and
+            processcount != 86 and
+            processcount != 107 and
+            processcount != 181 and
+            processcount != 196 and
+            processcount != 205 and
+            processcount != 229 and
+            processcount != 242 and
+            processcount != 243 and
+            processcount != 260 and
+            processcount != 297 and
+            processcount != 302 and
+            processcount != 324 and
+            processcount != 340 and
+            processcount != 345):
+        print('ok')
+        im= Background[processcount]
+        im2 = np.expand_dims(im, axis=0) #[1024,1280,3] to [1024,1280,3]
+        sil = sils[processcount]
+        sil2 =
+        perfectBackground =  np.vstack((perfectBackground , im2))
+        perfectCount = perfectCount +1
+
 
 #  ------------------------------------------------------------------
 
 ratio = 0.08  # 70%training 30%validation
 split = int(len(Background)*ratio)
 testlen = 100
+train_im = Background[:]  # 90% training
+train_sil = sils[:]
+train_param = params[:]
 
-
-train_im = Background[split:]  # 90% training
-train_sil = sils[split:]
-train_param = params[split:]
+# train_im = Background[split:]  # 90% training
+# train_sil = sils[split:]
+# train_param = params[split:]
 number_train_im = np.shape(train_im)[0]
 print('we have {} images for the training'.format(number_train_im))
+
+#erase not good picture
+# train_im_perfect
+# train_sil_perfect
+# train_sil_perfect
+# for i in range (0,number_train_im):
+#     if i != 2:
+#         train_im_perfect.append(train_im[i])
 
 
 test_im = Background[:split]  # remaining ratio for validation
@@ -118,29 +165,35 @@ test_dataset = CubeDataset(test_im, test_sil, test_param, transforms)
 val_dataset = CubeDataset(val_im, val_sil, val_param, transforms)
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
+train_dataloader2 = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=2)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
-
-for image, sil, param in train_dataloader:
+#
+i = 0
+for image, sil, param in train_dataloader2:
 
 #plot silhouette
-    print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
-    im = 0
-    print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
+    # print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
+    # im = 0
+    # print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
 
-    image2show = image[im]  # indexing random  one image
-    print(image2show.size()) #torch.Size([3, 512, 512])
-    plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
-    plt.show()
+    # image2show = image[im]  # indexing random  one image
+    # print(image2show.size()) #torch.Size([3, 512, 512])
+    # plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
+    # plt.show()
 
-    image2show = sil[im]  # indexing random  one image
-    print(image2show.size())  # torch.Size([3, 512, 512])
+    image2show = sil[0]  # indexing random  one image
+    # print(image2show.size())  # torch.Size([3, 512, 512])
     image2show = image2show.numpy()
     plt.imshow(image2show, cmap='gray')
+    plt.savefig('siltest2/sil{}{}.png'.format(traintype,i), bbox_inches='tight', pad_inches=0.05)
     plt.show()
+    plt.close()
+    i = i+1
+    print(i)
 
-    break  # break here just to show 1 batch of data
+    # break  # break here just to show 1 batch of data
 #
 #
 # for image, sil, param in test_dataloader:

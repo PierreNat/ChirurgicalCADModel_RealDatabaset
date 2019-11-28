@@ -11,7 +11,7 @@ import glob
 import argparse
 from skimage.io import imread, imsave
 import matplotlib2tikz
-# plt.switch_backend('agg')
+plt.switch_backend('agg')
 
 
 
@@ -180,7 +180,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             alpha = -1#y[epoch] #combination of the ground truth with the computed values
         else:
             if useOwnPretrainedModel:
-                alpha =0 #if we continue to train a existing model, we want to train it for pure renderer
+                alpha = 0 #if we continue to train a existing model, we want to train it for pure renderer
             else:
               alpha = y[epoch]
 
@@ -278,10 +278,10 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
                             if (i == 0):
                                 loss = (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
-                                mseLoss = loss = nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
+                                mseLoss  = nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
                             else:
                                 loss += (nn.BCELoss()(current_sil, current_GT_sil).to(device)) * (1 - alpha) + (nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)) * (alpha)
-                                mseLoss = loss = loss + nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
+                                mseLoss += nn.MSELoss()(t_params[i], parameter[i, 3:6]).to(device)
 
                     if (traintype == 'regression'):
                         print('regression for t')
@@ -297,6 +297,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             mseLoss = mseLoss / numbOfImage
             print('number of image is {}'.format(numbOfImage))
             print('step {} loss is {}'.format(count,loss))
+            print('step {} MSE loss is {}'.format(count,mseLoss))
             loss.backward()
             optimizer.step()
 
@@ -474,12 +475,22 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
 
 
 
-    fig, (ax1, ax2) = plt.subplots(2, 1)
+    fig, (ax1,ax11, ax2) = plt.subplots(3, 1)
     ax1.semilogy(Epoch_Train_losses)
-    ax1.set_ylabel('train {} loss'.format(traintype))
+    if traintype == 'render':
+        if useOwnPretrainedModel:
+            ax1.set_ylabel('train {} BCE loss'.format(traintype))
+        else:
+            ax1.set_ylabel('train {} BCE/MSE loss'.format(traintype))
+    else:
+        ax1.set_ylabel('train {} MSE loss'.format(traintype))
     ax1.set_xlim([0, n_epochs])
     # ax1.set_ylim([0, 4])
     # ax1.set_yscale('log')
+
+    ax11.semilogy(Epoch_Train_MSElosses)
+    ax11.set_ylabel('train {} MSE loss'.format(traintype))
+    ax11.set_xlim([0, n_epochs])
 
 
     ax2.semilogy(Epoch_Test_losses)
