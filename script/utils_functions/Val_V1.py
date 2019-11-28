@@ -117,10 +117,10 @@ def Val_V1(model, val_dataloader, n_epochs, fileExtension, device, traintype, lr
         numbOfImage = image.size()[0]
         # image1 = torch.flip(image,[0, 3]) #flip vertical
         # image = torch.roll(image, 100, 3) #shift down from 100 px
-        # image1 = shiftPixel(image, 100, 'y')
+        image1 = shiftPixel(image, 100, 'y')
         # image1 =   shiftPixel(image , 100, 'x')
         # image1 = torch.flip(image1, [0, 3])
-        image1 = image
+        # image1 = image
         Origimagesave = image1
         # Origimagesave = image.to(device)
         image1 = image1.to(device) #torch.Size([1, 3, 1024, 1280])

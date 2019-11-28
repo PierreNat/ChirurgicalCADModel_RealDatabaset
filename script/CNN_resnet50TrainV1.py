@@ -30,11 +30,11 @@ print("Today's date:", today)
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
 vallen = 100
-n_epochs = 2
+n_epochs = 100
 lr = 0.000001
 useofFK = False #use of the noisy ground truth as mlp layer during the training
 validation = False #not implemented
-useOwnPretrainedModel = True #continue to train a existing trained network
+useOwnPretrainedModel = False #continue to train a existing trained network
 if useOwnPretrainedModel:
     modelName='FinalModel_train_261119render_40epochs_continue existing model2'
 else:
@@ -42,13 +42,13 @@ else:
 
 date4File = today #mmddyy
 obj_name = 'LongShaft2'#'shaftshortOnly'
-comment = 'try Rt small lr'
+comment = 'regression test'
 traintype = 'render' #'regression' or 'render'
 ResnetOutput = 't' #Rt #define if the resnet gives 3 (only translation) or 6 outputs (Rotation and translation)
 
 
 
-file_name_extension = '444_images3' #'806_images3'#'444_images3' #'444_images3'  # choose the corresponding database to use
+file_name_extension = '444_images4' #'806_images3'#'444_images3' #'444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 ShaftSetName = 'Shaft_{}'.format(file_name_extension) #used to describe the document name
 SettingString = 'training with {} epochs, use of fK: {}, use of own model: {}, model: {} \r\n object: {}, training type: {}, \r\n resnetOutput: {},  training dataset used: {}, comment: {}'.format(n_epochs,
@@ -86,63 +86,71 @@ silsVal = np.load(BWShaft_Valfile )
 paramsVal = np.load(parameters_Valfile )
 # print(np.min(params[:,4]))
 
+# #  ------------------------------------------------------------------
+# #only for the '444_images3' datase
+# perfectBackground = np.empty([0,1024,1280,3])
+# perfectSils = np.empty([0,1024,1280])
+# perfectParams = np.empty([0,6])
+# perfectCount = 0
+# for processcount in range(0,444):
+#     if (processcount !=8 and
+#             processcount != 33 and
+#             processcount != 34 and
+#             processcount != 48 and
+#             processcount !=  63 and
+#             processcount !=  70 and
+#             processcount != 76 and
+#             processcount != 83 and
+#             processcount != 85 and
+#             processcount != 121and
+#             processcount != 142and
+#             processcount != 216and
+#             processcount != 230and
+#             processcount != 231and
+#             processcount != 240and
+#             processcount != 264and
+#             processcount != 277and
+#             processcount != 278and
+#             processcount != 295and
+#             processcount != 332and
+#             processcount != 337and
+#             processcount != 359and
+#             processcount != 375and
+#             processcount != 380and
+#             processcount != 434):
+#         print('ok {}'.format(processcount))
+#         im= Background[processcount]
+#         im2 = np.expand_dims(im, axis=0) #[1024,1280,3] to [1024,1280,3]
+#         sil = sils[processcount]
+#         sil2 = np.expand_dims(sil, axis=0)
+#         par = params[processcount]
+#         par2 = np.expand_dims(par, axis=0)
+#
+#         perfectBackground =  np.vstack((perfectBackground , im2))
+#         perfectSils =  np.vstack((perfectSils , sil2))
+#         perfectParams = np.vstack((perfectParams, par2))
+#
+#
+#         perfectCount = perfectCount +1
+#
+# Background = perfectBackground
+# sils = perfectSils
+# params = perfectParams
+
 #  ------------------------------------------------------------------
-perfectBackground = np.empty([0,1024,1280,3])
-perfectSils = np.empty([0,1024,1280])
-perfectParams = np.empty([0,6])
-perfectCount = 0
-for processcount in range(0,444):
-    if (processcount != 13 and
-            processcount != 28 and
-            processcount != 41 and
-            processcount != 48 and
-            processcount != 58 and
-            processcount != 86 and
-            processcount != 107 and
-            processcount != 181 and
-            processcount != 196 and
-            processcount != 205 and
-            processcount != 229 and
-            processcount != 242 and
-            processcount != 243 and
-            processcount != 260 and
-            processcount != 297 and
-            processcount != 302 and
-            processcount != 324 and
-            processcount != 340 and
-            processcount != 345):
-        print('ok')
-        im= Background[processcount]
-        im2 = np.expand_dims(im, axis=0) #[1024,1280,3] to [1024,1280,3]
-        sil = sils[processcount]
-        sil2 =
-        perfectBackground =  np.vstack((perfectBackground , im2))
-        perfectCount = perfectCount +1
 
-
-#  ------------------------------------------------------------------
-
-ratio = 0.08  # 70%training 30%validation
+ratio = 0.05  # 70%training 30%validation
 split = int(len(Background)*ratio)
 testlen = 100
-train_im = Background[:]  # 90% training
-train_sil = sils[:]
-train_param = params[:]
+# train_im = Background[:]  # 90% training
+# train_sil = sils[:]
+# train_param = params[:]
 
-# train_im = Background[split:]  # 90% training
-# train_sil = sils[split:]
-# train_param = params[split:]
+train_im = Background[split:]  # 90% training
+train_sil = sils[split:]
+train_param = params[split:]
 number_train_im = np.shape(train_im)[0]
 print('we have {} images for the training'.format(number_train_im))
-
-#erase not good picture
-# train_im_perfect
-# train_sil_perfect
-# train_sil_perfect
-# for i in range (0,number_train_im):
-#     if i != 2:
-#         train_im_perfect.append(train_im[i])
-
 
 test_im = Background[:split]  # remaining ratio for validation
 test_sil = sils[:split]
@@ -165,33 +173,33 @@ test_dataset = CubeDataset(test_im, test_sil, test_param, transforms)
 val_dataset = CubeDataset(val_im, val_sil, val_param, transforms)
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-train_dataloader2 = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=2)
+# train_dataloader2 = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=2)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
 #
-i = 0
-for image, sil, param in train_dataloader2:
-
-#plot silhouette
-    # print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
-    # im = 0
-    # print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
-
-    # image2show = image[im]  # indexing random  one image
-    # print(image2show.size()) #torch.Size([3, 512, 512])
-    # plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
-    # plt.show()
-
-    image2show = sil[0]  # indexing random  one image
-    # print(image2show.size())  # torch.Size([3, 512, 512])
-    image2show = image2show.numpy()
-    plt.imshow(image2show, cmap='gray')
-    plt.savefig('siltest2/sil{}{}.png'.format(traintype,i), bbox_inches='tight', pad_inches=0.05)
-    plt.show()
-    plt.close()
-    i = i+1
-    print(i)
+# i = 0
+# for image, sil, param in train_dataloader2:
+#
+# #plot silhouette
+#     # print(image.size(), sil.size(), param.size()) #torch.Size([batch, 3, 512, 512]) torch.Size([batch, 6])
+#     # im = 0
+#     # print(param[im])  # parameter in form tensor([2.5508, 0.0000, 0.0000, 0.0000, 0.0000, 5.0000])
+#
+#     # image2show = image[im]  # indexing random  one image
+#     # print(image2show.size()) #torch.Size([3, 512, 512])
+#     # plt.imshow((image2show * 0.5 + 0.5).numpy().transpose(1, 2, 0))
+#     # plt.show()
+#
+#     image2show = sil[0]  # indexing random  one image
+#     # print(image2show.size())  # torch.Size([3, 512, 512])
+#     image2show = image2show.numpy()
+#     plt.imshow(image2show, cmap='gray')
+#     plt.savefig('siltest3/sil{}{}.png'.format(traintype,i), bbox_inches='tight', pad_inches=0.05)
+#     plt.show()
+#     plt.close()
+#     i = i+1
+#     print(i)
 
     # break  # break here just to show 1 batch of data
 #

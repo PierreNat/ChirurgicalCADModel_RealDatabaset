@@ -203,8 +203,6 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
                     t_params = model(image) #call the 3 parameters model
                     # print(t_params.size())
 
-
-
             parameter = parameter.to(device) #ground truth parameter
 
 
@@ -310,7 +308,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
         epochsTrainLoss.write('step: {}/{} current step loss: {:.4f}\r\n'.format(epoch, n_epochs, epochTrainloss))
         epochsTrainMSELoss.write('step: {}/{} current step MSE loss: {:.4f}\r\n'.format(epoch, n_epochs, epochTrainMSELoss))
         print('loss of epoch {} is {}'.format(epoch, epochTrainloss))
-        print('MSE loss of epoch {} is {}'.format(epoch, epochTrainMSELoss ))
+        print('MSE loss of epoch {} is {}'.format(epoch, epochTrainMSELoss))
 
         # save the model
         output_model_dir = '{}/modelTemp'.format(output_result_dir)
