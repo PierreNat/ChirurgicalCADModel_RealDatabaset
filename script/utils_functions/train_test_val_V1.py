@@ -11,7 +11,7 @@ import glob
 import argparse
 from skimage.io import imread, imsave
 import matplotlib2tikz
-plt.switch_backend('agg')
+# plt.switch_backend('agg')
 
 
 
@@ -149,11 +149,13 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
     ExperimentSettings.close()
 
     x = np.arange(n_epochs)
-    div = 2
-    slope = 0.4
+    div =0.8
+    slope = 0.5
     y = sigmoid(x, 1, 0, n_epochs/div, slope)
     plt.plot(x, y)
-    plt.title('div:{} slope:{}'.format(div,slope))
+    # plt.title('div:{} slope:{}'.format(div,slope))
+    plt.xlabel('epochs')
+    plt.ylabel('\u03B1')
     plt.savefig('{}/ReverseSigmoid_{}.png'.format(output_result_dir, fileExtension), bbox_inches='tight', pad_inches=0.05)
     plt.show()
 
@@ -345,11 +347,7 @@ def training(model, train_dataloader, test_dataloader, val_dataloader, n_epochs,
             Test_Step_loss = []
             numbOfImage = image.size()[0]
 
-
-
             image = image.to(device)
-
-
 
             parameter = parameter.to(device)
 

@@ -30,7 +30,7 @@ print("Today's date:", today)
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
 vallen = 100
-n_epochs = 100
+n_epochs = 40
 lr = 0.000001
 useofFK = False #use of the noisy ground truth as mlp layer during the training
 validation = False #not implemented
@@ -48,7 +48,7 @@ ResnetOutput = 't' #Rt #define if the resnet gives 3 (only translation) or 6 out
 
 
 
-file_name_extension = '444_images4' #'806_images3'#'444_images3' #'444_images3'  # choose the corresponding database to use
+file_name_extension = '673_images3' #'444_images4' #'806_images3'#'444_images3' #'444_images3'  # choose the corresponding database to use
 file_name_extension_validation = '693_images2'  # choose the corresponding database to use
 ShaftSetName = 'Shaft_{}'.format(file_name_extension) #used to describe the document name
 SettingString = 'training with {} epochs, use of fK: {}, use of own model: {}, model: {} \r\n object: {}, training type: {}, \r\n resnetOutput: {},  training dataset used: {}, comment: {}'.format(n_epochs,
@@ -146,9 +146,9 @@ testlen = 100
 # train_sil = sils[:]
 # train_param = params[:]
 
-train_im = Background[split:]  # 90% training
-train_sil = sils[split:]
-train_param = params[split:]
+train_im = Background[:]  # 90% training
+train_sil = sils[:]
+train_param = params[:]
 number_train_im = np.shape(train_im)[0]
 print('we have {} images for the training'.format(number_train_im))
 
@@ -173,7 +173,7 @@ test_dataset = CubeDataset(test_im, test_sil, test_param, transforms)
 val_dataset = CubeDataset(val_im, val_sil, val_param, transforms)
 
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
-# train_dataloader2 = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=2)
+train_dataloader2 = DataLoader(train_dataset, batch_size=1, shuffle=False, num_workers=2)
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=2)
 val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=2)
 
@@ -195,9 +195,9 @@ val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_worker
 #     # print(image2show.size())  # torch.Size([3, 512, 512])
 #     image2show = image2show.numpy()
 #     plt.imshow(image2show, cmap='gray')
-#     plt.savefig('siltest3/sil{}{}.png'.format(traintype,i), bbox_inches='tight', pad_inches=0.05)
-#     plt.show()
-#     plt.close()
+#     plt.savefig('newtest/sil{}{}.png'.format(traintype,i), bbox_inches='tight', pad_inches=0.05)
+#     # plt.show()
+#     # plt.close()
 #     i = i+1
 #     print(i)
 

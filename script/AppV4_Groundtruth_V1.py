@@ -933,25 +933,7 @@ class CommandWindow:
                 if self.Rt[5] != float("inf"):
                     print(self.Rt)
 
-                    if(processcount !=13 and
-                            processcount != 28 and
-                            processcount != 41 and
-                            processcount != 48 and
-                            processcount != 58 and
-                            processcount !=86 and
-                            processcount != 107 and
-                            processcount != 181and
-                            processcount != 196 and
-                            processcount != 205 and
-                            processcount != 229 and
-                            processcount != 242 and
-                            processcount != 243 and
-                            processcount !=260 and
-                            processcount !=297 and
-                            processcount !=302 and
-                            processcount !=324 and
-                            processcount !=340and
-                            processcount !=345):
+                    if self.Rt[5] >0.06 and self.Rt[5] <0.1 and self.Rt[3] >-0.02 and self.Rt[3] <0.01:
                         backgroundImage_database.extend(self.backgroundIm)
                         RGBshaft_database.extend(self.image)
                         BWshaft_database.extend(self.sil)

@@ -6,74 +6,60 @@ import numpy as np
 # import pysilico
 import json
 import numpy as np
+import numpy as np
+import matplotlib.pyplot as plt
+import torch.nn as nn
 import imageio
 
-with open('dictSave/testsave1000_.json') as json_file:
+with open('dictSave/testsave1100New.json') as json_file:
     data = json.load(json_file)
     data_len = len(data)
     # usm_camera = data[0:data_len]['usm-1']
-    usm_camera = data[0]['usm-1']
-    usm_inst = data[0]['usm-2']
-
-    instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['pose'][0])),
-                                                 list(map(float, usm_inst['pose'][1])),
-                                                 list(map(float, usm_inst['pose'][2])),
-                                                 list(map(float, usm_inst['pose'][3]))],
-                                                dtype=np.float64)
 
 
-    joint_values = np.asarray([list(map(float, usm_inst['articulation'][0])),
-                             list(map(float, usm_inst['articulation'][1])),
-                             list(map(float, usm_inst['articulation'][2]))],
-                            dtype=np.float64)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+torch.cuda.empty_cache()
+print(device)
 
-    joint_values[-1] = 2 * joint_values[-1]
+file_name_extension = '444_images3'  # choose the corresponding database to use
+file_name_extension_validation = '693_images2'  # choose the corresponding database to use
+ShaftSetName = 'Shaft_{}'.format(file_name_extension) #used to describe the document name
 
-    # joint_values = list(map(float, usm_inst['articulation'][0]))
-    # joint_values[-1] = 2 * joint_values[-1]
+batch_size = 2
+vallen = 100
+n_epochs = 10
 
 
 
-    # usm_inst = data['usm_2']
+Background_file = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension)
+RGBshaft_file = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension)
+BWShaft_file = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension)
+parameters_file = 'Npydatabase/params_{}.npy'.format(file_name_extension)
 
-    # for key, value in data:
-    #     if key is 'fame_index':  # 'name' is the key we wish to get the value from
-    #         print(value)  # print its value
-    # for p in data['fame_index']:
-    #     print('usm-1: ' + p['usm-1'])
-
-    for p in data:
-        print(p, data[p])
-
-#
-#
-# # mars_data_dir = '/opt/isi/mars_fs/data'
-# mars_data_dir = '/data'
-# json_file = open('data/data.json')
-#
-# data = json.load(json_file)
-# # data = json.load(open('/home/max/platform/repos/marker-tracking/data/seq2/frame_gt10150.json'))
-# usm_camera = data['usm_1']
-# usm_inst = data['usm_2']
-#
-# # davinci = pysilico.PyDaVinci(mars_data_dir, "NONE", "THIRTY_SCOPE", "FENESTRATED_BIPOLAR_FORCEPS", "NONE")
-# # davinci.AddShaderRenderer()
-#
-# instrument_to_camera_transform = np.asarray([list(map(float, usm_inst['instrument_to_camera_transform'][0])),
-#                                              list(map(float, usm_inst['instrument_to_camera_transform'][1])),
-#                                              list(map(float, usm_inst['instrument_to_camera_transform'][2])),
-#                                              list(map(float, usm_inst['instrument_to_camera_transform'][3]))], dtype=np.float64)
-#
-# joint_values = list(map(float, usm_inst['instrument_joint_values']))
-# joint_values[-1] = 2*joint_values[-1]
-# davinci.SetInstrumentTransform(2, pysilico.Matrix(instrument_to_camera_transform), joint_values)
+Background_Valfile = 'Npydatabase/endoscIm_{}.npy'.format(file_name_extension_validation)
+RGBshaft_Valfile = 'Npydatabase/RGBShaft_{}.npy'.format(file_name_extension_validation)
+BWShaft_Valfile = 'Npydatabase/BWShaft_{}.npy'.format(file_name_extension_validation)
+parameters_Valfile = 'Npydatabase/params_{}.npy'.format(file_name_extension_validation)
 
 
-davinci.RenderInstruments()
-(component_image_, camera_vertex_image_, model_vertex_image_) = davinci.GetShaderFramebuffers()
+date4File = '15111' #mmddyy
+obj_name = 'LongShaft2' #'shaftshortOnly'
+comment = 'test'
+type= 'render'
+fileExtension = '{}{}_{}epochs_{}'.format(date4File,type, n_epochs,comment) #string to ad at the end of the file
 
-component_image = np.array(component_image_)
+Background = np.load(Background_file)
+sils = np.load(BWShaft_file)
+params = np.load(parameters_file)
 
-component_image = np.flipud(component_image)
+print('param loaded')
 
-imageio.imsave('/tmp/test_projection.png', component_image)
+
+train_im = Background[:]  # 90% training
+train_sil = sils[:]
+train_param = params[:]
+paramX = params[:, 3]
+paramY = params[:, 4]
+paramZ = params[:, 5]
+plt.hist(paramY, bins=20)
+plt.show()

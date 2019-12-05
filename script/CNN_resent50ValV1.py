@@ -30,7 +30,7 @@ print("Today's date:", today)
 
 ##### PARAMETERS GO HERE ###########
 batch_size = 2
-vallen = 200 #number of frame in the gif result
+vallen = 400 #number of frame in the gif result
 start = 0 #start at the xth image of the validation dataset
 n_epochs = 100
 lr = 0.0001
@@ -44,7 +44,7 @@ modelName='FinalModel_train_261119render_40epochs_continue existing model2'
 
 date4File = today #mmddyy
 obj_name = 'LongShaft2'#'LongShaft2'#'shaftshortOnly'
-comment = 'validation render shift'
+comment = 'validation render shift xy 50 '
 traintype = ' ' #'regression' or 'render'
 ResnetOutput = 't' #Rt #define if the resnet gives 3 (only translation) or 6 outputs (Rotation and translation)
 
